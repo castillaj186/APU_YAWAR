@@ -27,17 +27,20 @@ import net.minecraft.client.MinecraftClient;
  * desenfoque/imprecisión en todo lo dibujado hasta el siguiente reinicio de
  * viewport (independientemente del contenido: nuestras texturas o ítems
  * vanilla por igual).
- */
+ *
+ * Nota: desde que las 3 pantallas del Panel K dejaron de invocar el
+ * {@code renderBackground()} real (con blur) en ningún punto — ni como primer
+ * fondo (ahora un {@code fill()} plano) ni en la llamada oculta de
+ * {@code super.render()} (ver {@code renderBackground()} sobrescrito en cada
+ * pantalla) — el blur que causaba este viewport incorrecto ya no se ejecuta
+ * nunca en este flujo, así que esta restauración ya no es estrictamente
+ * necesaria para ese bug concreto. Se conserva de todas formas: es una sola
+ * llamada idempotente y sin costo real, y es una red de seguridad barata si
+ * algo más adelante vuelve a invocar el blur real antes de dibujar el panel. */
 final class ViewportFix {
-    /** F9 (en {@link SurvivalPanelScreen}) alterna esto para que el usuario
-     * pueda comparar, en la misma sesión y sin recompilar, el panel CON y SIN
-     * esta corrección — encendido por defecto (el comportamiento normal y
-     * correcto). Apagarlo reproduce a propósito el defecto original, solo
-     * como herramienta de verificación. */
-    static boolean enabled = true;
     private ViewportFix() {}
     static void restoreAfterBackground(MinecraftClient client) {
-        if (!enabled || client == null) return;
+        if (client == null) return;
         var window = client.getWindow();
         RenderSystem.viewport(0, 0, window.getFramebufferWidth(), window.getFramebufferHeight());
     }

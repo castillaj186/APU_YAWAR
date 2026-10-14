@@ -23,12 +23,6 @@ final class PanelTextures {
     static final Identifier ICON_ITEMS = id("panel_k/icon_items");
     static final Identifier ICON_MISSIONS = id("panel_k/icon_missions");
     static final Identifier ICON_SEARCH = id("panel_k/icon_search");
-    /** Copia de depuración: mismo bitmap que {@link #ICON_MOBS} pero con
-     * {@code blur:false} (nearest) en vez de {@code blur:true} (bilineal).
-     * Solo se usa en la pantalla de comparación F8, nunca en producción —
-     * permite comparar ambos filtros sobre el mismo PNG, al mismo tamaño de
-     * destino, sin que la diferencia de contenido confunda la comparación. */
-    static final Identifier DEBUG_ICON_NEAREST = id("panel_k/debug_icon_nearest");
     static final int PANEL_W = 1672, PANEL_H = 941;
     static final int ICON_SIZE = 512;
     private PanelTextures() {}

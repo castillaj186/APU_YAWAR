@@ -53,8 +53,15 @@ public final class MissionsScreen extends Screen {
         }).dimensions(fx, fy + fh - 20, 110, 18).build());
     }
 
+    /** {@code Screen.render()} vuelve a llamar a {@code renderBackground()}
+     * internamente antes de pintar los widgets (botón "Volver"); eso aplicaba
+     * una segunda pasada de blur sobre el panel ya dibujado. El fondo real de
+     * esta pantalla es el {@code fill()} oscuro de {@link #render}, así que se
+     * sobrescribe como no-op para bloquear esa llamada oculta. */
+    @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        context.fill(0, 0, this.width, this.height, 0xCC000000);
         ViewportFix.restoreAfterBackground(this.client);
         int[] box = panelBox();
         context.drawTexture(PanelTextures.PANEL, box[0], box[1], box[2], box[3], 0f, 0f,
