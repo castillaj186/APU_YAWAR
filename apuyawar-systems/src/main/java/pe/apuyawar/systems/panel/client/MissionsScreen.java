@@ -15,6 +15,8 @@ import pe.apuyawar.systems.missions.MissionDefinition;
  * y se aplica con {@link #applySync}.
  */
 public final class MissionsScreen extends Screen {
+    private boolean suppressBackgroundDuringWidgetRender = false;
+
     private int[] progress = new int[MissionCatalog.ALL.size()];
     private boolean[] rewarded = new boolean[MissionCatalog.ALL.size()];
     private int selected = 0;
@@ -54,6 +56,14 @@ public final class MissionsScreen extends Screen {
         }).dimensions(fx, fy + fh - 20, 110, 18).build());
     }
 
+    /** Screen.render() vuelve a llamar a renderBackground() antes de pintar widgets.
+     * Evitamos aplicar blur sobre nuestro panel ya dibujado; el primer fondo
+     * se pinta normalmente al comienzo de render(). */
+    @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (!suppressBackgroundDuringWidgetRender) {
+            super.renderBackground(context, mouseX, mouseY, delta);
+        }
+    }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
         ViewportFix.restoreAfterBackground(this.client);
@@ -96,7 +106,12 @@ public final class MissionsScreen extends Screen {
             context.drawText(this.textRenderer, "Estado: " + state, detailX, detailY + 64, complete ? 0xFF55FF55 : 0xFFAAAAAA, false);
         }
         context.disableScissor();
-        super.render(context, mouseX, mouseY, delta);
+        suppressBackgroundDuringWidgetRender = true;
+        try {
+            super.render(context, mouseX, mouseY, delta);
+        } finally {
+            suppressBackgroundDuringWidgetRender = false;
+        }
     }
 
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
