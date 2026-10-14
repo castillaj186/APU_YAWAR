@@ -28,12 +28,13 @@ public final class MissionsScreen extends Screen {
         this.rewarded = rewarded;
     }
 
-    /** Mismo ratio limpio 1/n que {@link SurvivalPanelScreen#panelBox()}, para
-     * que ambas pantallas muestren el panel con el mismo factor de escala y
-     * evitar un muestreo fraccionario arbitrario de texels. */
+    /** Mismo factor que {@link SurvivalPanelScreen#panelBox()} (incluida la
+     * prueba A/B de {@link PanelScale#rawMode}, F7), para que ambas pantallas
+     * muestren el panel con el mismo factor de escala y evitar un muestreo
+     * fraccionario arbitrario de texels. */
     private int[] panelBox() {
         float ideal = Math.min(this.width * 0.92f / PanelTextures.PANEL_W, this.height * 0.92f / PanelTextures.PANEL_H);
-        float scale = PanelScale.snap(ideal);
+        float scale = PanelScale.resolve(ideal);
         int w = Math.round(PanelTextures.PANEL_W * scale), h = Math.round(PanelTextures.PANEL_H * scale);
         int x = (this.width - w) / 2, y = (this.height - h) / 2;
         return new int[]{x, y, w, h};

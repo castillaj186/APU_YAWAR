@@ -50,6 +50,32 @@ public final class SurvivalPanelScreen extends Screen {
      * con el atajo de pantalla completa de Minecraft, que se procesa en un
      * callback aparte y no se puede interceptar desde Screen.keyPressed.) */
     private static boolean useNearestPanelDebug = false;
+    /** F7: ver {@link PanelScale#rawMode} (javadoc completo en
+     * {@code PanelScale}) — comparación A/B pedida en la revisión de la
+     * PR #1: con esto encendido, {@code panelBox()} usa el factor ideal SIN
+     * redondear a 1/n (en vez de {@code PanelScale.snap}), porque en GUI
+     * pequeñas (ej. 480x253, escala 4) el redondeo hacia abajo desaprovechaba
+     * resolución disponible (ideal≈0.247 quedaba en 0.20, no en 0.25).
+     * Afecta también a {@link MissionsScreen} (mismo {@code PanelScale}
+     * compartido). Apagado por defecto. El estado real vive en
+     * {@link PanelScale#rawMode} (no un campo propio) para que ambas
+     * pantallas lean el mismo valor. */
+
+    // Constantes de diseño del overlay F8 (compartidas entre render() y
+    // renderDiagnostic()). Revisadas en la PR #1: rowH bajó de 56 a 46 y el
+    // tamaño de los íconos D1/D2 de 44 a 34 para liberar espacio vertical, y
+    // las muestras G-antes/G-después se movieron a una tercera columna propia
+    // (antes estaban fijas en y=300, fuera de una GUI de 480x253 de altura).
+    // Con estos valores el overlay completo cabe en 444x244 lógicos: se
+    // verificó a mano contra 480x253 (el caso reportado) con margen; en GUI
+    // más pequeñas que eso seguiría pudiendo recortarse, pero no hay reporte
+    // de ese caso todavía.
+    private static final int DX = 12, DY = 12, COL_W = 170, ROW_H = 46;
+    private static final int DIAG_ICON_SIZE = 34;
+    private static final int G_SIZE = 80;
+    private static final int GX = DX + COL_W * 2 + 8;
+    private static final int GY_ANTES = DY + 10;
+    private static final int GY_DESPUES = GY_ANTES + G_SIZE + 24;
 
     public SurvivalPanelScreen() { super(Text.literal("APU YAWAR")); }
 
@@ -65,13 +91,15 @@ public final class SurvivalPanelScreen extends Screen {
     }
 
     /** Devuelve {x, y, width, height} del panel ya escalado y centrado en pantalla.
-     * El ratio ideal (92% de pantalla) se ajusta con {@link PanelScale#snap}
-     * a la fracción limpia 1/n más cercana en vez de usarse tal cual: un
-     * factor arbitrario como 0.4387 produce un muestreo irregular de texels
-     * incluso con filtrado bilineal; 1/n es predecible. */
+     * El ratio ideal (92% de pantalla) se resuelve con {@link PanelScale#resolve}:
+     * por defecto, a la fracción limpia 1/n más cercana ({@link PanelScale#snap}),
+     * porque un factor arbitrario como 0.4387 produce un muestreo irregular de
+     * texels incluso con filtrado bilineal; con {@link PanelScale#rawMode} (F7)
+     * encendido, usa {@code ideal} tal cual, para comparar en vivo si eso
+     * recupera nitidez en GUI pequeñas donde 1/n desaprovecha resolución. */
     private int[] panelBox() {
         float ideal = Math.min(this.width * 0.92f / PanelTextures.PANEL_W, this.height * 0.92f / PanelTextures.PANEL_H);
-        float scale = PanelScale.snap(ideal);
+        float scale = PanelScale.resolve(ideal);
         int w = Math.round(PanelTextures.PANEL_W * scale), h = Math.round(PanelTextures.PANEL_H * scale);
         int x = (this.width - w) / 2, y = (this.height - h) / 2;
         return new int[]{x, y, w, h};
@@ -141,7 +169,10 @@ public final class SurvivalPanelScreen extends Screen {
         // en posición separada, mismo tamaño y mismo filtro — comparación
         // directa pedida explícitamente para descartar que super.render() (u
         // otra operación entre medio) afecte lo ya dibujado.
-        if (diagnosticMode) drawPanelSample(context, 12, 300, 110, PanelTextures.PANEL, "G-antes de super.render()");
+        // Posición/tamaño corregidos tras la revisión de la PR #1: la anterior
+        // (12,300) a 110px quedaba fuera de pantalla en una GUI de 480x253
+        // (ver GX/GY/G_SIZE más abajo, columna 3 junto al resto del overlay).
+        if (diagnosticMode) drawPanelSample(context, GX, GY_ANTES, G_SIZE, PanelTextures.PANEL, "G-antes");
         searchField.visible = tab == Tab.SEARCH;
         super.render(context, mouseX, mouseY, delta);
         logViewport("C-tras super.render() (antes del diagnóstico F8)");
@@ -201,61 +232,81 @@ public final class SurvivalPanelScreen extends Screen {
      *     también, el entero resolvió el problema reportado con los huevos de
      *     aparición; si E2 sigue blando, el problema no era el factor
      *     fraccionario.</li>
-     * </ul> */
+     * <li>G-antes/G-después: mismo recorte grande de {@code panel.png},
+     *     dibujado una vez en {@link #render} ANTES de {@code super.render()}
+     *     y otra vez aquí DESPUÉS, en una tercera columna propia (antes fijo
+     *     en y=300, lo que lo dejaba fuera de una GUI de 480x253 de alto —
+     *     corregido en la revisión de la PR #1 a {@link #GX}/{@link #GY_ANTES}/
+     *     {@link #GY_DESPUES}, dentro del área visible).</li>
+     * </ul>
+     * Debajo de las pruebas, una línea de texto muestra los valores reales de
+     * {@code panelBox()} (ideal sin redondear, snap a 1/n, y el que está en
+     * uso según {@link PanelScale#rawMode}/F7) — la comparación numérica en
+     * vivo pedida en la PR #1, además de la visual. */
     private void renderDiagnostic(DrawContext context, int[] box) {
-        int dx = 12, dy = 12, colW = 170, rowH = 56;
-        context.fill(dx - 4, dy - 4, dx + colW * 2 + 4, dy + rowH * 4 + 40, 0xE8000000);
+        int bgRight = Math.max(DX + COL_W * 2 + 4, GX + G_SIZE + 4);
+        int statusY0 = DY + ROW_H * 4 + 2;
+        int bgBottom = statusY0 + 3 * 12 + 10;
+        context.fill(DX - 4, DY - 4, bgRight + 4, bgBottom, 0xE8000000);
         context.drawText(this.textRenderer, "F9 ViewportFix: " + (ViewportFix.enabled ? "ON (corregido)" : "OFF (defecto original)"),
-                dx, dy + rowH * 4 + 2, ViewportFix.enabled ? 0xFF55FF55 : 0xFFFF5555, false);
+                DX, statusY0, ViewportFix.enabled ? 0xFF55FF55 : 0xFFFF5555, false);
         context.drawText(this.textRenderer, "F10 sin blur de fondo: " + (skipBlurBackground ? "ON (fill plano)" : "OFF (renderBackground normal)"),
-                dx, dy + rowH * 4 + 14, skipBlurBackground ? 0xFF55FF55 : 0xFFAAAAAA, false);
+                DX, statusY0 + 12, skipBlurBackground ? 0xFF55FF55 : 0xFFAAAAAA, false);
         context.drawText(this.textRenderer, "F12 panel nearest: " + (useNearestPanelDebug ? "ON (debug)" : "OFF (bilineal producción)"),
-                dx, dy + rowH * 4 + 26, useNearestPanelDebug ? 0xFF55FF55 : 0xFFAAAAAA, false);
+                DX, statusY0 + 24, useNearestPanelDebug ? 0xFF55FF55 : 0xFFAAAAAA, false);
+        float ideal = Math.min(this.width * 0.92f / PanelTextures.PANEL_W, this.height * 0.92f / PanelTextures.PANEL_H);
+        float snapped = PanelScale.snap(ideal);
+        float used = box[2] / (float) PanelTextures.PANEL_W;
+        context.drawText(this.textRenderer, String.format(
+                "F7 escala sin redondear: %s (ideal=%.3f snap=%.3f usado=%.3f box=%dx%d gui=%dx%d)",
+                PanelScale.rawMode ? "ON" : "OFF", ideal, snapped, used, box[2], box[3], this.width, this.height),
+                DX, statusY0 + 36, PanelScale.rawMode ? 0xFF55FF55 : 0xFFAAAAAA, false);
 
         // G-después: MISMO recorte grande de panel.png que G-antes (dibujado
         // en render() antes de super.render()), misma textura y tamaño, en
         // otra posición — comparación directa antes/después de super.render().
-        drawPanelSample(context, dx + colW, 300, 110, PanelTextures.PANEL, "G-después de super.render()");
+        drawPanelSample(context, GX, GY_DESPUES, G_SIZE, PanelTextures.PANEL, "G-despues");
 
         // Fila 1: A (cuadrícula fill) | C (texto nativo)
-        context.drawText(this.textRenderer, "A: fill (control)", dx, dy, 0xFFFFFF00, false);
-        int gx = dx, gy = dy + 10, cell = 2;
+        context.drawText(this.textRenderer, "A: fill (control)", DX, DY, 0xFFFFFF00, false);
+        int gx = DX, gy = DY + 10, cell = 2;
         for (int yy = 0; yy < 16; yy++)
             for (int xx = 0; xx < 16; xx++)
                 context.fill(gx + xx * cell, gy + yy * cell, gx + xx * cell + cell, gy + yy * cell + cell,
                         (xx + yy) % 2 == 0 ? 0xFFFFFFFF : 0xFF000000);
-        context.drawText(this.textRenderer, "C: texto nativo", dx + colW, dy, 0xFFFFFF00, false);
-        context.drawText(this.textRenderer, "Aa0 1234", dx + colW, dy + 12, 0xFFFFFFFF, false);
+        context.drawText(this.textRenderer, "C: texto nativo", DX + COL_W, DY, 0xFFFFFF00, false);
+        context.drawText(this.textRenderer, "Aa0 1234", DX + COL_W, DY + 12, 0xFFFFFFFF, false);
+        // G-antes ya se dibujó completo (imagen + etiqueta) en render(), antes
+        // de super.render() — no se repite aquí, solo G-después (más abajo).
 
         // Fila 2: B1 (panel.png a escala EN VIVO) | B2 (panel.png 1:1)
-        int row2 = dy + rowH;
-        context.drawText(this.textRenderer, "B1: panel escala en vivo", dx, row2, 0xFFFFFF00, false);
+        int row2 = DY + ROW_H;
+        context.drawText(this.textRenderer, "B1: panel escala en vivo", DX, row2, 0xFFFFFF00, false);
         float liveScale = box[2] / (float) PanelTextures.PANEL_W;
         int liveSize = Math.max(8, Math.round(64 * liveScale));
-        context.drawTexture(PanelTextures.PANEL, dx, row2 + 10, liveSize, liveSize, 300f, 0f,
+        context.drawTexture(PanelTextures.PANEL, DX, row2 + 10, liveSize, liveSize, 300f, 0f,
                 64, 64, PanelTextures.PANEL_W, PanelTextures.PANEL_H);
-        context.drawText(this.textRenderer, "B2: panel.png 1:1", dx + colW, row2, 0xFFFFFF00, false);
-        context.drawTexture(PanelTextures.PANEL, dx + colW, row2 + 10, 32, 32, 300f, 0f,
+        context.drawText(this.textRenderer, "B2: panel.png 1:1", DX + COL_W, row2, 0xFFFFFF00, false);
+        context.drawTexture(PanelTextures.PANEL, DX + COL_W, row2 + 10, 32, 32, 300f, 0f,
                 32, 32, PanelTextures.PANEL_W, PanelTextures.PANEL_H);
 
         // Fila 3: D1 (icon_mobs bilineal, producción) | D2 (mismo bitmap, nearest)
-        int row3 = dy + rowH * 2;
-        int iconSize = 44;
-        context.drawText(this.textRenderer, "D1: icon bilineal (actual)", dx, row3, 0xFFFFFF00, false);
-        context.drawTexture(PanelTextures.ICON_MOBS, dx, row3 + 10, iconSize, iconSize, 0f, 0f,
+        int row3 = DY + ROW_H * 2;
+        context.drawText(this.textRenderer, "D1: icon bilineal (actual)", DX, row3, 0xFFFFFF00, false);
+        context.drawTexture(PanelTextures.ICON_MOBS, DX, row3 + 10, DIAG_ICON_SIZE, DIAG_ICON_SIZE, 0f, 0f,
                 PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE);
-        context.drawText(this.textRenderer, "D2: mismo PNG, nearest", dx + colW, row3, 0xFFFFFF00, false);
-        context.drawTexture(PanelTextures.DEBUG_ICON_NEAREST, dx + colW, row3 + 10, iconSize, iconSize, 0f, 0f,
+        context.drawText(this.textRenderer, "D2: mismo PNG, nearest", DX + COL_W, row3, 0xFFFFFF00, false);
+        context.drawTexture(PanelTextures.DEBUG_ICON_NEAREST, DX + COL_W, row3 + 10, DIAG_ICON_SIZE, DIAG_ICON_SIZE, 0f, 0f,
                 PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE, PanelTextures.ICON_SIZE);
 
         // Fila 4: E1 (ítem vanilla nativo 16px) | E2 (mismo ítem, escala x2 entera de CatalogGrid)
-        int row4 = dy + rowH * 3;
+        int row4 = DY + ROW_H * 3;
         ItemStack vanillaProbe = net.minecraft.item.Items.ZOMBIE_SPAWN_EGG.getDefaultStack();
-        context.drawText(this.textRenderer, "E1: huevo vanilla nativo", dx, row4, 0xFFFFFF00, false);
-        context.drawItem(vanillaProbe, dx, row4 + 10);
-        context.drawText(this.textRenderer, "E2: mismo huevo, x2 entero", dx + colW, row4, 0xFFFFFF00, false);
+        context.drawText(this.textRenderer, "E1: huevo vanilla nativo", DX, row4, 0xFFFFFF00, false);
+        context.drawItem(vanillaProbe, DX, row4 + 10);
+        context.drawText(this.textRenderer, "E2: mismo huevo, x2 entero", DX + COL_W, row4, 0xFFFFFF00, false);
         context.getMatrices().push();
-        context.getMatrices().translate(dx + colW, row4 + 10, 0);
+        context.getMatrices().translate(DX + COL_W, row4 + 10, 0);
         context.getMatrices().scale(2f, 2f, 1f);
         context.drawItem(vanillaProbe, 0, 0);
         context.getMatrices().pop();
@@ -269,6 +320,8 @@ public final class SurvivalPanelScreen extends Screen {
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F9) { ViewportFix.enabled = !ViewportFix.enabled; return true; }
         // F10: ver skipBlurBackground.
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F10) { skipBlurBackground = !skipBlurBackground; return true; }
+        // F7: ver PanelScale.rawMode.
+        if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F7) { PanelScale.rawMode = !PanelScale.rawMode; return true; }
         // F12 (no F11: coincide con pantalla completa, atajo global de
         // Minecraft que no pasa por Screen.keyPressed y se activaría igual).
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F12) { useNearestPanelDebug = !useNearestPanelDebug; return true; }
