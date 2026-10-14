@@ -26,6 +26,8 @@ import java.util.Map;
  * (Staff + Creative) antes de ejecutar nada real.
  */
 public final class AdminPanelScreen extends Screen {
+    private boolean suppressBackgroundDuringWidgetRender = false;
+
     private enum Section { JUGADORES, ANUNCIOS, RULETA, ECONOMIA, EVENTOS, STAFF, HERRAMIENTAS }
     private Section section = Section.JUGADORES;
     private TextFieldWidget announceField;
@@ -124,12 +126,25 @@ public final class AdminPanelScreen extends Screen {
             ClientPlayNetworking.send(new AdminTeleportToPayload(name));
     }
 
+    /** Screen.render() vuelve a llamar a renderBackground() antes de pintar widgets.
+     * Evitamos aplicar blur sobre nuestro panel ya dibujado; el primer fondo
+     * se pinta normalmente al comienzo de render(). */
+    @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (!suppressBackgroundDuringWidgetRender) {
+            super.renderBackground(context, mouseX, mouseY, delta);
+        }
+    }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
         ViewportFix.restoreAfterBackground(this.client);
         context.fill(0, 0, 135, this.height, 0xC0151008);
         context.drawText(this.textRenderer, "Panel Administrativo", 10, 8, 0xFFFFD700, true);
-        super.render(context, mouseX, mouseY, delta);
+        suppressBackgroundDuringWidgetRender = true;
+        try {
+            super.render(context, mouseX, mouseY, delta);
+        } finally {
+            suppressBackgroundDuringWidgetRender = false;
+        }
         int ry = 36;
         switch (section) {
             case JUGADORES -> context.drawText(this.textRenderer, "Jugadores conectados: usa los botones de la derecha para teletransportarte.", 140, ry, 0xFFFFFFFF, false);
