@@ -33,11 +33,24 @@ import java.util.List;
  * ni desbloquear automáticamente nada. Para añadir una criatura nueva de un mod
  * propio más adelante, basta con agregar una línea a {@link #build()}; no hace
  * falta tocar {@link MobCatalogEntry}, {@link MobCellRenderer} ni {@link CatalogGrid}.
+ *
+ * <p><b>Mostrado en el Panel K: solo hostiles.</b> {@link #ENTRIES} filtra
+ * {@link #ALL_VANILLA} a {@link MobCatalogEntry.Category#HOSTILE} — que una
+ * criatura pueda defenderse si se la provoca no la convierte en un enemigo que
+ * ataca por su cuenta (por eso Enderman, Lobo, Piglin, etc. están categorizados
+ * como {@code NEUTRAL} y no aparecen aquí, aunque sí siguen existiendo en
+ * {@link #ALL_VANILLA} para un futuro catálogo completo o filtro por categoría).
  */
 final class MobCatalog {
     /** Cuántos espacios "?" de contenido futuro mostrar al final de la cuadrícula. */
     static final int FUTURE_SLOTS = 16;
-    static final List<MobCatalogEntry> ENTRIES = Collections.unmodifiableList(build());
+    /** Las 79 criaturas Vanilla curadas (pasivas + neutrales + hostiles), sin
+     * filtrar — ver {@link #ENTRIES} para lo que realmente se muestra. */
+    static final List<MobCatalogEntry> ALL_VANILLA = Collections.unmodifiableList(build());
+    /** Lo que se muestra en el catálogo de "Cambios y Mobs": solo hostiles. */
+    static final List<MobCatalogEntry> ENTRIES = ALL_VANILLA.stream()
+            .filter(e -> e.category() == MobCatalogEntry.Category.HOSTILE)
+            .toList();
     private MobCatalog() {}
 
     private static List<MobCatalogEntry> build() {

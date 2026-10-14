@@ -1,32 +1,40 @@
 package pe.apuyawar.systems.panel.client;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
+import net.minecraft.recipe.CraftingRecipe;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Catálogo de "Objetos": todos los ítems registrados (Vanilla + los que agregue
- * APU YAWAR, como Sol PE). No existe todavía ninguna regla real de progresión para
- * bloquear ítems individualmente (se confirmó que no hay sistema previo) — por
- * ahora se muestran todos como disponibles, más unos espacios "?" de contenido
- * futuro, listos para conectar una regla de desbloqueo real más adelante.
+ * Catálogo de "Objetos": antes recorría {@code Registries.ITEM} completo
+ * (mostraba cualquier ítem registrado, incluidos los que no se pueden obtener
+ * de ninguna forma por crafteo). Ahora muestra únicamente objetos con al menos
+ * una receta real de mesa de trabajo — ver {@link CraftingRecipeIndex}.
+ *
+ * <p>Ya no es una lista estática al cargar la clase: las recetas dependen del
+ * {@code RecipeManager} del mundo/servidor actual (pueden variar entre
+ * servidores o cambiar con un datapack recargado), así que esta clase pasó de
+ * ser un {@code static final} a construirse una vez por cada apertura del
+ * Panel K, en el constructor de {@link SurvivalPanelScreen} — el mismo patrón
+ * de ciclo de vida que ya usa la caché de entidades de {@link MobCellRenderer}
+ * (vive y muere con la pantalla, sin necesitar invalidación explícita).
  */
 final class ItemCatalog {
     static final int FUTURE_SLOTS = 16;
-    static final List<CatalogEntry> ENTRIES = build();
-    private ItemCatalog() {}
-    private static List<CatalogEntry> build() {
-        List<CatalogEntry> list = new ArrayList<>();
-        for (Item item : Registries.ITEM) {
-            if (item == Items.AIR) continue;
-            ItemStack stack = new ItemStack(item);
-            list.add(new CatalogEntry(stack, stack.getName().getString()));
-        }
-        list.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
-        return list;
+    private final CraftingRecipeIndex index;
+
+    ItemCatalog() {
+        var client = MinecraftClient.getInstance();
+        // Defensivo: el Panel K solo se abre tras confirmar con el servidor
+        // (PanelOpenRequestPayload/PanelOpenResponsePayload) estando en un
+        // mundo, así que client.world no debería ser null aquí — pero si
+        // alguna vez lo fuera, un catálogo vacío es preferible a un crash.
+        this.index = client.world != null
+                ? new CraftingRecipeIndex(client.world.getRecipeManager(), client.world.getRegistryManager())
+                : null;
     }
+
+    List<CatalogEntry> entries() { return index != null ? index.entries() : List.of(); }
+    List<CraftingRecipe> recipesFor(Item item) { return index != null ? index.recipesFor(item) : List.of(); }
 }

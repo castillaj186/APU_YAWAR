@@ -18,7 +18,7 @@ import java.util.function.Function;
 final class CatalogGrid<T> {
     private static final int CELL = 40;
     private static final int INFO_HEIGHT = 12;
-    private final List<T> entries;
+    private List<T> entries;
     private final int futureSlots;
     private final CellRenderer<T> cellRenderer;
     private final Function<T, String> nameExtractor;
@@ -97,6 +97,23 @@ final class CatalogGrid<T> {
         if (index < 0 || index >= totalSlots()) return false;
         selected = index;
         return true;
+    }
+    /** La entrada real seleccionada, o {@code null} si no hay selección o la
+     * selección actual es un espacio "?" de contenido bloqueado (no una entrada
+     * real que pueda abrirse en detalle). */
+    T selectedEntry() {
+        return (selected >= 0 && selected < entries.size()) ? entries.get(selected) : null;
+    }
+    /** Usado por la búsqueda unificada al cambiar el texto: la lista de
+     * resultados es otra, así que reemplaza las entradas y limpia selección y
+     * scroll (un índice antiguo ya no tendría sentido contra la lista nueva).
+     * No se usa desde las pestañas Mobs/Objetos (su lista no cambia mientras
+     * la pantalla está abierta) — solo construyen el {@code CatalogGrid} una
+     * vez con su lista final. */
+    void setEntries(List<T> newEntries) {
+        this.entries = newEntries;
+        this.selected = -1;
+        this.scroll = 0;
     }
     boolean mouseScrolled(double amount) {
         int before = scroll;
