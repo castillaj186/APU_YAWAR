@@ -1,0 +1,57 @@
+.gradle/
+build/
+**/build/
+run/
+**/run/
+out/
+.classpath
+.project
+.settings/
+*.class
+*.log
+.vscode/*.log
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle
+.gradle/
+**/.gradle/
+**/build/
+
+# Minecraft runtime
+**/run/
+**/logs/
+**/crash-reports/
+**/screenshots/
+**/saves/
+**/worlds/
+**/backups/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Temporales
+*.log
+*.tmp
+*.zip
+*.rar
+*.7z
+
+# Archivos de entorno y credenciales
+.env
+.env.*
+*.pem
+*.key
+*.keystore
+*.jks
+
+# Datos privados de servidores Minecraft
+**/ops.json
+**/whitelist.json
+**/usercache.json
+**/banned-players.json
+**/banned-ips.json
+**/server.properties
+**/options.txt
+

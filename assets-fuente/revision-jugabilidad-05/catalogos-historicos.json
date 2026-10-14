@@ -1,0 +1,2546 @@
+{
+  "red": [
+    {
+      "id": "juicio_001",
+      "name": "REGRESA AL PUNTO: TNT",
+      "description": "Regresa rápido al punto indicado y quédate dentro. La brújula te ayudará a encontrarlo, pero ten cuidado: caerá TNT sobre ti cada 2 segundos. Tienes 10 minutos.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 0,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_002",
+      "name": "LOBBY: Creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_003",
+      "name": "LOBBY: TNT y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 1,
+        "tnt": 40,
+        "tn": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_004",
+      "name": "LOBBY: Mobs",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 1,
+        "zb": 60,
+        "sk": 80,
+        "sp": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_005",
+      "name": "LOBBY: Tormenta",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 1,
+        "st": 100,
+        "sn": 3,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_006",
+      "name": "LOBBY: Eléctricos",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 1,
+        "ce": 40,
+        "cen": 1,
+        "cr": 80,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_007",
+      "name": "LOBBY: Horda",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 1,
+        "hd": 400,
+        "hn": 8,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_008",
+      "name": "LOBBY: Infierno",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 1,
+        "tnt": 60,
+        "tn": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 60,
+        "sk": 80,
+        "ph": 160,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_009",
+      "name": "BUNKER 1: TNT",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 2,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_010",
+      "name": "BUNKER 1: Creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 2,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_011",
+      "name": "BUNKER 1: TNT y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 2,
+        "tnt": 40,
+        "tn": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_012",
+      "name": "BUNKER 1: Mobs",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 2,
+        "zb": 60,
+        "sk": 80,
+        "sp": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_013",
+      "name": "BUNKER 1: Tormenta",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 2,
+        "st": 100,
+        "sn": 3,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_014",
+      "name": "BUNKER 1: Eléctricos",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 2,
+        "ce": 40,
+        "cen": 1,
+        "cr": 80,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_015",
+      "name": "BUNKER 1: Horda",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 2,
+        "hd": 400,
+        "hn": 8,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_016",
+      "name": "BUNKER 1: Infierno",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 2,
+        "tnt": 60,
+        "tn": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 60,
+        "sk": 80,
+        "ph": 160,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_017",
+      "name": "BUNKER 2: TNT",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 3,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_018",
+      "name": "BUNKER 2: Creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 3,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_019",
+      "name": "BUNKER 2: TNT y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 3,
+        "tnt": 40,
+        "tn": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_020",
+      "name": "BUNKER 2: Mobs",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 3,
+        "zb": 60,
+        "sk": 80,
+        "sp": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_021",
+      "name": "BUNKER 2: Tormenta",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 3,
+        "st": 100,
+        "sn": 3,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_022",
+      "name": "BUNKER 2: Eléctricos",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 3,
+        "ce": 40,
+        "cen": 1,
+        "cr": 80,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_023",
+      "name": "BUNKER 2: Horda",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 3,
+        "hd": 400,
+        "hn": 8,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_024",
+      "name": "BUNKER 2: Infierno",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 3,
+        "tnt": 60,
+        "tn": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 60,
+        "sk": 80,
+        "ph": 160,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_025",
+      "name": "BUNKER 3: TNT",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 4,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_026",
+      "name": "BUNKER 3: Creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 4,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_027",
+      "name": "BUNKER 3: TNT y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 4,
+        "tnt": 40,
+        "tn": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_028",
+      "name": "BUNKER 3: Mobs",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 4,
+        "zb": 60,
+        "sk": 80,
+        "sp": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_029",
+      "name": "BUNKER 3: Tormenta",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 4,
+        "st": 100,
+        "sn": 3,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_030",
+      "name": "BUNKER 3: Eléctricos",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 4,
+        "ce": 40,
+        "cen": 1,
+        "cr": 80,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_031",
+      "name": "BUNKER 3: Horda",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 4,
+        "hd": 400,
+        "hn": 8,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_032",
+      "name": "BUNKER 3: Infierno",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 4,
+        "tnt": 60,
+        "tn": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 60,
+        "sk": 80,
+        "ph": 160,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_033",
+      "name": "BUNKER 4: TNT",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 5,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_034",
+      "name": "BUNKER 4: Creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 1,
+        "twist": 1,
+        "dest": 5,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_035",
+      "name": "BUNKER 4: TNT y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 5,
+        "tnt": 40,
+        "tn": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_036",
+      "name": "BUNKER 4: Mobs",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 5,
+        "zb": 60,
+        "sk": 80,
+        "sp": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_037",
+      "name": "BUNKER 4: Tormenta",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 5,
+        "st": 100,
+        "sn": 3,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_038",
+      "name": "BUNKER 4: Eléctricos",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 5,
+        "ce": 40,
+        "cen": 1,
+        "cr": 80,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_039",
+      "name": "BUNKER 4: Horda",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 2,
+        "twist": 1,
+        "dest": 5,
+        "hd": 400,
+        "hn": 8,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_040",
+      "name": "BUNKER 4: Infierno",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 5,
+        "tnt": 60,
+        "tn": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 60,
+        "sk": 80,
+        "ph": 160,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_041",
+      "name": "Lluvia de TNT",
+      "description": "Sobrevive 3 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 2,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 1,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_042",
+      "name": "Lluvia de TNT x3",
+      "description": "Sobrevive 4 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "tnt": 40,
+        "tn": 3
+      }
+    },
+    {
+      "id": "juicio_043",
+      "name": "Lluvia de creepers",
+      "description": "Sobrevive 3 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 2,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_044",
+      "name": "Lluvia de creepers",
+      "description": "Correeee, en tu lugar aparecerá 1 creeper encendido cada 2 segundos. Corre o explota; ¡ten cuidado!",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "cr": 40,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_045",
+      "name": "Creepers eléctricos",
+      "description": "Sobrevive 4 minutos. Peligros: creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "ce": 40,
+        "cen": 1
+      }
+    },
+    {
+      "id": "juicio_046",
+      "name": "Creepers eléctricos x2",
+      "description": "Sobrevive 5 minutos. Peligros: creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ce": 40,
+        "cen": 2
+      }
+    },
+    {
+      "id": "juicio_047",
+      "name": "Creepers nucleares",
+      "description": "Sobrevive 4 minutos. Peligros: creepers NUCLEARES.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "cn": 200,
+        "cnn": 1
+      }
+    },
+    {
+      "id": "juicio_048",
+      "name": "Creepers nucleares sin descanso",
+      "description": "Sobrevive 5 minutos. Peligros: creepers NUCLEARES.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "cn": 120,
+        "cnn": 2
+      }
+    },
+    {
+      "id": "juicio_049",
+      "name": "Tormenta de triple rayo",
+      "description": "Sobrevive 3 minutos. Peligros: tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 1,
+        "st": 100,
+        "sn": 3
+      }
+    },
+    {
+      "id": "juicio_050",
+      "name": "Tormenta y zombies",
+      "description": "Sobrevive 5 minutos. Peligros: zombies, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "st": 100,
+        "sn": 3,
+        "zb": 80,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_051",
+      "name": "Tormenta infernal",
+      "description": "Sobrevive 5 minutos. Peligros: creepers ELÉCTRICOS, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "st": 60,
+        "sn": 3,
+        "ce": 100,
+        "cen": 1
+      }
+    },
+    {
+      "id": "juicio_052",
+      "name": "Horda de zombies",
+      "description": "Sobrevive 3 minutos. Peligros: hordas de zombies.",
+      "parameters": {
+        "kind": 2,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 1,
+        "hd": 240,
+        "hn": 10
+      }
+    },
+    {
+      "id": "juicio_053",
+      "name": "Hordas imparables",
+      "description": "Sobrevive 5 minutos. Peligros: husks, hordas de zombies.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "hd": 160,
+        "hn": 14,
+        "hu": 100,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_054",
+      "name": "Plaga de husks",
+      "description": "Sobrevive 4 minutos. Peligros: husks.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "hu": 40,
+        "mc": 3
+      }
+    },
+    {
+      "id": "juicio_055",
+      "name": "Plaga de arañas",
+      "description": "Sobrevive 4 minutos. Peligros: arañas.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "sp": 40,
+        "mc": 3
+      }
+    },
+    {
+      "id": "juicio_056",
+      "name": "Phantoms sobre ti",
+      "description": "Sobrevive 4 minutos. Peligros: phantoms.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "ph": 60,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_057",
+      "name": "Lluvia de esqueletos",
+      "description": "Sobrevive 4 minutos. Peligros: esqueletos.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "sk": 40,
+        "mc": 3
+      }
+    },
+    {
+      "id": "juicio_058",
+      "name": "Brujas y vindicadores",
+      "description": "Sobrevive 5 minutos. Peligros: brujas, vindicadores.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "wi": 100,
+        "vi": 80,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_059",
+      "name": "Zombies y creepers",
+      "description": "Sobrevive 4 minutos. Peligros: creepers encendidos sobre ti cada 2 s, zombies.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "zb": 60,
+        "cr": 60,
+        "crn": 1,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_060",
+      "name": "Esqueletos y arañas",
+      "description": "Sobrevive 5 minutos. Peligros: esqueletos, arañas.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "sk": 60,
+        "sp": 60,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_061",
+      "name": "Phantoms y tormenta",
+      "description": "Sobrevive 5 minutos. Peligros: phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ph": 80,
+        "mc": 2,
+        "st": 100,
+        "sn": 3
+      }
+    },
+    {
+      "id": "juicio_062",
+      "name": "Eléctricos",
+      "description": "Sobrevive 5 minutos. Peligros: creepers ELÉCTRICOS.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ce": 60,
+        "cen": 1
+      }
+    },
+    {
+      "id": "juicio_063",
+      "name": "Nuclear y horda",
+      "description": "Sobrevive 5 minutos. Peligros: creepers NUCLEARES, hordas de zombies.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "cn": 200,
+        "cnn": 1,
+        "hd": 240,
+        "hn": 12
+      }
+    },
+    {
+      "id": "juicio_064",
+      "name": "Mezcla mortal",
+      "description": "Sobrevive 5 minutos. Peligros: creepers encendidos sobre ti cada 2 s, zombies, esqueletos, arañas.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "cr": 60,
+        "crn": 1,
+        "zb": 60,
+        "sk": 80,
+        "sp": 80,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_065",
+      "name": "Apocalipsis",
+      "description": "Sobrevive 5 minutos. Peligros: creepers ELÉCTRICOS, creepers NUCLEARES, zombies, esqueletos, arañas, phantoms, tormenta con TRIPLE rayo, hordas de zombies.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ce": 60,
+        "cen": 1,
+        "cn": 300,
+        "cnn": 1,
+        "zb": 60,
+        "sk": 60,
+        "sp": 80,
+        "ph": 120,
+        "st": 100,
+        "sn": 3,
+        "hd": 400,
+        "hn": 8,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_066",
+      "name": "Un corazón y horda",
+      "description": "Sobrevive 5 minutos. Peligros: zombies, hordas de zombies, UN SOLO CORAZÓN.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "hd": 220,
+        "hn": 12,
+        "zb": 60,
+        "mc": 2,
+        "onehp": 1
+      }
+    },
+    {
+      "id": "juicio_067",
+      "name": "Ceguera total y creepers",
+      "description": "Sobrevive 4 minutos. Peligros: creepers encendidos sobre ti cada 2 s, ceguera permanente.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 3,
+        "twist": 1,
+        "cr": 40,
+        "crn": 2,
+        "blind": 1
+      }
+    },
+    {
+      "id": "juicio_068",
+      "name": "Oscuridad, phantoms y arañas",
+      "description": "Sobrevive 5 minutos. Peligros: arañas, phantoms, oscuridad permanente.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ph": 80,
+        "sp": 60,
+        "mc": 2,
+        "blind": 2
+      }
+    },
+    {
+      "id": "juicio_069",
+      "name": "Infierno sin respiro",
+      "description": "Sobrevive 5 minutos. Peligros: creepers encendidos sobre ti cada 2 s, creepers ELÉCTRICOS, zombies, esqueletos, arañas, phantoms, husks, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "cr": 50,
+        "crn": 2,
+        "ce": 80,
+        "cen": 1,
+        "zb": 40,
+        "sk": 60,
+        "sp": 60,
+        "ph": 100,
+        "hu": 80,
+        "mc": 3,
+        "st": 60,
+        "sn": 3
+      }
+    },
+    {
+      "id": "juicio_070",
+      "name": "Rayos y TNT",
+      "description": "Sobrevive 4 minutos. Peligros: TNT sobre ti cada 2 s, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 3,
+        "twist": 1,
+        "st": 60,
+        "sn": 3,
+        "tnt": 40,
+        "tn": 2
+      }
+    },
+    {
+      "id": "juicio_071",
+      "name": "Subir hasta Y 120",
+      "description": "Sube hasta Y 120 en 4 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 3,
+        "dur": 4800,
+        "tier": 1,
+        "twist": 0,
+        "zb": 100,
+        "mc": 1,
+        "alt": 120
+      }
+    },
+    {
+      "id": "juicio_072",
+      "name": "Subir hasta Y 130",
+      "description": "Sube hasta Y 130 en 4 minutos. Peligros: zombies, esqueletos.",
+      "parameters": {
+        "kind": 3,
+        "dur": 4800,
+        "tier": 1,
+        "twist": 0,
+        "sk": 80,
+        "zb": 100,
+        "mc": 1,
+        "alt": 130
+      }
+    },
+    {
+      "id": "juicio_073",
+      "name": "Subir hasta Y 140",
+      "description": "Sube hasta Y 140 en 5 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 0,
+        "cr": 60,
+        "crn": 1,
+        "alt": 140
+      }
+    },
+    {
+      "id": "juicio_074",
+      "name": "Subir hasta Y 150",
+      "description": "Sube hasta Y 150 en 5 minutos. Peligros: TNT sobre ti cada 2 s, zombies.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 0,
+        "tnt": 60,
+        "tn": 1,
+        "zb": 100,
+        "mc": 1,
+        "alt": 150
+      }
+    },
+    {
+      "id": "juicio_075",
+      "name": "Subir hasta Y 160",
+      "description": "Sube hasta Y 160 en 5 minutos. Peligros: tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 0,
+        "st": 100,
+        "sn": 3,
+        "alt": 160
+      }
+    },
+    {
+      "id": "juicio_076",
+      "name": "Subir hasta Y 180",
+      "description": "Sube hasta Y 180 en 5 minutos. Peligros: arañas, phantoms.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "ph": 100,
+        "sp": 80,
+        "mc": 2,
+        "alt": 180
+      }
+    },
+    {
+      "id": "juicio_077",
+      "name": "Subir hasta Y 190",
+      "description": "Sube hasta Y 190 en 5 minutos. Peligros: creepers ELÉCTRICOS, zombies, esqueletos.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "ce": 80,
+        "cen": 1,
+        "sk": 80,
+        "zb": 80,
+        "mc": 2,
+        "alt": 190
+      }
+    },
+    {
+      "id": "juicio_078",
+      "name": "Subir hasta Y 200",
+      "description": "Sube hasta Y 200 en 5 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s, arañas, phantoms.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "tnt": 60,
+        "tn": 1,
+        "cr": 60,
+        "crn": 1,
+        "ph": 120,
+        "sp": 80,
+        "mc": 2,
+        "alt": 200
+      }
+    },
+    {
+      "id": "juicio_079",
+      "name": "Gas tóxico: Y 80",
+      "description": "Escapa del gas: sube hasta Y 80 en 3 minutos.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 0,
+        "alt": 80,
+        "rise": 0,
+        "gg": 600,
+        "ggs": 30
+      }
+    },
+    {
+      "id": "juicio_080",
+      "name": "Gas tóxico: Y 90",
+      "description": "Escapa del gas: sube hasta Y 90 en 3 minutos.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 0,
+        "alt": 90,
+        "rise": 0,
+        "gg": 600,
+        "ggs": 30
+      }
+    },
+    {
+      "id": "juicio_081",
+      "name": "Gas tóxico: Y 100",
+      "description": "Escapa del gas: sube hasta Y 100 en 3 minutos.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 2,
+        "twist": 0,
+        "alt": 100,
+        "rise": 0,
+        "gg": 600,
+        "ggs": 30
+      }
+    },
+    {
+      "id": "juicio_082",
+      "name": "Gas tóxico: Y 110",
+      "description": "Escapa del gas: sube hasta Y 110 en 3 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 2,
+        "twist": 0,
+        "zb": 100,
+        "mc": 1,
+        "alt": 110,
+        "rise": 0,
+        "gg": 600,
+        "ggs": 30
+      }
+    },
+    {
+      "id": "juicio_083",
+      "name": "Gas tóxico: Y 120",
+      "description": "Escapa del gas: sube hasta Y 120 en 3 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 3,
+        "twist": 0,
+        "cr": 80,
+        "crn": 1,
+        "alt": 120,
+        "rise": 0,
+        "gg": 600,
+        "ggs": 30
+      }
+    },
+    {
+      "id": "juicio_084",
+      "name": "Gas ascendente: Y 130",
+      "description": "Escapa del gas: sube hasta Y 130 en 3 minutos.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 0,
+        "alt": 130,
+        "rise": 1,
+        "gg": 0,
+        "ggs": 0
+      }
+    },
+    {
+      "id": "juicio_085",
+      "name": "Gas ascendente: Y 140",
+      "description": "Escapa del gas: sube hasta Y 140 en 3 minutos.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 2,
+        "twist": 0,
+        "alt": 140,
+        "rise": 1,
+        "gg": 0,
+        "ggs": 0
+      }
+    },
+    {
+      "id": "juicio_086",
+      "name": "Gas ascendente: Y 145 y zombies",
+      "description": "Escapa del gas: sube hasta Y 150 en 3 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 2,
+        "twist": 0,
+        "zb": 80,
+        "mc": 2,
+        "alt": 150,
+        "rise": 1,
+        "gg": 0,
+        "ggs": 0
+      }
+    },
+    {
+      "id": "juicio_087",
+      "name": "Gas ascendente: Y 150 y creepers",
+      "description": "Escapa del gas: sube hasta Y 150 en 3 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 3,
+        "twist": 0,
+        "cr": 60,
+        "crn": 1,
+        "alt": 150,
+        "rise": 1,
+        "gg": 0,
+        "ggs": 0
+      }
+    },
+    {
+      "id": "juicio_088",
+      "name": "Gas ascendente: Y 150 y phantoms",
+      "description": "Escapa del gas: sube hasta Y 150 en 3 minutos. Peligros: phantoms.",
+      "parameters": {
+        "kind": 4,
+        "dur": 3600,
+        "tier": 3,
+        "twist": 0,
+        "ph": 100,
+        "mc": 2,
+        "alt": 150,
+        "rise": 1,
+        "gg": 0,
+        "ggs": 0
+      }
+    },
+    {
+      "id": "juicio_089",
+      "name": "Ve al Nether",
+      "description": "Viaja al Nether en 5 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 1,
+        "twist": 1,
+        "zb": 120,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_090",
+      "name": "Ve al Nether con esqueletos",
+      "description": "Viaja al Nether en 5 minutos. Peligros: zombies, esqueletos.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 1,
+        "twist": 1,
+        "sk": 80,
+        "zb": 120,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_091",
+      "name": "Ve al Nether bajo creepers",
+      "description": "Viaja al Nether en 5 minutos. Peligros: creepers encendidos sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "cr": 60,
+        "crn": 1
+      }
+    },
+    {
+      "id": "juicio_092",
+      "name": "Ve al Nether bajo TNT",
+      "description": "Viaja al Nether en 5 minutos. Peligros: TNT sobre ti cada 2 s.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "tnt": 60,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_093",
+      "name": "Ve al Nether en tormenta",
+      "description": "Viaja al Nether en 5 minutos. Peligros: tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "st": 100,
+        "sn": 3
+      }
+    },
+    {
+      "id": "juicio_094",
+      "name": "Ve al Nether con phantoms y arañas",
+      "description": "Viaja al Nether en 5 minutos. Peligros: arañas, phantoms.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 1,
+        "ph": 100,
+        "sp": 80,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_095",
+      "name": "Ve al Nether con eléctricos",
+      "description": "Viaja al Nether en 5 minutos. Peligros: creepers ELÉCTRICOS, zombies.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "ce": 60,
+        "cen": 1,
+        "zb": 80,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_096",
+      "name": "Ve al Nether: infierno mixto",
+      "description": "Viaja al Nether en 5 minutos. Peligros: TNT sobre ti cada 2 s, creepers encendidos sobre ti cada 2 s, esqueletos, phantoms, tormenta con TRIPLE rayo.",
+      "parameters": {
+        "kind": 5,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "tnt": 60,
+        "tn": 1,
+        "cr": 60,
+        "crn": 1,
+        "sk": 60,
+        "ph": 120,
+        "st": 100,
+        "sn": 3,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_097",
+      "name": "Lobby: horda y ceguera",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: zombies, hordas de zombies, ceguera permanente.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 1,
+        "hd": 240,
+        "hn": 12,
+        "zb": 80,
+        "mc": 2,
+        "blind": 1
+      }
+    },
+    {
+      "id": "juicio_098",
+      "name": "Bunker 2: un corazón y creepers",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers encendidos sobre ti cada 2 s, UN SOLO CORAZÓN.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 3,
+        "cr": 40,
+        "crn": 2,
+        "onehp": 1
+      }
+    },
+    {
+      "id": "juicio_099",
+      "name": "Bunker 4: oscuridad, phantoms y TNT",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: TNT sobre ti cada 2 s, phantoms, oscuridad permanente.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 5,
+        "ph": 80,
+        "tnt": 60,
+        "tn": 1,
+        "mc": 2,
+        "blind": 2
+      }
+    },
+    {
+      "id": "juicio_100",
+      "name": "Destino al azar: infierno total",
+      "description": "Llega al destino y quédate dentro. Tienes 10 minutos. Peligros: creepers ELÉCTRICOS, creepers NUCLEARES, zombies, esqueletos, phantoms, tormenta con TRIPLE rayo, hordas de zombies.",
+      "parameters": {
+        "kind": 1,
+        "dur": 12000,
+        "tier": 3,
+        "twist": 1,
+        "dest": 0,
+        "ce": 60,
+        "cen": 1,
+        "cn": 300,
+        "cnn": 1,
+        "zb": 50,
+        "sk": 60,
+        "ph": 120,
+        "st": 60,
+        "sn": 3,
+        "hd": 240,
+        "hn": 12,
+        "mc": 2
+      }
+    },
+    {
+      "id": "juicio_101",
+      "name": "Meteoritos",
+      "description": "Durante 3 minutos, mantente alerta: meteoritos ardientes caerán cerca de ti cada 2 segundos. Busca cobertura, muévete constantemente y evita quedarte expuesto en campo abierto.",
+      "parameters": {
+        "kind": 2,
+        "dur": 3600,
+        "tier": 1,
+        "twist": 1,
+        "mt": 40
+      }
+    },
+    {
+      "id": "juicio_102",
+      "name": "Lluvia de meteoritos",
+      "description": "Aguanta 4 minutos mientras una lluvia de meteoritos cruza el cielo y golpea la zona a tu alrededor. No te quedes quieto: busca refugio entre cada impacto y vigila por dónde cae el siguiente.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "mt": 20
+      }
+    },
+    {
+      "id": "juicio_103",
+      "name": "Meteoritos extremos",
+      "description": "Resiste durante 5 minutos una lluvia casi continua de meteoritos mientras los zombies te presionan desde el suelo. Muévete con cuidado, aprovecha cualquier cobertura y no dejes que te acorralen.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "mt": 10,
+        "zb": 80,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_104",
+      "name": "Fantasmas del infierno",
+      "description": "Sobrevive 4 minutos. Ghasts del Nether aparecen sobre ti y disparan bolas de fuego.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "gh": 200
+      }
+    },
+    {
+      "id": "juicio_105",
+      "name": "Ghasts y meteoritos",
+      "description": "Sobrevive 5 minutos. Ghasts desde el cielo y meteoritos cayendo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "gh": 200,
+        "mt": 30
+      }
+    },
+    {
+      "id": "juicio_106",
+      "name": "Enjambre de vexes",
+      "description": "Sobrevive 4 minutos. Vexes con espada te persiguen y atraviesan paredes.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "vx": 60
+      }
+    },
+    {
+      "id": "juicio_107",
+      "name": "Ravager",
+      "description": "Sobrevive 4 minutos. Un ravager enfurecido va por ti; cuando muere, aparece otro.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "rv": 400
+      }
+    },
+    {
+      "id": "juicio_108",
+      "name": "Cielo rojo",
+      "description": "El cielo se teñirá de rojo durante 5 minutos. Sobrevive a los meteoritos, los creepers eléctricos y una tormenta de rayos triples; mantén la distancia de las amenazas y busca un lugar donde protegerte.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "mt": 20,
+        "ce": 60,
+        "st": 100,
+        "sn": 3
+      }
+    },
+    {
+      "id": "juicio_109",
+      "name": "Meteoritos y TNT",
+      "description": "Sobrevive durante 4 minutos mientras caen meteoritos y aparece TNT sobre ti cada 2 segundos. No te detengas demasiado tiempo en un mismo sitio y calcula bien tus movimientos para evitar ambos impactos.",
+      "parameters": {
+        "kind": 2,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 1,
+        "mt": 30,
+        "tnt": 40,
+        "tn": 1
+      }
+    },
+    {
+      "id": "juicio_110",
+      "name": "Caos infernal",
+      "description": "Sobrevive 5 minutos. Vexes, ravagers y ghasts al mismo tiempo.",
+      "parameters": {
+        "kind": 2,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 1,
+        "vx": 100,
+        "rv": 600,
+        "gh": 300
+      }
+    },
+    {
+      "id": "juicio_111",
+      "name": "Subir hasta Y 250",
+      "description": "Sube hasta Y 250 en 5 minutos. Peligros: meteoritos.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "alt": 250,
+        "mt": 40
+      }
+    },
+    {
+      "id": "juicio_112",
+      "name": "Subir hasta Y 250 (zombies)",
+      "description": "Sube hasta Y 250 en 5 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 2,
+        "twist": 0,
+        "alt": 250,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_113",
+      "name": "Subir hasta Y 250 (vexes)",
+      "description": "Sube hasta Y 250 en 5 minutos. Peligros: vexes.",
+      "parameters": {
+        "kind": 3,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "alt": 250,
+        "vx": 100
+      }
+    },
+    {
+      "id": "juicio_114",
+      "name": "Bajar hasta Y 0",
+      "description": "Baja hasta Y 0 o menos en 4 minutos. Peligros: zombies.",
+      "parameters": {
+        "kind": 6,
+        "dur": 4800,
+        "tier": 1,
+        "twist": 0,
+        "alt": 0,
+        "zb": 100,
+        "mc": 1
+      }
+    },
+    {
+      "id": "juicio_115",
+      "name": "Bajar hasta Y -30",
+      "description": "Baja hasta Y -30 o menos en 4 minutos. Peligros: creepers encendidos.",
+      "parameters": {
+        "kind": 6,
+        "dur": 4800,
+        "tier": 2,
+        "twist": 0,
+        "alt": -30,
+        "cr": 60
+      }
+    },
+    {
+      "id": "juicio_116",
+      "name": "Bajar hasta Y -50",
+      "description": "Baja hasta Y -50 o menos en 5 minutos. Peligros: esqueletos y oscuridad permanente.",
+      "parameters": {
+        "kind": 6,
+        "dur": 6000,
+        "tier": 3,
+        "twist": 0,
+        "alt": -50,
+        "sk": 80,
+        "blind": 2
+      }
+    }
+  ],
+  "orange": [
+    {
+      "id": "adversidad_001",
+      "description": "El magma se vuelve mucho más peligroso y puede castigar gravemente a quien lo pise. Mira bien dónde aterrizas y evita cruzar zonas de magma sin protección: un descuido puede costarte buena parte de la vida, incluso antes de que logres reaccionar.",
+      "rules": [
+        "execute if score #c1 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~-0.2 ~ magma_block run damage @s 100 minecraft:generic",
+        "execute if score #c1 naranja matches 1 as @a[gamemode=adventure] at @s if block ~ ~-0.2 ~ magma_block run damage @s 100 minecraft:generic",
+        "execute if score #c1 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ magma_block run damage @s 100 minecraft:generic",
+        "execute if score #c1 naranja matches 1 as @a[gamemode=adventure] at @s if block ~ ~ ~ magma_block run damage @s 100 minecraft:generic",
+        "execute if score #c72 naranja matches 1 unless score #c1 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~-0.2 ~ magma_block run damage @s 4 minecraft:hot_floor"
+      ]
+    },
+    {
+      "id": "adversidad_002",
+      "description": "Los creepers ahora se acercan con mucha más velocidad, así que tendrás menos tiempo para detectarlos y escapar antes de que exploten. Mantén la distancia, revisa tus alrededores y no des por segura ninguna cueva o zona oscura.",
+      "rules": [
+        "execute if score #c2 naranja matches 1 as @e[type=creeper,tag=!nr_s2] run attribute @s minecraft:generic.movement_speed base set 0.34",
+        "execute if score #c2 naranja matches 1 as @e[type=creeper,tag=!nr_s2] run tag @s add nr_s2"
+      ]
+    },
+    {
+      "id": "adversidad_003",
+      "description": "Los zombies ahora aguantan más golpes antes de caer. Los enfrentamientos pueden alargarse y atraer a otros enemigos, así que procura no luchar rodeado y administra bien tus armas, armadura y comida.",
+      "rules": [
+        "execute if score #c3 naranja matches 1 as @e[type=zombie,tag=!nr_a3] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c3 naranja matches 1 as @e[type=zombie,tag=!nr_a3] run data modify entity @s Health set value 40.0f",
+        "execute if score #c3 naranja matches 1 as @e[type=zombie,tag=!nr_a3] run tag @s add nr_a3"
+      ]
+    },
+    {
+      "id": "adversidad_004",
+      "description": "Los zombies golpean con más fuerza y cada encuentro representa un riesgo mayor, especialmente si aparecen varios a la vez. No te confíes por ser enemigos comunes: usa escudo, conserva espacio para retroceder y evita combatir con poca vida.",
+      "rules": [
+        "execute if score #c4 naranja matches 1 as @e[type=zombie] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_005",
+      "description": "Los esqueletos tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c5 naranja matches 1 as @e[type=skeleton,tag=!nr_a5] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c5 naranja matches 1 as @e[type=skeleton,tag=!nr_a5] run data modify entity @s Health set value 30.0f",
+        "execute if score #c5 naranja matches 1 as @e[type=skeleton,tag=!nr_a5] run tag @s add nr_a5"
+      ]
+    },
+    {
+      "id": "adversidad_006",
+      "description": "Los esqueletos se mueven más rápido. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c6 naranja matches 1 as @e[type=skeleton,tag=!nr_s6] run attribute @s minecraft:generic.movement_speed base set 0.32",
+        "execute if score #c6 naranja matches 1 as @e[type=skeleton,tag=!nr_s6] run tag @s add nr_s6"
+      ]
+    },
+    {
+      "id": "adversidad_007",
+      "description": "Las arañas tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c7 naranja matches 1 as @e[type=spider,tag=!nr_a7] run attribute @s minecraft:generic.max_health base set 24",
+        "execute if score #c7 naranja matches 1 as @e[type=spider,tag=!nr_a7] run data modify entity @s Health set value 24.0f",
+        "execute if score #c7 naranja matches 1 as @e[type=spider,tag=!nr_a7] run tag @s add nr_a7"
+      ]
+    },
+    {
+      "id": "adversidad_008",
+      "description": "Las arañas se mueven más rápido. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c8 naranja matches 1 as @e[type=spider,tag=!nr_s8] run attribute @s minecraft:generic.movement_speed base set 0.35",
+        "execute if score #c8 naranja matches 1 as @e[type=spider,tag=!nr_s8] run tag @s add nr_s8"
+      ]
+    },
+    {
+      "id": "adversidad_009",
+      "description": "Las arañas colocan telarañas cerca de los jugadores. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c9 naranja matches 1 as @e[type=spider] at @s if entity @a[distance=..3,gamemode=survival] run fill ~ ~ ~ ~ ~ ~ cobweb replace air"
+      ]
+    },
+    {
+      "id": "adversidad_010",
+      "description": "Las arañas de cueva aplican veneno más fuerte. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c10 naranja matches 1 as @e[type=cave_spider] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_011",
+      "description": "Los phantoms tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c11 naranja matches 1 as @e[type=phantom,tag=!nr_a11] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c11 naranja matches 1 as @e[type=phantom,tag=!nr_a11] run data modify entity @s Health set value 30.0f",
+        "execute if score #c11 naranja matches 1 as @e[type=phantom,tag=!nr_a11] run tag @s add nr_a11"
+      ]
+    },
+    {
+      "id": "adversidad_012",
+      "description": "Los phantoms envenenan a quienes se acercan. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c12 naranja matches 1 as @a[gamemode=survival] at @s if entity @e[type=phantom,distance=..4] run effect give @s poison 4 0 true",
+        "execute if score #c12 naranja matches 1 as @a[gamemode=adventure] at @s if entity @e[type=phantom,distance=..4] run effect give @s poison 4 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_013",
+      "description": "Los endermans tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c13 naranja matches 1 as @e[type=enderman,tag=!nr_a13] run attribute @s minecraft:generic.max_health base set 60",
+        "execute if score #c13 naranja matches 1 as @e[type=enderman,tag=!nr_a13] run data modify entity @s Health set value 60.0f",
+        "execute if score #c13 naranja matches 1 as @e[type=enderman,tag=!nr_a13] run tag @s add nr_a13"
+      ]
+    },
+    {
+      "id": "adversidad_014",
+      "description": "Los blazes tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c14 naranja matches 1 as @e[type=blaze,tag=!nr_a14] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c14 naranja matches 1 as @e[type=blaze,tag=!nr_a14] run data modify entity @s Health set value 40.0f",
+        "execute if score #c14 naranja matches 1 as @e[type=blaze,tag=!nr_a14] run tag @s add nr_a14"
+      ]
+    },
+    {
+      "id": "adversidad_015",
+      "description": "Los blazes se mueven más rápido. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c15 naranja matches 1 as @e[type=blaze,tag=!nr_s15] run attribute @s minecraft:generic.movement_speed base set 0.28",
+        "execute if score #c15 naranja matches 1 as @e[type=blaze,tag=!nr_s15] run tag @s add nr_s15"
+      ]
+    },
+    {
+      "id": "adversidad_016",
+      "description": "Los ghasts tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c16 naranja matches 1 as @e[type=ghast,tag=!nr_a16] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c16 naranja matches 1 as @e[type=ghast,tag=!nr_a16] run data modify entity @s Health set value 30.0f",
+        "execute if score #c16 naranja matches 1 as @e[type=ghast,tag=!nr_a16] run tag @s add nr_a16"
+      ]
+    },
+    {
+      "id": "adversidad_017",
+      "description": "Los piglins tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c17 naranja matches 1 as @e[type=piglin,tag=!nr_a17] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c17 naranja matches 1 as @e[type=piglin,tag=!nr_a17] run data modify entity @s Health set value 30.0f",
+        "execute if score #c17 naranja matches 1 as @e[type=piglin,tag=!nr_a17] run tag @s add nr_a17"
+      ]
+    },
+    {
+      "id": "adversidad_018",
+      "description": "Los hoglins tienen más vida y velocidad. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c18 naranja matches 1 as @e[type=hoglin,tag=!nr_a18] run attribute @s minecraft:generic.max_health base set 60",
+        "execute if score #c18 naranja matches 1 as @e[type=hoglin,tag=!nr_a18] run data modify entity @s Health set value 60.0f",
+        "execute if score #c18 naranja matches 1 as @e[type=hoglin,tag=!nr_a18] run tag @s add nr_a18",
+        "execute if score #c18 naranja matches 1 as @e[type=hoglin,tag=!nr_s18] run attribute @s minecraft:generic.movement_speed base set 0.35",
+        "execute if score #c18 naranja matches 1 as @e[type=hoglin,tag=!nr_s18] run tag @s add nr_s18"
+      ]
+    },
+    {
+      "id": "adversidad_019",
+      "description": "Los piglin brutes tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c19 naranja matches 1 as @e[type=piglin_brute,tag=!nr_a19] run attribute @s minecraft:generic.max_health base set 70",
+        "execute if score #c19 naranja matches 1 as @e[type=piglin_brute,tag=!nr_a19] run data modify entity @s Health set value 70.0f",
+        "execute if score #c19 naranja matches 1 as @e[type=piglin_brute,tag=!nr_a19] run tag @s add nr_a19"
+      ]
+    },
+    {
+      "id": "adversidad_020",
+      "description": "Los wither skeletons tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c20 naranja matches 1 as @e[type=wither_skeleton,tag=!nr_a20] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c20 naranja matches 1 as @e[type=wither_skeleton,tag=!nr_a20] run data modify entity @s Health set value 40.0f",
+        "execute if score #c20 naranja matches 1 as @e[type=wither_skeleton,tag=!nr_a20] run tag @s add nr_a20"
+      ]
+    },
+    {
+      "id": "adversidad_021",
+      "description": "Los magma cubes tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c21 naranja matches 1 as @e[type=magma_cube,tag=!nr_a21] run attribute @s minecraft:generic.max_health base set 24",
+        "execute if score #c21 naranja matches 1 as @e[type=magma_cube,tag=!nr_a21] run data modify entity @s Health set value 24.0f",
+        "execute if score #c21 naranja matches 1 as @e[type=magma_cube,tag=!nr_a21] run tag @s add nr_a21"
+      ]
+    },
+    {
+      "id": "adversidad_022",
+      "description": "Los slimes tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c22 naranja matches 1 as @e[type=slime,tag=!nr_a22] run attribute @s minecraft:generic.max_health base set 24",
+        "execute if score #c22 naranja matches 1 as @e[type=slime,tag=!nr_a22] run data modify entity @s Health set value 24.0f",
+        "execute if score #c22 naranja matches 1 as @e[type=slime,tag=!nr_a22] run tag @s add nr_a22"
+      ]
+    },
+    {
+      "id": "adversidad_023",
+      "description": "Los drowned tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c23 naranja matches 1 as @e[type=drowned,tag=!nr_a23] run attribute @s minecraft:generic.max_health base set 35",
+        "execute if score #c23 naranja matches 1 as @e[type=drowned,tag=!nr_a23] run data modify entity @s Health set value 35.0f",
+        "execute if score #c23 naranja matches 1 as @e[type=drowned,tag=!nr_a23] run tag @s add nr_a23"
+      ]
+    },
+    {
+      "id": "adversidad_024",
+      "description": "Los husks tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c24 naranja matches 1 as @e[type=husk,tag=!nr_a24] run attribute @s minecraft:generic.max_health base set 35",
+        "execute if score #c24 naranja matches 1 as @e[type=husk,tag=!nr_a24] run data modify entity @s Health set value 35.0f",
+        "execute if score #c24 naranja matches 1 as @e[type=husk,tag=!nr_a24] run tag @s add nr_a24"
+      ]
+    },
+    {
+      "id": "adversidad_025",
+      "description": "Los strays tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c25 naranja matches 1 as @e[type=stray,tag=!nr_a25] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c25 naranja matches 1 as @e[type=stray,tag=!nr_a25] run data modify entity @s Health set value 30.0f",
+        "execute if score #c25 naranja matches 1 as @e[type=stray,tag=!nr_a25] run tag @s add nr_a25"
+      ]
+    },
+    {
+      "id": "adversidad_026",
+      "description": "Las brujas tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c26 naranja matches 1 as @e[type=witch,tag=!nr_a26] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c26 naranja matches 1 as @e[type=witch,tag=!nr_a26] run data modify entity @s Health set value 40.0f",
+        "execute if score #c26 naranja matches 1 as @e[type=witch,tag=!nr_a26] run tag @s add nr_a26"
+      ]
+    },
+    {
+      "id": "adversidad_027",
+      "description": "Los evocadores tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c27 naranja matches 1 as @e[type=evoker,tag=!nr_a27] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c27 naranja matches 1 as @e[type=evoker,tag=!nr_a27] run data modify entity @s Health set value 40.0f",
+        "execute if score #c27 naranja matches 1 as @e[type=evoker,tag=!nr_a27] run tag @s add nr_a27"
+      ]
+    },
+    {
+      "id": "adversidad_028",
+      "description": "Los vindicadores tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c28 naranja matches 1 as @e[type=vindicator,tag=!nr_a28] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c28 naranja matches 1 as @e[type=vindicator,tag=!nr_a28] run data modify entity @s Health set value 40.0f",
+        "execute if score #c28 naranja matches 1 as @e[type=vindicator,tag=!nr_a28] run tag @s add nr_a28"
+      ]
+    },
+    {
+      "id": "adversidad_029",
+      "description": "Los ravagers tienen mucha más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c29 naranja matches 1 as @e[type=ravager,tag=!nr_a29] run attribute @s minecraft:generic.max_health base set 150",
+        "execute if score #c29 naranja matches 1 as @e[type=ravager,tag=!nr_a29] run data modify entity @s Health set value 150.0f",
+        "execute if score #c29 naranja matches 1 as @e[type=ravager,tag=!nr_a29] run tag @s add nr_a29"
+      ]
+    },
+    {
+      "id": "adversidad_030",
+      "description": "Los guardianes tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c30 naranja matches 1 as @e[type=guardian,tag=!nr_a30] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c30 naranja matches 1 as @e[type=guardian,tag=!nr_a30] run data modify entity @s Health set value 40.0f",
+        "execute if score #c30 naranja matches 1 as @e[type=guardian,tag=!nr_a30] run tag @s add nr_a30"
+      ]
+    },
+    {
+      "id": "adversidad_031",
+      "description": "El elder guardian tiene más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c31 naranja matches 1 as @e[type=elder_guardian,tag=!nr_a31] run attribute @s minecraft:generic.max_health base set 120",
+        "execute if score #c31 naranja matches 1 as @e[type=elder_guardian,tag=!nr_a31] run data modify entity @s Health set value 120.0f",
+        "execute if score #c31 naranja matches 1 as @e[type=elder_guardian,tag=!nr_a31] run tag @s add nr_a31"
+      ]
+    },
+    {
+      "id": "adversidad_032",
+      "description": "Los shulkers tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c32 naranja matches 1 as @e[type=shulker,tag=!nr_a32] run attribute @s minecraft:generic.max_health base set 40",
+        "execute if score #c32 naranja matches 1 as @e[type=shulker,tag=!nr_a32] run data modify entity @s Health set value 40.0f",
+        "execute if score #c32 naranja matches 1 as @e[type=shulker,tag=!nr_a32] run tag @s add nr_a32"
+      ]
+    },
+    {
+      "id": "adversidad_033",
+      "description": "Los silverfish tienen más vida y velocidad. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c33 naranja matches 1 as @e[type=silverfish,tag=!nr_a33] run attribute @s minecraft:generic.max_health base set 12",
+        "execute if score #c33 naranja matches 1 as @e[type=silverfish,tag=!nr_a33] run data modify entity @s Health set value 12.0f",
+        "execute if score #c33 naranja matches 1 as @e[type=silverfish,tag=!nr_a33] run tag @s add nr_a33",
+        "execute if score #c33 naranja matches 1 as @e[type=silverfish,tag=!nr_s33] run attribute @s minecraft:generic.movement_speed base set 0.35",
+        "execute if score #c33 naranja matches 1 as @e[type=silverfish,tag=!nr_s33] run tag @s add nr_s33"
+      ]
+    },
+    {
+      "id": "adversidad_034",
+      "description": "Los endermites tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c34 naranja matches 1 as @e[type=endermite,tag=!nr_a34] run attribute @s minecraft:generic.max_health base set 12",
+        "execute if score #c34 naranja matches 1 as @e[type=endermite,tag=!nr_a34] run data modify entity @s Health set value 12.0f",
+        "execute if score #c34 naranja matches 1 as @e[type=endermite,tag=!nr_a34] run tag @s add nr_a34"
+      ]
+    },
+    {
+      "id": "adversidad_035",
+      "description": "Los zoglins tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c35 naranja matches 1 as @e[type=zoglin,tag=!nr_a35] run attribute @s minecraft:generic.max_health base set 60",
+        "execute if score #c35 naranja matches 1 as @e[type=zoglin,tag=!nr_a35] run data modify entity @s Health set value 60.0f",
+        "execute if score #c35 naranja matches 1 as @e[type=zoglin,tag=!nr_a35] run tag @s add nr_a35"
+      ]
+    },
+    {
+      "id": "adversidad_036",
+      "description": "Los mobs hostiles reciben Fuerza I periódica. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c36 naranja matches 1 as @e[type=#naranja:hostiles] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_037",
+      "description": "Los mobs hostiles reciben Velocidad I periódica. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c37 naranja matches 1 as @e[type=#naranja:hostiles] run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_038",
+      "description": "Los mobs hostiles reciben Resistencia I periódica. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c38 naranja matches 1 as @e[type=#naranja:hostiles] run effect give @s resistance 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_039",
+      "description": "Los hostiles detectan jugadores desde más lejos. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c39 naranja matches 1 as @e[type=#naranja:hostiles,tag=!nr_fr] run attribute @s minecraft:generic.follow_range base set 48",
+        "execute if score #c39 naranja matches 1 as @e[type=#naranja:hostiles,tag=!nr_fr] run tag @s add nr_fr"
+      ]
+    },
+    {
+      "id": "adversidad_040",
+      "description": "El servidor se fuerza a dificultad difícil. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c40 naranja matches 1 run difficulty hard"
+      ]
+    },
+    {
+      "id": "adversidad_041",
+      "description": "Romper hojas cerca puede invocar silverfish. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_042",
+      "description": "Minar carbón tiene chance de invocar un bat cerca. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_043",
+      "description": "Los zombies cerca de menas de hierro ganan Speed. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c43 naranja matches 1 as @e[type=zombie] at @s if block ~ ~-1 ~ iron_ore run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_044",
+      "description": "Los piglins detectan jugadores cerca de oro del suelo. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_045",
+      "description": "Llevar diamantes en mano cerca de hostiles les da Glowing al jugador. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c45 naranja matches 1 as @a[gamemode=survival,nbt={SelectedItem:{id:\"minecraft:diamond\"}}] at @s if entity @e[type=#naranja:hostiles,distance=..16] run effect give @s glowing 3 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_046",
+      "description": "Los drowned cerca del agua ganan Speed. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c46 naranja matches 1 as @e[type=drowned] at @s if block ~ ~ ~ water run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_047",
+      "description": "Las brujas cerca de jugadores ganan Resistencia. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c47 naranja matches 1 as @e[type=witch] at @s if entity @a[distance=..10] run effect give @s resistance 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_048",
+      "description": "Los creepers cerca de redstone ore se cargan. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c48 naranja matches 1 as @e[type=creeper] at @s if block ~ ~-1 ~ redstone_ore run data merge entity @s {powered:1b}"
+      ]
+    },
+    {
+      "id": "adversidad_049",
+      "description": "Los illagers ganan Speed cerca de jugadores. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c49 naranja matches 1 as @e[type=pillager] run effect give @s speed 6 0 true",
+        "execute if score #c49 naranja matches 1 as @e[type=vindicator] run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_050",
+      "description": "En el Nether los blazes ganan Speed. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c50 naranja matches 1 as @e[type=blaze] run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_051",
+      "description": "Los mobs en el Nether tienen chance de dar Ceguera al jugador cercano. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_052",
+      "description": "Con armadura de netherite los phantoms te priorizan (glow). Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_053",
+      "description": "Los blazes regeneran vida lentamente. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c53 naranja matches 1 as @e[type=blaze] run effect give @s regeneration 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_054",
+      "description": "Los endermans ganan Resistencia. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c54 naranja matches 1 as @e[type=enderman] run effect give @s resistance 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_055",
+      "description": "Los creepers tienen más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c55 naranja matches 1 as @e[type=creeper,tag=!nr_a55] run attribute @s minecraft:generic.max_health base set 30",
+        "execute if score #c55 naranja matches 1 as @e[type=creeper,tag=!nr_a55] run data modify entity @s Health set value 30.0f",
+        "execute if score #c55 naranja matches 1 as @e[type=creeper,tag=!nr_a55] run tag @s add nr_a55"
+      ]
+    },
+    {
+      "id": "adversidad_056",
+      "description": "Los esqueletos regeneran poco a poco. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c56 naranja matches 1 as @e[type=skeleton] run effect give @s regeneration 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_057",
+      "description": "Las arañas ganan Jump Boost. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c57 naranja matches 1 as @e[type=spider] run effect give @s jump_boost 6 1 true"
+      ]
+    },
+    {
+      "id": "adversidad_058",
+      "description": "Los zombies se potencian cerca de cultivos. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c58 naranja matches 1 as @e[type=zombie] at @s if block ~ ~-1 ~ farmland run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_059",
+      "description": "Los drowned en ríos/océano ganan Fuerza. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c59 naranja matches 1 as @e[type=drowned] at @s if entity @a[distance=..8] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_060",
+      "description": "Los piglins brutes ganan Fuerza cerca de jugadores. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c60 naranja matches 1 as @e[type=piglin_brute] at @s if entity @a[distance=..12] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_061",
+      "description": "randomTickSpeed bajo: cultivos y plantas crecen lento. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c61 naranja matches 1 run gamerule randomTickSpeed 2"
+      ]
+    },
+    {
+      "id": "adversidad_062",
+      "description": "No se puede saltar la noche durmiendo (hace falta el 101% de jugadores). Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c62 naranja matches 1 run gamerule playersSleepingPercentage 101"
+      ]
+    },
+    {
+      "id": "adversidad_063",
+      "description": "Los phantoms están habilitados (doInsomnia). Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c63 naranja matches 1 run gamerule doInsomnia true"
+      ]
+    },
+    {
+      "id": "adversidad_064",
+      "description": "Los aldeanos bebé se eliminan: no hay reproducción útil. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c64 naranja matches 1 as @e[type=villager,nbt={Age:-24000}] run kill @s",
+        "execute if score #c64 naranja matches 1 as @e[type=villager] store result score #age naranja run data get entity @s Age",
+        "execute if score #c64 naranja matches 1 as @e[type=villager] if score #age naranja matches ..-1 run kill @s"
+      ]
+    },
+    {
+      "id": "adversidad_065",
+      "description": "Si hay demasiadas vacas juntas, las extras desaparecen. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c65 naranja matches 1 as @a at @s store result score #tmp naranja run execute if entity @e[type=cow,distance=..48]",
+        "execute if score #c65 naranja matches 1 if score #tmp naranja matches 20.. as @a at @s run kill @e[type=cow,distance=..48,sort=random,limit=2]"
+      ]
+    },
+    {
+      "id": "adversidad_066",
+      "description": "Si hay demasiados cerdos juntos, los extras desaparecen. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c66 naranja matches 1 as @a at @s store result score #tmp naranja run execute if entity @e[type=pig,distance=..48]",
+        "execute if score #c66 naranja matches 1 if score #tmp naranja matches 20.. as @a at @s run kill @e[type=pig,distance=..48,sort=random,limit=2]"
+      ]
+    },
+    {
+      "id": "adversidad_067",
+      "description": "Si hay demasiadas ovejas juntas, las extras desaparecen. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c67 naranja matches 1 as @a at @s store result score #tmp naranja run execute if entity @e[type=sheep,distance=..48]",
+        "execute if score #c67 naranja matches 1 if score #tmp naranja matches 20.. as @a at @s run kill @e[type=sheep,distance=..48,sort=random,limit=2]"
+      ]
+    },
+    {
+      "id": "adversidad_068",
+      "description": "Si hay demasiados pollos juntos, los extras desaparecen. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c68 naranja matches 1 as @a at @s store result score #tmp naranja run execute if entity @e[type=chicken,distance=..48]",
+        "execute if score #c68 naranja matches 1 if score #tmp naranja matches 25.. as @a at @s run kill @e[type=chicken,distance=..48,sort=random,limit=3]"
+      ]
+    },
+    {
+      "id": "adversidad_069",
+      "description": "Los aldeanos zombie en cura tienen alta chance de fallar. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_070",
+      "description": "Los golems de hierro sin nombre se debilitan con el tiempo. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c70 naranja matches 1 as @e[type=iron_golem] unless data entity @s CustomName run damage @s 2 minecraft:generic"
+      ]
+    },
+    {
+      "id": "adversidad_071",
+      "description": "El cactus hace daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c71 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ cactus run damage @s 4 minecraft:cactus",
+        "execute if score #c71 naranja matches 1 as @a[gamemode=adventure] at @s if block ~ ~ ~ cactus run damage @s 4 minecraft:cactus"
+      ]
+    },
+    {
+      "id": "adversidad_072",
+      "description": "El magma hace daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c72 naranja matches 1 unless score #c1 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~-0.2 ~ magma_block run damage @s 4 minecraft:hot_floor"
+      ]
+    },
+    {
+      "id": "adversidad_073",
+      "description": "Los arbustos de bayas hacen daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c73 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ sweet_berry_bush run damage @s 3 minecraft:sweet_berry_bush"
+      ]
+    },
+    {
+      "id": "adversidad_074",
+      "description": "Las fogatas hacen daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c74 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ campfire run damage @s 3 minecraft:in_fire"
+      ]
+    },
+    {
+      "id": "adversidad_075",
+      "description": "El dripstone puntiagudo hace daño extra al estar sobre él. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c75 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~-0.2 ~ pointed_dripstone run damage @s 3 minecraft:stalagmite"
+      ]
+    },
+    {
+      "id": "adversidad_076",
+      "description": "Las rosas de wither hacen daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c76 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ wither_rose run damage @s 3 minecraft:wither"
+      ]
+    },
+    {
+      "id": "adversidad_077",
+      "description": "La nieve polvo congela / daña más rápido. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c77 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ powder_snow run damage @s 2 minecraft:freeze"
+      ]
+    },
+    {
+      "id": "adversidad_078",
+      "description": "Las fogatas de almas hacen daño extra. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c78 naranja matches 1 as @a[gamemode=survival] at @s if block ~ ~ ~ soul_campfire run damage @s 4 minecraft:in_fire"
+      ]
+    },
+    {
+      "id": "adversidad_079",
+      "description": "Arañas cercanas generan telaraña bajo el jugador. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c79 naranja matches 1 as @a[gamemode=survival] at @s if entity @e[type=spider,distance=..4] run fill ~ ~ ~ ~ ~ ~ cobweb replace air"
+      ]
+    },
+    {
+      "id": "adversidad_080",
+      "description": "Romper telaraña puede invocar araña de cueva. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_081",
+      "description": "Las antorchas bajo el agua se apagan/rompen. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c81 naranja matches 1 as @a at @s if block ~ ~ ~ water run fill ~-2 ~-1 ~-2 ~2 ~2 ~2 air replace torch",
+        "execute if score #c81 naranja matches 1 as @a at @s if block ~ ~ ~ water run fill ~-2 ~-1 ~-2 ~2 ~2 ~2 air replace wall_torch"
+      ]
+    },
+    {
+      "id": "adversidad_082",
+      "description": "doFireTick activo: el fuego se propaga. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c82 naranja matches 1 run gamerule doFireTick true"
+      ]
+    },
+    {
+      "id": "adversidad_083",
+      "description": "mobExplosionDropDecay: menos blocks de explosiones de mobs. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c83 naranja matches 1 run gamerule mobExplosionDropDecay true"
+      ]
+    },
+    {
+      "id": "adversidad_084",
+      "description": "maxEntityCramming reducido: las granjas se matan solas antes. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c84 naranja matches 1 run gamerule maxEntityCramming 8"
+      ]
+    },
+    {
+      "id": "adversidad_085",
+      "description": "Los espectadores no generan chunks. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c85 naranja matches 1 run gamerule spectatorsGenerateChunks false"
+      ]
+    },
+    {
+      "id": "adversidad_086",
+      "description": "reducedDebugInfo activo. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c86 naranja matches 1 run gamerule reducedDebugInfo true"
+      ]
+    },
+    {
+      "id": "adversidad_087",
+      "description": "forgivingPortal false: portales más estrictos. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c87 naranja matches 1 run gamerule forgiveDeadPlayers false"
+      ]
+    },
+    {
+      "id": "adversidad_088",
+      "description": "Los mooshrooms ya no se pueden ordeñar (ni leche ni stew). Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c88 naranja matches 1 as @a[nbt={Inventory:[{id:\"minecraft:mushroom_stew\"}]}] run clear @s mushroom_stew 1"
+      ]
+    },
+    {
+      "id": "adversidad_089",
+      "description": "Los cubos con leche se vacían solos: no puedes guardar leche. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c89 naranja matches 1 as @a[nbt={Inventory:[{id:\"minecraft:milk_bucket\"}]}] run clear @s milk_bucket",
+        "execute if score #c89 naranja matches 1 as @a[nbt={Inventory:[{id:\"minecraft:milk_bucket\"}]}] run give @s bucket 1"
+      ]
+    },
+    {
+      "id": "adversidad_090",
+      "description": "Los esqueletos no se quedan sin flechas. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c90 naranja matches 1 as @e[type=skeleton] run data modify entity @s HandItems[1] set value {id:\"minecraft:arrow\",Count:64b}"
+      ]
+    },
+    {
+      "id": "adversidad_091",
+      "description": "Los zombies ganan aún más vida. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c91 naranja matches 1 as @e[type=zombie,tag=!nr_a91] run attribute @s minecraft:generic.max_health base set 50",
+        "execute if score #c91 naranja matches 1 as @e[type=zombie,tag=!nr_a91] run data modify entity @s Health set value 50.0f",
+        "execute if score #c91 naranja matches 1 as @e[type=zombie,tag=!nr_a91] run tag @s add nr_a91"
+      ]
+    },
+    {
+      "id": "adversidad_092",
+      "description": "Ya no se puede ordeñar vacas. La leche deja de ser un recurso fácil. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c92 naranja matches 1 as @a[nbt={Inventory:[{id:\"minecraft:milk_bucket\"}]}] run clear @s milk_bucket 1",
+        "execute if score #c92 naranja matches 1 as @a[nbt={Inventory:[{id:\"minecraft:milk_bucket\"}]}] run give @s bucket 1"
+      ]
+    },
+    {
+      "id": "adversidad_093",
+      "description": "Las arañas pueden ganar efecto de invisibilidad breve. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c93 naranja matches 1 as @e[type=spider] at @s if entity @a[distance=..8] run effect give @s invisibility 3 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_094",
+      "description": "Las brujas se regeneran lentamente. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c94 naranja matches 1 as @e[type=witch] run effect give @s regeneration 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_095",
+      "description": "Los guardianes tienen más velocidad de movimiento. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c95 naranja matches 1 as @e[type=guardian,tag=!nr_s95] run attribute @s minecraft:generic.movement_speed base set 0.4",
+        "execute if score #c95 naranja matches 1 as @e[type=guardian,tag=!nr_s95] run tag @s add nr_s95"
+      ]
+    },
+    {
+      "id": "adversidad_096",
+      "description": "Los piglins se enfadan más fácil cerca sin oro. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": []
+    },
+    {
+      "id": "adversidad_097",
+      "description": "Los hoglins ganan Fuerza al detectar jugadores. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c97 naranja matches 1 as @e[type=hoglin] at @s if entity @a[distance=..12] run effect give @s strength 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_098",
+      "description": "Los phantoms cercanos se potencias entre sí (speed). Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c98 naranja matches 1 as @e[type=phantom] at @s if entity @e[type=phantom,distance=0.1..8] run effect give @s speed 6 0 true"
+      ]
+    },
+    {
+      "id": "adversidad_099",
+      "description": "Los slimes grandes tienen más vida antes de dividirse. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c99 naranja matches 1 as @e[type=slime,tag=!nr_a99] run attribute @s minecraft:generic.max_health base set 32",
+        "execute if score #c99 naranja matches 1 as @e[type=slime,tag=!nr_a99] run data modify entity @s Health set value 32.0f",
+        "execute if score #c99 naranja matches 1 as @e[type=slime,tag=!nr_a99] run tag @s add nr_a99"
+      ]
+    },
+    {
+      "id": "adversidad_100",
+      "description": "Los endermans ganan velocidad al mirarlos de cerca. Este cambio queda activo de forma permanente, así que adapta tu estrategia desde ahora: explora con cuidado, prepara equipo adecuado y no subestimes los peligros del mundo.",
+      "rules": [
+        "execute if score #c100 naranja matches 1 as @e[type=enderman,tag=!nr_s100] run attribute @s minecraft:generic.movement_speed base set 0.4",
+        "execute if score #c100 naranja matches 1 as @e[type=enderman,tag=!nr_s100] run tag @s add nr_s100",
+        "execute if score #c100 naranja matches 1 as @e[type=enderman] at @s if entity @a[distance=..6] run effect give @s speed 4 1 true"
+      ]
+    }
+  ]
+}

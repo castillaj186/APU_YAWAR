@@ -1,0 +1,33 @@
+APU YAWAR: El Juicio de los Dioses - Servidor de pruebas Fabric 1.21.1
+
+INSTALACION
+1) Extraer la carpeta "servidor" de este ZIP dentro de E:\APU_YAWAR.
+2) No sustituir la carpeta "servidor" por el servidor SAFIO antiguo.
+3) Ejecutar iniciar.bat con Java 21 instalado.
+4) El primer inicio crea mundo_apuyawar automaticamente.
+5) Esperar el mensaje "Done" y detener siempre con "stop" en la consola.
+
+MODS INCLUIDOS
+- Fabric API 0.116.17+1.21.1
+- Lithium 0.15.4 (Fabric)
+- FerriteCore 7.0.3 (Fabric)
+
+NO INCLUIDOS
+- safio_ui, safio_content, peluches-alex, mods-example ni otros JAR antiguos
+- Mundos, logs antiguos, datos personales de usuarios o permisos de operadores
+- Mods nuevos APU YAWAR (se compilan en VS Code y se copian a servidor/mods)
+- Datapack APU YAWAR (se copia a mundo_apuyawar/datapacks luego de crear el mundo)
+
+SEMILLA
+Se dejo level-seed= vacio: en el primer inicio se elegira aleatoriamente.
+Si deseas una semilla especifica, escríbela en server.properties ANTES del primer inicio.
+Cambiar la semilla despues de crear el mundo NO regenera el terreno viejo.
+
+IMPORTANTE
+- Este es un servidor de PRUEBAS, no preparado ni endurecido para publicarse en Internet.
+- online-mode=true se mantiene activado.
+- El puerto predeterminado es 25565; no inicies simultaneamente el servidor antiguo.
+- Configuramos allow-nether=false, pero el bloqueo completo de dimensiones
+  y otras reglas del proyecto se haran en mods/datapack.
+- Este paquete fue preparado a partir de tu propio servidor.zip y no se ha
+  probado arrancandolo en este entorno. Comprueba en tu Windows.

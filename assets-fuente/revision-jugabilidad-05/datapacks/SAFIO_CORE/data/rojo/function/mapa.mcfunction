@@ -1,0 +1,7 @@
+# /function rojo:mapa  -> muestra botones para guardar LOBBY y BUNKER 1-4 en Xaero (se guardan para siempre; salen en el World Map con M).
+tellraw @s ["",{"text":"📍 PUNTOS ROJO (clic para guardarlos en Xaero)\n","color":"red","bold":true}]
+tellraw @s ["",{"text":"  [LOBBY]","color":"gold","underlined":true,"clickEvent":{"action":"run_command","value":"/xaero_waypoint_add:LOBBY:L:11616:67:1903:11:false:0:Internal_overworld_waypoints"}},{"text":"  X 11616 Y 67 Z 1903","color":"gray"}]
+tellraw @s ["",{"text":"  [BUNKER 1]","color":"gold","underlined":true,"clickEvent":{"action":"run_command","value":"/xaero_waypoint_add:BUNKER_1:B1:14045:72:121:11:false:0:Internal_overworld_waypoints"}},{"text":"  X 14045 Y 72 Z 121","color":"gray"}]
+tellraw @s ["",{"text":"  [BUNKER 2]","color":"gold","underlined":true,"clickEvent":{"action":"run_command","value":"/xaero_waypoint_add:BUNKER_2:B2:14198:47:-625:11:false:0:Internal_overworld_waypoints"}},{"text":"  X 14198 Y 47 Z -625","color":"gray"}]
+tellraw @s ["",{"text":"  [BUNKER 3]","color":"gold","underlined":true,"clickEvent":{"action":"run_command","value":"/xaero_waypoint_add:BUNKER_3:B3:7412:63:4797:11:false:0:Internal_overworld_waypoints"}},{"text":"  X 7412 Y 63 Z 4797","color":"gray"}]
+tellraw @s ["",{"text":"  [BUNKER 4]","color":"gold","underlined":true,"clickEvent":{"action":"run_command","value":"/xaero_waypoint_add:BUNKER_4:B4:1532:126:2552:11:false:0:Internal_overworld_waypoints"}},{"text":"  X 1532 Y 126 Z 2552","color":"gray"}]

@@ -1,0 +1,1 @@
+function safio:ruleta/iniciar_resultado

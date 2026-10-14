@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "safio:load",
+    "naranja:load",
+    "safio_ext:load"
+  ]
+}

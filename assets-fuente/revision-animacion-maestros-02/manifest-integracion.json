@@ -1,0 +1,67 @@
+﻿[
+    {
+        "Archivo":  "sector_rojo.png",
+        "SHA256":  "CB9001D3F4C916B674636A19DACAAD0982168EDC08B2CFB637AC56C6F432EA1A",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_rosa.png",
+        "SHA256":  "FEDB4B2DEFA056658FF7045B1F360789D6E72D787761BF40AAC70FAC881D696A",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_morado.png",
+        "SHA256":  "1371BC71AC17F970B9253D33CEC092577CEF071FA481CCEE751BD5472F8CEEAD",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_azul.png",
+        "SHA256":  "C74BE7A53D55A88D6FA72D1E9409EAAC53192FE4DCFD3BE6200D1A051E727350",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_turquesa.png",
+        "SHA256":  "E06C0D6E7E0566F7957F096FD6FDAA5FF471314B22CAEBCB8C98C866F515C0DA",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_verde.png",
+        "SHA256":  "C63BE1AACDCA6642A6A786519DFFDB84D074431420E8390A7C8842DDC5F764FC",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_amarillo.png",
+        "SHA256":  "3E2231E5DC1A9B026CEC700F6A1D0657A2FD608BD9E3EE938C1A342060994DB1",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "sector_naranja.png",
+        "SHA256":  "C8193CDFA5A3B7395B86EA6EF23C55D7D044CFCFB098BB501D52E10D0836ABB7",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "ring.png",
+        "SHA256":  "BBDB052F7C83E8B0F96A68CB353314EEEB25E28D762A76711AFDF57E6C19AAC7",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "medallion.png",
+        "SHA256":  "EAF20E8C114AE9B0575839B8D51257DE54D1F79D7A257D5625B0DA8B85778C2C",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "pointer.png",
+        "SHA256":  "5BDF7027EBF852AB5CE554CEB641F527347816381E4AC30D5E2DB02579CDD98B",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "glow.png",
+        "SHA256":  "F039FC7343969FEF304A90FD096E9BE032EA09D2E8C83F7F76AE5E661EC76BB5",
+        "Coincide":  true
+    },
+    {
+        "Archivo":  "flash.png",
+        "SHA256":  "50A660DA9863A8C17D495F3C3F640082F4F0E4E8E8E300714EE858DEC93B35E5",
+        "Coincide":  true
+    }
+]

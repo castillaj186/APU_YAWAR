@@ -1,0 +1,308 @@
+﻿Compiled from "WeekEvents.java"
+public final class pe.safio.ui.WeekEvents {
+  private static final pe.safio.ui.WeekEvents$Challenge[][] REVIIL;
+
+  private static final pe.safio.ui.WeekEvents$Challenge[] NUTRIA;
+
+  private pe.safio.ui.WeekEvents();
+    Code:
+       0: aload_0
+       1: invokespecial #16                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static pe.safio.ui.WeekEvents$Challenge reviil(int, int);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: if_icmplt     21
+       5: iload_0
+       6: bipush        6
+       8: if_icmpgt     21
+      11: iload_1
+      12: iconst_1
+      13: if_icmplt     21
+      16: iload_1
+      17: iconst_2
+      18: if_icmple     31
+      21: new           #24                 // class java/lang/IllegalArgumentException
+      24: dup
+      25: ldc           #26                 // String reto inexistente
+      27: invokespecial #29                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      30: athrow
+      31: getstatic     #31                 // Field REVIIL:[[Lpe/safio/ui/WeekEvents$Challenge;
+      34: iload_0
+      35: iconst_1
+      36: isub
+      37: aaload
+      38: iload_1
+      39: iconst_1
+      40: isub
+      41: aaload
+      42: areturn
+
+  public static pe.safio.ui.WeekEvents$Challenge nutria(int);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: if_icmplt     11
+       5: iload_0
+       6: bipush        7
+       8: if_icmple     21
+      11: new           #24                 // class java/lang/IllegalArgumentException
+      14: dup
+      15: ldc           #36                 // String minijuego inexistente
+      17: invokespecial #29                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      20: athrow
+      21: getstatic     #38                 // Field NUTRIA:[Lpe/safio/ui/WeekEvents$Challenge;
+      24: iload_0
+      25: iconst_1
+      26: isub
+      27: aaload
+      28: areturn
+
+  public static int correctAnswer(int, int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 2 to 7
+
+                     2: 49
+
+                     3: 40
+
+                     4: 64
+
+                     5: 44
+
+                     6: 64
+
+                     7: 49
+               default: 64
+          }
+      40: iconst_4
+      41: goto          65
+      44: bipush        12
+      46: goto          65
+      49: iload_1
+      50: bipush        7
+      52: imul
+      53: iload_0
+      54: iadd
+      55: iconst_3
+      56: invokestatic  #46                 // Method java/lang/Math.floorMod:(II)I
+      59: iconst_1
+      60: iadd
+      61: goto          65
+      64: iconst_0
+      65: ireturn
+
+  static {};
+    Code:
+       0: bipush        6
+       2: anewarray     #48                 // class "[Lpe/safio/ui/WeekEvents$Challenge;"
+       5: dup
+       6: iconst_0
+       7: iconst_2
+       8: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+      11: dup
+      12: iconst_0
+      13: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+      16: dup
+      17: ldc           #50                 // String Ascenso desesperado
+      19: ldc           #52                 // String Alcanza altura Y=155 o superior
+      21: sipush        180
+      24: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+      27: aastore
+      28: dup
+      29: iconst_1
+      30: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+      33: dup
+      34: ldc           #57                 // String El abismo llama
+      36: ldc           #59                 // String Desciende hasta Y=0 o inferior
+      38: sipush        180
+      41: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+      44: aastore
+      45: aastore
+      46: dup
+      47: iconst_1
+      48: iconst_2
+      49: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+      52: dup
+      53: iconst_0
+      54: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+      57: dup
+      58: ldc           #61                 // String Refugio negro
+      60: ldc           #63                 // String Queda bajo techo, sin cielo visible
+      62: sipush        180
+      65: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+      68: aastore
+      69: dup
+      70: iconst_1
+      71: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+      74: dup
+      75: ldc           #65                 // String Ultima cumbre
+      77: ldc           #67                 // String Llega a Y=180 o superior
+      79: sipush        180
+      82: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+      85: aastore
+      86: aastore
+      87: dup
+      88: iconst_2
+      89: iconst_2
+      90: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+      93: dup
+      94: iconst_0
+      95: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+      98: dup
+      99: ldc           #69                 // String Mineros malditos
+     101: ldc           #71                 // String Baja hasta Y=-25 o inferior
+     103: sipush        180
+     106: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     109: aastore
+     110: dup
+     111: iconst_1
+     112: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     115: dup
+     116: ldc           #73                 // String Muro viviente
+     118: ldc           #75                 // String Equipa un escudo en alguna mano
+     120: sipush        180
+     123: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     126: aastore
+     127: aastore
+     128: dup
+     129: iconst_3
+     130: iconst_2
+     131: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+     134: dup
+     135: iconst_0
+     136: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     139: dup
+     140: ldc           #77                 // String Arqueros del caos
+     142: ldc           #79                 // String Sujeta un arco en tu mano principal
+     144: sipush        180
+     147: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     150: aastore
+     151: dup
+     152: iconst_1
+     153: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     156: dup
+     157: ldc           #81                 // String Tierra prohibida
+     159: ldc           #83                 // String Sit�ate a Y=-35 o inferior
+     161: sipush        180
+     164: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     167: aastore
+     168: aastore
+     169: dup
+     170: iconst_4
+     171: iconst_2
+     172: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+     175: dup
+     176: iconst_0
+     177: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     180: dup
+     181: ldc           #85                 // String Guardia de la noche
+     183: ldc           #87                 // String Bajo techo y con escudo equipado
+     185: sipush        180
+     188: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     191: aastore
+     192: dup
+     193: iconst_1
+     194: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     197: dup
+     198: ldc           #89                 // String Hacia el vacio
+     200: ldc           #91                 // String Alcanza Y=-45 o inferior
+     202: sipush        180
+     205: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     208: aastore
+     209: aastore
+     210: dup
+     211: iconst_5
+     212: iconst_2
+     213: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+     216: dup
+     217: iconst_0
+     218: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     221: dup
+     222: ldc           #93                 // String Ultimo alimento
+     224: ldc           #95                 // String Sujeta una manzana dorada
+     226: sipush        180
+     229: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     232: aastore
+     233: dup
+     234: iconst_1
+     235: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     238: dup
+     239: ldc           #97                 // String Juramento oscuro
+     241: ldc           #99                 // String A Y=-35 o menos, sujeta una antorcha
+     243: sipush        180
+     246: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     249: aastore
+     250: aastore
+     251: putstatic     #31                 // Field REVIIL:[[Lpe/safio/ui/WeekEvents$Challenge;
+     254: bipush        7
+     256: anewarray     #7                  // class pe/safio/ui/WeekEvents$Challenge
+     259: dup
+     260: iconst_0
+     261: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     264: dup
+     265: ldc           #101                // String Jose dice
+     267: ldc           #103                // String Agachate al terminar el cronometro
+     269: bipush        75
+     271: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     274: aastore
+     275: dup
+     276: iconst_1
+     277: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     280: dup
+     281: ldc           #105                // String Tres cofres
+     283: ldc           #107                // String Usa /nutria elegir 1, 2 o 3
+     285: bipush        75
+     287: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     290: aastore
+     291: dup
+     292: iconst_2
+     293: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     296: dup
+     297: ldc           #109                // String Adivina Minecraft
+     299: ldc           #111                // String Cuantas tablas produce un tronco? /nutria elegir N
+     301: bipush        75
+     303: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     306: aastore
+     307: dup
+     308: iconst_3
+     309: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     312: dup
+     313: ldc           #113                // String Salto a la cima
+     315: ldc           #115                // String Llega a la altura Y=110 o mayor
+     317: bipush        100
+     319: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     322: aastore
+     323: dup
+     324: iconst_4
+     325: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     328: dup
+     329: ldc           #117                // String Trivia de explorador
+     331: ldc           #119                // String Cuantos ojos se usan maximo en un portal End? /nutria elegir N
+     333: bipush        75
+     335: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     338: aastore
+     339: dup
+     340: iconst_5
+     341: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     344: dup
+     345: ldc           #121                // String Manos del tiempo
+     347: ldc           #123                // String Sujeta un reloj cuando termine el cronometro
+     349: bipush        95
+     351: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     354: aastore
+     355: dup
+     356: bipush        6
+     358: new           #7                  // class pe/safio/ui/WeekEvents$Challenge
+     361: dup
+     362: ldc           #125                // String Gran final Nutria
+     364: ldc           #127                // String Agachate y elige el cofre correcto con /nutria elegir N
+     366: bipush        100
+     368: invokespecial #55                 // Method pe/safio/ui/WeekEvents$Challenge."<init>":(Ljava/lang/String;Ljava/lang/String;I)V
+     371: aastore
+     372: putstatic     #38                 // Field NUTRIA:[Lpe/safio/ui/WeekEvents$Challenge;
+     375: return
+}

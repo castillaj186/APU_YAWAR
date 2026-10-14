@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "apuyawar_systems_tests",
+  "version": "1.0.0",
+  "name": "APU YAWAR pruebas de desarrollo",
+  "environment": "server",
+  "entrypoints": { "fabric-gametest": ["pe.apuyawar.systems.JudgmentGameTests"] },
+  "depends": { "apuyawar_systems": "*", "fabric-gametest-api-v1": "*" }
+}

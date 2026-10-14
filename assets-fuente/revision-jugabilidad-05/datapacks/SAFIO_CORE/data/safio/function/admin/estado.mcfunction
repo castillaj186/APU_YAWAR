@@ -1,0 +1,5 @@
+# Para admins: ejecutar /function safio:admin/estado
+# Muestra los valores internos en el chat a los jugadores conectados.
+tellraw @a [{"text":"[SAFIO] Dia ","color":"gold"},{"score":{"name":"#dia","objective":"safio.dia"}},{"text":" | Fase "},{"score":{"name":"#fase","objective":"safio.fase"}}]
+tellraw @a [{"text":"[SAFIO] Animando: ","color":"aqua"},{"score":{"name":"#animando","objective":"safio.anim"}},{"text":" | Etapa: "},{"score":{"name":"#fase_anim","objective":"safio.anim"}},{"text":" | Restantes: "},{"score":{"name":"#restantes","objective":"safio.anim"}},{"text":" | Frame: "},{"score":{"name":"#frame","objective":"safio.anim"}}]
+tellraw @a [{"text":"[SAFIO] Resultado: ","color":"yellow"},{"score":{"name":"#resultado","objective":"safio.ruleta"}},{"text":" | Evento: "},{"score":{"name":"#evento","objective":"safio.estado"}},{"text":" | Segundos: "},{"score":{"name":"#timer","objective":"safio.timer"}},{"text":" | Visual: "},{"score":{"name":"#visual","objective":"safio.config"}}]

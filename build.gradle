@@ -1,0 +1,10 @@
+plugins {
+    id 'fabric-loom' version '1.9.2' apply false
+}
+allprojects {
+    group = 'pe.apuyawar'
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+    }
+}

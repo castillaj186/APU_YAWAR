@@ -1,0 +1,106 @@
+﻿[
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\flash.png",
+        "Hash":  "445D974E08ADD6A59BF2B901BBCF26A1CDE10A11CB23E46A5F02EAA53FC8AF63"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\glow.png",
+        "Hash":  "DC00EF403C08FE7F2946996839673AB6801A58AE1278386D562A17C8273DFE92"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\medallion_delgado.png",
+        "Hash":  "3014BE984A87FE59FFFE2C7A055FF60643E66D439F72FCDE3FC71E630BECDB6B"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\pointer.png",
+        "Hash":  "B5F38EBB6C1DEA71BDA21F4179645CF3061F0C29586A8C552EFE083BCBAA8C24"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\ring_delgado.png",
+        "Hash":  "2DD6DB26B719638945D43BDA66D1DA663BD24C58BEB8D1267E265D63680B6272"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_amarillo.png",
+        "Hash":  "C3574D2B9DF0BD852ABEF0500D47DB873BAA41DB38245D911B7E7A5B8949B4AB"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_azul.png",
+        "Hash":  "298FA3AAF307572666F7D77DDCABE285C27FFE8D688A1971F6768F4688F35304"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_morado.png",
+        "Hash":  "907A2E7325030A3E8FB0A51C3DC21BE5B14B2E673C7BCF8F05090D7F8BB2E7CC"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_naranja.png",
+        "Hash":  "669D05CE0DFE7390119E14BDFA6A2E822F58CD76C7B0476652C860E0D3B41FC3"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_rojo.png",
+        "Hash":  "0DC76C3754D536A0B0387663C3B94BD8A493833C853BC7E550A49F7EF03B4456"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_rosa.png",
+        "Hash":  "057B3A5678E39A11CBAA47DCFFFAACA291A61EBA14B750988727001E05184964"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_turquesa.png",
+        "Hash":  "3F6CCE20054E412D91E579B996AD2E0D41DB44FE073FC342565E8D7019674AE4"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\assets-fuente\\referencias\\sector_maestro_verde.png",
+        "Hash":  "29F731A867FBB9D42E9FDDEE978C3AF8B828A66AD4B5277210CB2E46895170C4"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\flash.png",
+        "Hash":  "50A660DA9863A8C17D495F3C3F640082F4F0E4E8E8E300714EE858DEC93B35E5"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\glow.png",
+        "Hash":  "F039FC7343969FEF304A90FD096E9BE032EA09D2E8C83F7F76AE5E661EC76BB5"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\medallion.png",
+        "Hash":  "EAF20E8C114AE9B0575839B8D51257DE54D1F79D7A257D5625B0DA8B85778C2C"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\pointer.png",
+        "Hash":  "5BDF7027EBF852AB5CE554CEB641F527347816381E4AC30D5E2DB02579CDD98B"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\ring.png",
+        "Hash":  "BBDB052F7C83E8B0F96A68CB353314EEEB25E28D762A76711AFDF57E6C19AAC7"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_amarillo.png",
+        "Hash":  "3E2231E5DC1A9B026CEC700F6A1D0657A2FD608BD9E3EE938C1A342060994DB1"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_azul.png",
+        "Hash":  "C74BE7A53D55A88D6FA72D1E9409EAAC53192FE4DCFD3BE6200D1A051E727350"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_morado.png",
+        "Hash":  "1371BC71AC17F970B9253D33CEC092577CEF071FA481CCEE751BD5472F8CEEAD"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_naranja.png",
+        "Hash":  "C8193CDFA5A3B7395B86EA6EF23C55D7D044CFCFB098BB501D52E10D0836ABB7"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_rojo.png",
+        "Hash":  "CB9001D3F4C916B674636A19DACAAD0982168EDC08B2CFB637AC56C6F432EA1A"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_rosa.png",
+        "Hash":  "FEDB4B2DEFA056658FF7045B1F360789D6E72D787761BF40AAC70FAC881D696A"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_turquesa.png",
+        "Hash":  "E06C0D6E7E0566F7957F096FD6FDAA5FF471314B22CAEBCB8C98C866F515C0DA"
+    },
+    {
+        "Path":  "E:\\APU_YAWAR\\apuyawar-systems\\src\\main\\resources\\assets\\apuyawar_systems\\textures\\gui\\roulette\\sector_verde.png",
+        "Hash":  "C63BE1AACDCA6642A6A786519DFFDB84D074431420E8390A7C8842DDC5F764FC"
+    }
+]

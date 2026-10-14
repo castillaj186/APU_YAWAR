@@ -1,0 +1,1416 @@
+[
+  {
+    "id": "zombis_feroces",
+    "name": "Zombis feroces",
+    "description": "Zombis: ataque +12%",
+    "legacy": 1,
+    "actions": []
+  },
+  {
+    "id": "flechas_crueles",
+    "name": "Flechas crueles",
+    "description": "Flechas de esqueletos causan Debilidad I por 4 s",
+    "legacy": 2,
+    "actions": []
+  },
+  {
+    "id": "creepers_veloces",
+    "name": "Creepers veloces",
+    "description": "Creepers: velocidad +10%",
+    "legacy": 3,
+    "actions": []
+  },
+  {
+    "id": "caida_dolorosa",
+    "name": "Caida dolorosa",
+    "description": "Caidas que hacen dano causan Lentitud I por 4 s",
+    "legacy": 4,
+    "actions": []
+  },
+  {
+    "id": "olfato_depredador",
+    "name": "Olfato depredador",
+    "description": "Hostiles: alcance de seguimiento +12%",
+    "legacy": 5,
+    "actions": []
+  },
+  {
+    "id": "llamas_persistentes",
+    "name": "Llamas persistentes",
+    "description": "El fuego sobre el jugador dura mas mientras no se moje",
+    "legacy": 6,
+    "actions": []
+  },
+  {
+    "id": "sin_puertas_aire",
+    "name": "Sin puertas de aire",
+    "description": "No se pueden colocar puertas bajo agua",
+    "legacy": 7,
+    "actions": []
+  },
+  {
+    "id": "ahogados_veloces",
+    "name": "Ahogados veloces",
+    "description": "Ahogados: velocidad +12%",
+    "legacy": 8,
+    "actions": []
+  },
+  {
+    "id": "carrera_agotadora",
+    "name": "Carrera agotadora",
+    "description": "Correr consume mas saturacion",
+    "legacy": 9,
+    "actions": []
+  },
+  {
+    "id": "zombis_incansables",
+    "name": "Zombis incansables",
+    "description": "Zombis: velocidad adicional +6%",
+    "legacy": 10,
+    "actions": []
+  },
+  {
+    "id": "aldeanos_sin_cria",
+    "name": "Aldeanos sin cria",
+    "description": "Aldeanos dejan de reproducirse",
+    "legacy": 11,
+    "actions": []
+  },
+  {
+    "id": "flecha_entumecedora",
+    "name": "Flecha entumecedora",
+    "description": "Flechas de esqueletos causan Lentitud I por 4 s",
+    "legacy": 12,
+    "actions": []
+  },
+  {
+    "id": "aranas_cazadoras",
+    "name": "Aranas cazadoras",
+    "description": "Aranas: velocidad +12%",
+    "legacy": 13,
+    "actions": []
+  },
+  {
+    "id": "heridas_debilitantes",
+    "name": "Heridas debilitantes",
+    "description": "Con menos de media vida: Hambre I",
+    "legacy": 14,
+    "actions": []
+  },
+  {
+    "id": "humo_explosivo",
+    "name": "Humo explosivo",
+    "description": "Explosion de creeper causa Debilidad I por 6 s",
+    "legacy": 15,
+    "actions": []
+  },
+  {
+    "id": "saqueadores_atentos",
+    "name": "Saqueadores atentos",
+    "description": "Saqueadores: seguimiento +15%",
+    "legacy": 16,
+    "actions": []
+  },
+  {
+    "id": "colmillos_toxicos",
+    "name": "Colmillos toxicos",
+    "description": "Aranas causan Veneno I por 3 s al herir",
+    "legacy": 17,
+    "actions": []
+  },
+  {
+    "id": "brujas_agiles",
+    "name": "Brujas agiles",
+    "description": "Brujas: velocidad +12%",
+    "legacy": 18,
+    "actions": []
+  },
+  {
+    "id": "tinieblas_profundas",
+    "name": "Tinieblas profundas",
+    "description": "Bajo Y=0 aparece oscuridad de forma intermitente",
+    "legacy": 19,
+    "actions": []
+  },
+  {
+    "id": "zombis_blindados",
+    "name": "Zombis blindados",
+    "description": "Zombis: +2 puntos de armadura",
+    "legacy": 20,
+    "actions": []
+  },
+  {
+    "id": "encantamiento_exigente",
+    "name": "Encantamiento exigente",
+    "description": "Mesa de encantamientos requiere nivel 15 para usar",
+    "legacy": 21,
+    "actions": []
+  },
+  {
+    "id": "lepisma_rabioso",
+    "name": "Lepisma rabioso",
+    "description": "Lepisma: velocidad +16%",
+    "legacy": 22,
+    "actions": []
+  },
+  {
+    "id": "esqueleto_nocturno",
+    "name": "Esqueleto nocturno",
+    "description": "Esqueletos: velocidad +10% durante la noche",
+    "legacy": 23,
+    "actions": []
+  },
+  {
+    "id": "hambre_momia",
+    "name": "Hambre de momia",
+    "description": "Ataques de husks aplican Hambre adicional por 5 s",
+    "legacy": 24,
+    "actions": []
+  },
+  {
+    "id": "aldeano_infectado",
+    "name": "Aldeano infectado",
+    "description": "Zombi aldeano: salud maxima +12%",
+    "legacy": 25,
+    "actions": []
+  },
+  {
+    "id": "fantasmas_fugaces",
+    "name": "Fantasmas fugaces",
+    "description": "Phantoms: velocidad +14%",
+    "legacy": 26,
+    "actions": []
+  },
+  {
+    "id": "flecha_glacial",
+    "name": "Flecha glacial",
+    "description": "Strays aplican Lentitud II por 4 s",
+    "legacy": 27,
+    "actions": []
+  },
+  {
+    "id": "veneno_cavernario",
+    "name": "Veneno cavernario",
+    "description": "Aranas de cueva aplican Veneno I durante 5 s",
+    "legacy": 28,
+    "actions": []
+  },
+  {
+    "id": "slimes_rapidos",
+    "name": "Slimes rapidos",
+    "description": "Slimes: velocidad +12%",
+    "legacy": 29,
+    "actions": []
+  },
+  {
+    "id": "mina_extenuante",
+    "name": "Mina extenuante",
+    "description": "Bajo Y=-20 se aplica Fatiga minera I",
+    "legacy": 30,
+    "actions": []
+  },
+  {
+    "id": "creepers_resistentes",
+    "name": "Creepers resistentes",
+    "description": "Creepers: +3 puntos de armadura",
+    "legacy": 31,
+    "actions": []
+  },
+  {
+    "id": "saqueadores_veloces",
+    "name": "Saqueadores veloces",
+    "description": "Saqueadores: velocidad +10%",
+    "legacy": 32,
+    "actions": []
+  },
+  {
+    "id": "lluvia_hostil",
+    "name": "Lluvia hostil",
+    "description": "Bajo lluvia descubierta se aplica Lentitud I",
+    "legacy": 33,
+    "actions": []
+  },
+  {
+    "id": "furia_no_muerto",
+    "name": "Furia del no-muerto",
+    "description": "Zombis heridos ganan Fuerza I temporal",
+    "legacy": 34,
+    "actions": []
+  },
+  {
+    "id": "armadura_pesada",
+    "name": "Armadura pesada",
+    "description": "Correr con cuatro piezas de diamante agota mas",
+    "legacy": 35,
+    "actions": []
+  },
+  {
+    "id": "adversidad_001",
+    "name": "Adversidad 001",
+    "description": "El magma se vuelve mucho más peligroso y puede castigar gravemente a quien lo pise. Mira bien dónde aterrizas y evita cruzar zonas de magma sin protección: un descuido puede costarte buena parte de la vida, incluso antes de que logres reaccionar.",
+    "legacy": 1001,
+    "actions": []
+  },
+  {
+    "id": "adversidad_002",
+    "name": "Adversidad 002",
+    "description": "Los creepers ahora se acercan con mucha más velocidad, así que tendrás menos tiempo para detectarlos y escapar antes de que exploten. Mantén la distancia, revisa tus alrededores y no des por segura ninguna cueva o zona oscura.",
+    "legacy": 1002,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "creeper",
+        "attribute": "movement_speed",
+        "value": 0.34
+      }
+    ]
+  },
+  {
+    "id": "adversidad_003",
+    "name": "Adversidad 003",
+    "description": "Los zombies ahora aguantan más golpes antes de caer. Los enfrentamientos pueden alargarse y atraer a otros enemigos, así que procura no luchar rodeado y administra bien tus armas, armadura y comida.",
+    "legacy": 1003,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "zombie",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_004",
+    "name": "Adversidad 004",
+    "description": "Los zombies golpean con más fuerza y cada encuentro representa un riesgo mayor, especialmente si aparecen varios a la vez. No te confíes por ser enemigos comunes: usa escudo, conserva espacio para retroceder y evita combatir con poca vida.",
+    "legacy": 1004,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "zombie",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_005",
+    "name": "Adversidad 005",
+    "description": "Los esqueletos tienen más vida.",
+    "legacy": 1005,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "skeleton",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_006",
+    "name": "Adversidad 006",
+    "description": "Los esqueletos se mueven más rápido.",
+    "legacy": 1006,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "skeleton",
+        "attribute": "movement_speed",
+        "value": 0.32
+      }
+    ]
+  },
+  {
+    "id": "adversidad_007",
+    "name": "Adversidad 007",
+    "description": "Las arañas tienen más vida.",
+    "legacy": 1007,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "spider",
+        "attribute": "max_health",
+        "value": 24.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_008",
+    "name": "Adversidad 008",
+    "description": "Las arañas se mueven más rápido.",
+    "legacy": 1008,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "spider",
+        "attribute": "movement_speed",
+        "value": 0.35
+      }
+    ]
+  },
+  {
+    "id": "adversidad_009",
+    "name": "Adversidad 009",
+    "description": "Las arañas cercanas ralentizan al jugador durante 1,5 s; sin colocar bloques.",
+    "legacy": 1009,
+    "actions": []
+  },
+  {
+    "id": "adversidad_010",
+    "name": "Adversidad 010",
+    "description": "Las arañas de cueva reciben Fuerza I.",
+    "legacy": 1010,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "cave_spider",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_011",
+    "name": "Adversidad 011",
+    "description": "Los phantoms tienen más vida.",
+    "legacy": 1011,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "phantom",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_012",
+    "name": "Adversidad 012",
+    "description": "Los phantoms envenenan a quienes se acercan.",
+    "legacy": 1012,
+    "actions": []
+  },
+  {
+    "id": "adversidad_013",
+    "name": "Adversidad 013",
+    "description": "Los endermans tienen más vida.",
+    "legacy": 1013,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "enderman",
+        "attribute": "max_health",
+        "value": 60.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_014",
+    "name": "Adversidad 014",
+    "description": "Los blazes tienen más vida.",
+    "legacy": 1014,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "blaze",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_015",
+    "name": "Adversidad 015",
+    "description": "Los blazes se mueven más rápido.",
+    "legacy": 1015,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "blaze",
+        "attribute": "movement_speed",
+        "value": 0.28
+      }
+    ]
+  },
+  {
+    "id": "adversidad_016",
+    "name": "Adversidad 016",
+    "description": "Los ghasts tienen más vida.",
+    "legacy": 1016,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "ghast",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_017",
+    "name": "Adversidad 017",
+    "description": "Los piglins tienen más vida.",
+    "legacy": 1017,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "piglin",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_018",
+    "name": "Adversidad 018",
+    "description": "Los hoglins tienen más vida y velocidad.",
+    "legacy": 1018,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "hoglin",
+        "attribute": "max_health",
+        "value": 60.0
+      },
+      {
+        "kind": "attribute",
+        "entity": "hoglin",
+        "attribute": "movement_speed",
+        "value": 0.35
+      }
+    ]
+  },
+  {
+    "id": "adversidad_019",
+    "name": "Adversidad 019",
+    "description": "Los piglin brutes tienen más vida.",
+    "legacy": 1019,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "piglin_brute",
+        "attribute": "max_health",
+        "value": 70.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_020",
+    "name": "Adversidad 020",
+    "description": "Los wither skeletons tienen más vida.",
+    "legacy": 1020,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "wither_skeleton",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_021",
+    "name": "Adversidad 021",
+    "description": "Los magma cubes tienen más vida.",
+    "legacy": 1021,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "magma_cube",
+        "attribute": "max_health",
+        "value": 24.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_022",
+    "name": "Adversidad 022",
+    "description": "Los slimes tienen más vida.",
+    "legacy": 1022,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "slime",
+        "attribute": "max_health",
+        "value": 24.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_023",
+    "name": "Adversidad 023",
+    "description": "Los drowned tienen más vida.",
+    "legacy": 1023,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "drowned",
+        "attribute": "max_health",
+        "value": 35.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_024",
+    "name": "Adversidad 024",
+    "description": "Los husks tienen más vida.",
+    "legacy": 1024,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "husk",
+        "attribute": "max_health",
+        "value": 35.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_025",
+    "name": "Adversidad 025",
+    "description": "Los strays tienen más vida.",
+    "legacy": 1025,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "stray",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_026",
+    "name": "Adversidad 026",
+    "description": "Las brujas tienen más vida.",
+    "legacy": 1026,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "witch",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_027",
+    "name": "Adversidad 027",
+    "description": "Los evocadores tienen más vida.",
+    "legacy": 1027,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "evoker",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_028",
+    "name": "Adversidad 028",
+    "description": "Los vindicadores tienen más vida.",
+    "legacy": 1028,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "vindicator",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_029",
+    "name": "Adversidad 029",
+    "description": "Los ravagers tienen mucha más vida.",
+    "legacy": 1029,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "ravager",
+        "attribute": "max_health",
+        "value": 150.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_030",
+    "name": "Adversidad 030",
+    "description": "Los guardianes tienen más vida.",
+    "legacy": 1030,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "guardian",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_031",
+    "name": "Adversidad 031",
+    "description": "El elder guardian tiene más vida.",
+    "legacy": 1031,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "elder_guardian",
+        "attribute": "max_health",
+        "value": 120.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_032",
+    "name": "Adversidad 032",
+    "description": "Los shulkers tienen más vida.",
+    "legacy": 1032,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "shulker",
+        "attribute": "max_health",
+        "value": 40.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_033",
+    "name": "Adversidad 033",
+    "description": "Los silverfish tienen más vida y velocidad.",
+    "legacy": 1033,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "silverfish",
+        "attribute": "max_health",
+        "value": 12.0
+      },
+      {
+        "kind": "attribute",
+        "entity": "silverfish",
+        "attribute": "movement_speed",
+        "value": 0.35
+      }
+    ]
+  },
+  {
+    "id": "adversidad_034",
+    "name": "Adversidad 034",
+    "description": "Los endermites tienen más vida.",
+    "legacy": 1034,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "endermite",
+        "attribute": "max_health",
+        "value": 12.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_035",
+    "name": "Adversidad 035",
+    "description": "Los zoglins tienen más vida.",
+    "legacy": 1035,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "zoglin",
+        "attribute": "max_health",
+        "value": 60.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_036",
+    "name": "Adversidad 036",
+    "description": "Los mobs hostiles reciben Fuerza I periódica.",
+    "legacy": 1036,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "hostile",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_037",
+    "name": "Adversidad 037",
+    "description": "Los mobs hostiles reciben Velocidad I periódica.",
+    "legacy": 1037,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "hostile",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_038",
+    "name": "Adversidad 038",
+    "description": "Los mobs hostiles reciben Resistencia I periódica.",
+    "legacy": 1038,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "hostile",
+        "effect": "resistance",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_039",
+    "name": "Adversidad 039",
+    "description": "Los hostiles detectan jugadores desde más lejos.",
+    "legacy": 1039,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "hostile",
+        "attribute": "follow_range",
+        "value": 48.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_040",
+    "name": "Adversidad 040",
+    "description": "El servidor se fuerza a dificultad difícil.",
+    "legacy": 1040,
+    "actions": []
+  },
+  {
+    "id": "adversidad_041",
+    "name": "Adversidad 041",
+    "description": "Romper hojas tiene un 15% de probabilidad de invocar un lepisma temporal.",
+    "legacy": 1041,
+    "actions": []
+  },
+  {
+    "id": "adversidad_042",
+    "name": "Adversidad 042",
+    "description": "Minar carbón tiene un 15% de probabilidad de invocar un murciélago temporal.",
+    "legacy": 1042,
+    "actions": []
+  },
+  {
+    "id": "adversidad_043",
+    "name": "Adversidad 043",
+    "description": "Los zombies cerca de menas de hierro ganan Speed.",
+    "legacy": 1043,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "zombie",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "iron"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_044",
+    "name": "Adversidad 044",
+    "description": "Los piglins detectan jugadores cerca de oro del suelo.",
+    "legacy": 1044,
+    "actions": []
+  },
+  {
+    "id": "adversidad_045",
+    "name": "Adversidad 045",
+    "description": "Llevar diamantes en mano cerca de hostiles les da Glowing al jugador.",
+    "legacy": 1045,
+    "actions": []
+  },
+  {
+    "id": "adversidad_046",
+    "name": "Adversidad 046",
+    "description": "Los drowned cerca del agua ganan Speed.",
+    "legacy": 1046,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "drowned",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "water"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_047",
+    "name": "Adversidad 047",
+    "description": "Las brujas cerca de jugadores ganan Resistencia.",
+    "legacy": 1047,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "witch",
+        "effect": "resistance",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_048",
+    "name": "Adversidad 048",
+    "description": "Los creepers cerca de redstone ore se cargan.",
+    "legacy": 1048,
+    "actions": []
+  },
+  {
+    "id": "adversidad_049",
+    "name": "Adversidad 049",
+    "description": "Los illagers ganan Speed cerca de jugadores.",
+    "legacy": 1049,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "pillager",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      },
+      {
+        "kind": "effect",
+        "entity": "vindicator",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_050",
+    "name": "Adversidad 050",
+    "description": "En el Nether los blazes ganan Speed.",
+    "legacy": 1050,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "blaze",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_051",
+    "name": "Adversidad 051",
+    "description": "Hostiles cercanos en el Nether provocan Ceguera breve cada 5 s.",
+    "legacy": 1051,
+    "actions": []
+  },
+  {
+    "id": "adversidad_052",
+    "name": "Adversidad 052",
+    "description": "Con pechera de netherita, los phantoms cercanos revelan tu posición con Brillo.",
+    "legacy": 1052,
+    "actions": []
+  },
+  {
+    "id": "adversidad_053",
+    "name": "Adversidad 053",
+    "description": "Los blazes regeneran vida lentamente.",
+    "legacy": 1053,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "blaze",
+        "effect": "regeneration",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_054",
+    "name": "Adversidad 054",
+    "description": "Los endermans ganan Resistencia.",
+    "legacy": 1054,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "enderman",
+        "effect": "resistance",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_055",
+    "name": "Adversidad 055",
+    "description": "Los creepers tienen más vida.",
+    "legacy": 1055,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "creeper",
+        "attribute": "max_health",
+        "value": 30.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_056",
+    "name": "Adversidad 056",
+    "description": "Los esqueletos regeneran poco a poco.",
+    "legacy": 1056,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "skeleton",
+        "effect": "regeneration",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_057",
+    "name": "Adversidad 057",
+    "description": "Las arañas ganan Jump Boost.",
+    "legacy": 1057,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "spider",
+        "effect": "jump_boost",
+        "duration": 120,
+        "amplifier": 1,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_058",
+    "name": "Adversidad 058",
+    "description": "Los zombies se potencian cerca de cultivos.",
+    "legacy": 1058,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "zombie",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "farmland"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_059",
+    "name": "Adversidad 059",
+    "description": "Los drowned en ríos/océano ganan Fuerza.",
+    "legacy": 1059,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "drowned",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_060",
+    "name": "Adversidad 060",
+    "description": "Los piglins brutes ganan Fuerza cerca de jugadores.",
+    "legacy": 1060,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "piglin_brute",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_061",
+    "name": "Adversidad 061",
+    "description": "randomTickSpeed bajo: cultivos y plantas crecen lento.",
+    "legacy": 1061,
+    "actions": []
+  },
+  {
+    "id": "adversidad_062",
+    "name": "Adversidad 062",
+    "description": "No se puede saltar la noche durmiendo (hace falta el 101% de jugadores).",
+    "legacy": 1062,
+    "actions": []
+  },
+  {
+    "id": "adversidad_063",
+    "name": "Adversidad 063",
+    "description": "Los phantoms están habilitados (doInsomnia).",
+    "legacy": 1063,
+    "actions": []
+  },
+  {
+    "id": "adversidad_064",
+    "name": "Adversidad 064",
+    "description": "Los aldeanos adultos dejan de reproducirse; no se eliminan bebés.",
+    "legacy": 1064,
+    "actions": []
+  },
+  {
+    "id": "adversidad_065",
+    "name": "Adversidad 065",
+    "description": "A partir de 20 vacas cercanas se bloquea temporalmente su reproducción.",
+    "legacy": 1065,
+    "actions": []
+  },
+  {
+    "id": "adversidad_066",
+    "name": "Adversidad 066",
+    "description": "A partir de 20 cerdos cercanos se bloquea temporalmente su reproducción.",
+    "legacy": 1066,
+    "actions": []
+  },
+  {
+    "id": "adversidad_067",
+    "name": "Adversidad 067",
+    "description": "A partir de 20 ovejas cercanas se bloquea temporalmente su reproducción.",
+    "legacy": 1067,
+    "actions": []
+  },
+  {
+    "id": "adversidad_068",
+    "name": "Adversidad 068",
+    "description": "A partir de 25 pollos cercanos se bloquea temporalmente su reproducción.",
+    "legacy": 1068,
+    "actions": []
+  },
+  {
+    "id": "adversidad_069",
+    "name": "Adversidad 069",
+    "description": "Se bloquea el inicio de la cura con manzana dorada de aldeanos zombi.",
+    "legacy": 1069,
+    "actions": []
+  },
+  {
+    "id": "adversidad_070",
+    "name": "Adversidad 070",
+    "description": "Los golems de hierro sin nombre se debilitan con el tiempo.",
+    "legacy": 1070,
+    "actions": []
+  },
+  {
+    "id": "adversidad_071",
+    "name": "Adversidad 071",
+    "description": "El cactus hace daño extra.",
+    "legacy": 1071,
+    "actions": []
+  },
+  {
+    "id": "adversidad_072",
+    "name": "Adversidad 072",
+    "description": "El magma hace daño extra.",
+    "legacy": 1072,
+    "actions": []
+  },
+  {
+    "id": "adversidad_073",
+    "name": "Adversidad 073",
+    "description": "Los arbustos de bayas hacen daño extra.",
+    "legacy": 1073,
+    "actions": []
+  },
+  {
+    "id": "adversidad_074",
+    "name": "Adversidad 074",
+    "description": "Las fogatas hacen daño extra.",
+    "legacy": 1074,
+    "actions": []
+  },
+  {
+    "id": "adversidad_075",
+    "name": "Adversidad 075",
+    "description": "El dripstone puntiagudo hace daño extra al estar sobre él.",
+    "legacy": 1075,
+    "actions": []
+  },
+  {
+    "id": "adversidad_076",
+    "name": "Adversidad 076",
+    "description": "Las rosas de wither hacen daño extra.",
+    "legacy": 1076,
+    "actions": []
+  },
+  {
+    "id": "adversidad_077",
+    "name": "Adversidad 077",
+    "description": "La nieve polvo congela / daña más rápido.",
+    "legacy": 1077,
+    "actions": []
+  },
+  {
+    "id": "adversidad_078",
+    "name": "Adversidad 078",
+    "description": "Las fogatas de almas hacen daño extra.",
+    "legacy": 1078,
+    "actions": []
+  },
+  {
+    "id": "adversidad_079",
+    "name": "Adversidad 079",
+    "description": "Las arañas cercanas ralentizan al jugador durante 1,5 s; sin colocar bloques.",
+    "legacy": 1079,
+    "actions": []
+  },
+  {
+    "id": "adversidad_080",
+    "name": "Adversidad 080",
+    "description": "Romper telarañas tiene un 15% de probabilidad de invocar una araña de cueva temporal.",
+    "legacy": 1080,
+    "actions": []
+  },
+  {
+    "id": "adversidad_081",
+    "name": "Adversidad 081",
+    "description": "Bajo agua, sostener antorchas provoca Fatiga minera I; se bloquea su colocación sumergida.",
+    "legacy": 1081,
+    "actions": []
+  },
+  {
+    "id": "adversidad_082",
+    "name": "Adversidad 082",
+    "description": "doFireTick activo: el fuego se propaga.",
+    "legacy": 1082,
+    "actions": []
+  },
+  {
+    "id": "adversidad_083",
+    "name": "Adversidad 083",
+    "description": "mobExplosionDropDecay: menos blocks de explosiones de mobs.",
+    "legacy": 1083,
+    "actions": []
+  },
+  {
+    "id": "adversidad_084",
+    "name": "Adversidad 084",
+    "description": "maxEntityCramming reducido: las granjas se matan solas antes.",
+    "legacy": 1084,
+    "actions": []
+  },
+  {
+    "id": "adversidad_085",
+    "name": "Adversidad 085",
+    "description": "Los espectadores no generan chunks.",
+    "legacy": 1085,
+    "actions": []
+  },
+  {
+    "id": "adversidad_086",
+    "name": "Adversidad 086",
+    "description": "reducedDebugInfo activo.",
+    "legacy": 1086,
+    "actions": []
+  },
+  {
+    "id": "adversidad_087",
+    "name": "Adversidad 087",
+    "description": "Los enemigos no perdonan a los jugadores muertos (forgiveDeadPlayers=false).",
+    "legacy": 1087,
+    "actions": []
+  },
+  {
+    "id": "adversidad_088",
+    "name": "Adversidad 088",
+    "description": "No se puede ordeñar mooshrooms con cubos ni cuencos.",
+    "legacy": 1088,
+    "actions": []
+  },
+  {
+    "id": "adversidad_089",
+    "name": "Adversidad 089",
+    "description": "No se pueden ordeñar vacas; la leche almacenada se convierte en cubos vacíos.",
+    "legacy": 1089,
+    "actions": []
+  },
+  {
+    "id": "adversidad_090",
+    "name": "Adversidad 090",
+    "description": "Los esqueletos detectan jugadores ocho bloques más lejos; sus flechas vanilla ya son ilimitadas.",
+    "legacy": 1090,
+    "actions": []
+  },
+  {
+    "id": "adversidad_091",
+    "name": "Adversidad 091",
+    "description": "Los zombies ganan aún más vida.",
+    "legacy": 1091,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "zombie",
+        "attribute": "max_health",
+        "value": 50.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_092",
+    "name": "Adversidad 092",
+    "description": "No se pueden ordeñar vacas; la leche almacenada se convierte en cubos vacíos.",
+    "legacy": 1092,
+    "actions": []
+  },
+  {
+    "id": "adversidad_093",
+    "name": "Adversidad 093",
+    "description": "Las arañas pueden ganar efecto de invisibilidad breve.",
+    "legacy": 1093,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "spider",
+        "effect": "invisibility",
+        "duration": 60,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_094",
+    "name": "Adversidad 094",
+    "description": "Las brujas se regeneran lentamente.",
+    "legacy": 1094,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "witch",
+        "effect": "regeneration",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "always"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_095",
+    "name": "Adversidad 095",
+    "description": "Los guardianes tienen más velocidad de movimiento.",
+    "legacy": 1095,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "guardian",
+        "attribute": "movement_speed",
+        "value": 0.4
+      }
+    ]
+  },
+  {
+    "id": "adversidad_096",
+    "name": "Adversidad 096",
+    "description": "Los piglins se enfadan más fácil cerca sin oro.",
+    "legacy": 1096,
+    "actions": []
+  },
+  {
+    "id": "adversidad_097",
+    "name": "Adversidad 097",
+    "description": "Los hoglins ganan Fuerza al detectar jugadores.",
+    "legacy": 1097,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "hoglin",
+        "effect": "strength",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_098",
+    "name": "Adversidad 098",
+    "description": "Los phantoms cercanos se potencias entre sí (speed).",
+    "legacy": 1098,
+    "actions": [
+      {
+        "kind": "effect",
+        "entity": "phantom",
+        "effect": "speed",
+        "duration": 120,
+        "amplifier": 0,
+        "condition": "near"
+      }
+    ]
+  },
+  {
+    "id": "adversidad_099",
+    "name": "Adversidad 099",
+    "description": "Los slimes grandes tienen más vida antes de dividirse.",
+    "legacy": 1099,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "slime",
+        "attribute": "max_health",
+        "value": 32.0
+      }
+    ]
+  },
+  {
+    "id": "adversidad_100",
+    "name": "Adversidad 100",
+    "description": "Los endermans ganan velocidad al mirarlos de cerca.",
+    "legacy": 1100,
+    "actions": [
+      {
+        "kind": "attribute",
+        "entity": "enderman",
+        "attribute": "movement_speed",
+        "value": 0.4
+      },
+      {
+        "kind": "effect",
+        "entity": "enderman",
+        "effect": "speed",
+        "duration": 80,
+        "amplifier": 1,
+        "condition": "near"
+      }
+    ]
+  }
+]

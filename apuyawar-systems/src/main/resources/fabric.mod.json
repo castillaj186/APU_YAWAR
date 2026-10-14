@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "apuyawar_systems",
+  "version": "${version}",
+  "name": "APU YAWAR: Systems",
+  "description": "El Juicio de los Dioses - ruleta e interfaces programadas",
+  "authors": [
+    "Equipo APU YAWAR"
+  ],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pe.apuyawar.systems.ApuYawarSystems"
+    ],
+    "client": [
+      "pe.apuyawar.systems.client.ApuYawarClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

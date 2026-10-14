@@ -1,0 +1,403 @@
+﻿Compiled from "DifficultyCatalog.java"
+public final class pe.safio.ui.DifficultyCatalog {
+  private static final java.util.List<pe.safio.ui.DifficultyCatalog$Rule> RULES;
+
+  private pe.safio.ui.DifficultyCatalog();
+    Code:
+       0: aload_0
+       1: invokespecial #15                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static java.util.List<pe.safio.ui.DifficultyCatalog$Rule> all();
+    Code:
+       0: getstatic     #22                 // Field RULES:Ljava/util/List;
+       3: areturn
+
+  public static pe.safio.ui.DifficultyCatalog$Rule get(int, int);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: if_icmplt     21
+       5: iload_0
+       6: bipush        7
+       8: if_icmpgt     21
+      11: iload_1
+      12: iconst_1
+      13: if_icmplt     21
+      16: iload_1
+      17: iconst_5
+      18: if_icmple     23
+      21: aconst_null
+      22: areturn
+      23: getstatic     #22                 // Field RULES:Ljava/util/List;
+      26: iload_0
+      27: iconst_1
+      28: isub
+      29: iconst_5
+      30: imul
+      31: iload_1
+      32: iadd
+      33: iconst_1
+      34: isub
+      35: invokeinterface #31,  2           // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      40: checkcast     #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      43: areturn
+
+  static {};
+    Code:
+       0: bipush        35
+       2: anewarray     #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+       5: dup
+       6: iconst_0
+       7: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      10: dup
+      11: iconst_1
+      12: iconst_1
+      13: ldc           #35                 // String Zombis feroces
+      15: ldc           #37                 // String Zombis: ataque +12%
+      17: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+      20: aastore
+      21: dup
+      22: iconst_1
+      23: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      26: dup
+      27: iconst_1
+      28: iconst_2
+      29: ldc           #42                 // String Flechas crueles
+      31: ldc           #44                 // String Flechas de esqueletos causan Debilidad I por 4 s
+      33: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+      36: aastore
+      37: dup
+      38: iconst_2
+      39: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      42: dup
+      43: iconst_1
+      44: iconst_3
+      45: ldc           #46                 // String Creepers veloces
+      47: ldc           #48                 // String Creepers: velocidad +10%
+      49: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+      52: aastore
+      53: dup
+      54: iconst_3
+      55: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      58: dup
+      59: iconst_1
+      60: iconst_4
+      61: ldc           #50                 // String Caida dolorosa
+      63: ldc           #52                 // String Caidas que hacen dano causan Lentitud I por 4 s
+      65: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+      68: aastore
+      69: dup
+      70: iconst_4
+      71: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      74: dup
+      75: iconst_1
+      76: iconst_5
+      77: ldc           #54                 // String Olfato depredador
+      79: ldc           #56                 // String Hostiles: alcance de seguimiento +12%
+      81: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+      84: aastore
+      85: dup
+      86: iconst_5
+      87: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+      90: dup
+      91: iconst_2
+      92: iconst_1
+      93: ldc           #58                 // String Llamas persistentes
+      95: ldc           #60                 // String El fuego sobre el jugador dura mas mientras no se moje
+      97: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     100: aastore
+     101: dup
+     102: bipush        6
+     104: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     107: dup
+     108: iconst_2
+     109: iconst_2
+     110: ldc           #62                 // String Sin puertas de aire
+     112: ldc           #64                 // String No se pueden colocar puertas bajo agua
+     114: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     117: aastore
+     118: dup
+     119: bipush        7
+     121: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     124: dup
+     125: iconst_2
+     126: iconst_3
+     127: ldc           #66                 // String Ahogados veloces
+     129: ldc           #68                 // String Ahogados: velocidad +12%
+     131: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     134: aastore
+     135: dup
+     136: bipush        8
+     138: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     141: dup
+     142: iconst_2
+     143: iconst_4
+     144: ldc           #70                 // String Carrera agotadora
+     146: ldc           #72                 // String Correr consume mas saturacion
+     148: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     151: aastore
+     152: dup
+     153: bipush        9
+     155: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     158: dup
+     159: iconst_2
+     160: iconst_5
+     161: ldc           #74                 // String Zombis incansables
+     163: ldc           #76                 // String Zombis: velocidad adicional +6%
+     165: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     168: aastore
+     169: dup
+     170: bipush        10
+     172: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     175: dup
+     176: iconst_3
+     177: iconst_1
+     178: ldc           #78                 // String Aldeanos sin cria
+     180: ldc           #80                 // String Aldeanos dejan de reproducirse
+     182: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     185: aastore
+     186: dup
+     187: bipush        11
+     189: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     192: dup
+     193: iconst_3
+     194: iconst_2
+     195: ldc           #82                 // String Flecha entumecedora
+     197: ldc           #84                 // String Flechas de esqueletos causan Lentitud I por 4 s
+     199: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     202: aastore
+     203: dup
+     204: bipush        12
+     206: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     209: dup
+     210: iconst_3
+     211: iconst_3
+     212: ldc           #86                 // String Aranas cazadoras
+     214: ldc           #88                 // String Aranas: velocidad +12%
+     216: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     219: aastore
+     220: dup
+     221: bipush        13
+     223: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     226: dup
+     227: iconst_3
+     228: iconst_4
+     229: ldc           #90                 // String Heridas debilitantes
+     231: ldc           #92                 // String Con menos de media vida: Hambre I
+     233: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     236: aastore
+     237: dup
+     238: bipush        14
+     240: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     243: dup
+     244: iconst_3
+     245: iconst_5
+     246: ldc           #94                 // String Humo explosivo
+     248: ldc           #96                 // String Explosion de creeper causa Debilidad I por 6 s
+     250: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     253: aastore
+     254: dup
+     255: bipush        15
+     257: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     260: dup
+     261: iconst_4
+     262: iconst_1
+     263: ldc           #98                 // String Saqueadores atentos
+     265: ldc           #100                // String Saqueadores: seguimiento +15%
+     267: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     270: aastore
+     271: dup
+     272: bipush        16
+     274: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     277: dup
+     278: iconst_4
+     279: iconst_2
+     280: ldc           #102                // String Colmillos toxicos
+     282: ldc           #104                // String Aranas causan Veneno I por 3 s al herir
+     284: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     287: aastore
+     288: dup
+     289: bipush        17
+     291: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     294: dup
+     295: iconst_4
+     296: iconst_3
+     297: ldc           #106                // String Brujas agiles
+     299: ldc           #108                // String Brujas: velocidad +12%
+     301: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     304: aastore
+     305: dup
+     306: bipush        18
+     308: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     311: dup
+     312: iconst_4
+     313: iconst_4
+     314: ldc           #110                // String Tinieblas profundas
+     316: ldc           #112                // String Bajo Y=0 aparece oscuridad de forma intermitente
+     318: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     321: aastore
+     322: dup
+     323: bipush        19
+     325: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     328: dup
+     329: iconst_4
+     330: iconst_5
+     331: ldc           #114                // String Zombis blindados
+     333: ldc           #116                // String Zombis: +2 puntos de armadura
+     335: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     338: aastore
+     339: dup
+     340: bipush        20
+     342: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     345: dup
+     346: iconst_5
+     347: iconst_1
+     348: ldc           #118                // String Encantamiento exigente
+     350: ldc           #120                // String Mesa de encantamientos requiere nivel 15 para usar
+     352: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     355: aastore
+     356: dup
+     357: bipush        21
+     359: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     362: dup
+     363: iconst_5
+     364: iconst_2
+     365: ldc           #122                // String Lepisma rabioso
+     367: ldc           #124                // String Lepisma: velocidad +16%
+     369: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     372: aastore
+     373: dup
+     374: bipush        22
+     376: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     379: dup
+     380: iconst_5
+     381: iconst_3
+     382: ldc           #126                // String Esqueleto nocturno
+     384: ldc           #128                // String Esqueletos: velocidad +10% durante la noche
+     386: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     389: aastore
+     390: dup
+     391: bipush        23
+     393: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     396: dup
+     397: iconst_5
+     398: iconst_4
+     399: ldc           #130                // String Hambre de momia
+     401: ldc           #132                // String Ataques de husks aplican Hambre adicional por 5 s
+     403: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     406: aastore
+     407: dup
+     408: bipush        24
+     410: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     413: dup
+     414: iconst_5
+     415: iconst_5
+     416: ldc           #134                // String Aldeano infectado
+     418: ldc           #136                // String Zombi aldeano: salud maxima +12%
+     420: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     423: aastore
+     424: dup
+     425: bipush        25
+     427: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     430: dup
+     431: bipush        6
+     433: iconst_1
+     434: ldc           #138                // String Fantasmas fugaces
+     436: ldc           #140                // String Phantoms: velocidad +14%
+     438: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     441: aastore
+     442: dup
+     443: bipush        26
+     445: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     448: dup
+     449: bipush        6
+     451: iconst_2
+     452: ldc           #142                // String Flecha glacial
+     454: ldc           #144                // String Strays aplican Lentitud II por 4 s
+     456: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     459: aastore
+     460: dup
+     461: bipush        27
+     463: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     466: dup
+     467: bipush        6
+     469: iconst_3
+     470: ldc           #146                // String Veneno cavernario
+     472: ldc           #148                // String Aranas de cueva aplican Veneno I durante 5 s
+     474: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     477: aastore
+     478: dup
+     479: bipush        28
+     481: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     484: dup
+     485: bipush        6
+     487: iconst_4
+     488: ldc           #150                // String Slimes rapidos
+     490: ldc           #152                // String Slimes: velocidad +12%
+     492: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     495: aastore
+     496: dup
+     497: bipush        29
+     499: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     502: dup
+     503: bipush        6
+     505: iconst_5
+     506: ldc           #154                // String Mina extenuante
+     508: ldc           #156                // String Bajo Y=-20 se aplica Fatiga minera I
+     510: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     513: aastore
+     514: dup
+     515: bipush        30
+     517: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     520: dup
+     521: bipush        7
+     523: iconst_1
+     524: ldc           #158                // String Creepers resistentes
+     526: ldc           #160                // String Creepers: +3 puntos de armadura
+     528: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     531: aastore
+     532: dup
+     533: bipush        31
+     535: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     538: dup
+     539: bipush        7
+     541: iconst_2
+     542: ldc           #162                // String Saqueadores veloces
+     544: ldc           #164                // String Saqueadores: velocidad +10%
+     546: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     549: aastore
+     550: dup
+     551: bipush        32
+     553: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     556: dup
+     557: bipush        7
+     559: iconst_3
+     560: ldc           #166                // String Lluvia hostil
+     562: ldc           #168                // String Bajo lluvia descubierta se aplica Lentitud I
+     564: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     567: aastore
+     568: dup
+     569: bipush        33
+     571: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     574: dup
+     575: bipush        7
+     577: iconst_4
+     578: ldc           #170                // String Furia del no-muerto
+     580: ldc           #172                // String Zombis heridos ganan Fuerza I temporal
+     582: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     585: aastore
+     586: dup
+     587: bipush        34
+     589: new           #7                  // class pe/safio/ui/DifficultyCatalog$Rule
+     592: dup
+     593: bipush        7
+     595: iconst_5
+     596: ldc           #174                // String Armadura pesada
+     598: ldc           #176                // String Correr con cuatro piezas de diamante agota mas
+     600: invokespecial #40                 // Method pe/safio/ui/DifficultyCatalog$Rule."<init>":(IILjava/lang/String;Ljava/lang/String;)V
+     603: aastore
+     604: invokestatic  #180                // InterfaceMethod java/util/List.of:([Ljava/lang/Object;)Ljava/util/List;
+     607: putstatic     #22                 // Field RULES:Ljava/util/List;
+     610: return
+}

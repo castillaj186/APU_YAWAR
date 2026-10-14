@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "apuyawar_world",
+  "version": "${version}",
+  "name": "APU YAWAR: World",
+  "description": "El Juicio de los Dioses - mod original de contenido y futura Dimension Cuy",
+  "authors": [
+    "Equipo APU YAWAR"
+  ],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pe.apuyawar.world.ApuYawarWorld"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

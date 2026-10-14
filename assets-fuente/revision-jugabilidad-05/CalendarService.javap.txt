@@ -1,0 +1,1435 @@
+﻿Compiled from "CalendarService.java"
+public final class pe.safio.ui.CalendarService {
+  private static final org.slf4j.Logger LOG;
+
+  private static final java.lang.String STATE = "safio.cal";
+
+  private static final java.lang.String SLOT = "safio.slots";
+
+  private static final java.lang.String MODS = "safio.mods";
+
+  private static final int GRACE_MINUTES = 8;
+
+  private static int snapshotSeconds;
+
+  private pe.safio.ui.CalendarService();
+    Code:
+       0: aload_0
+       1: invokespecial #55                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void init();
+    Code:
+       0: getstatic     #64                 // Field net/fabricmc/fabric/api/command/v2/CommandRegistrationCallback.EVENT:Lnet/fabricmc/fabric/api/event/Event;
+       3: invokedynamic #81,  0             // InvokeDynamic #0:register:()Lnet/fabricmc/fabric/api/command/v2/CommandRegistrationCallback;
+       8: invokevirtual #86                 // Method net/fabricmc/fabric/api/event/Event.register:(Ljava/lang/Object;)V
+      11: return
+
+  private static net.minecraft.class_266 objective(net.minecraft.class_269, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #96                 // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore_2
+       6: aload_2
+       7: ifnonnull     28
+      10: aload_0
+      11: aload_1
+      12: getstatic     #100                // Field net/minecraft/class_274.field_1468:Lnet/minecraft/class_274;
+      15: aload_1
+      16: invokestatic  #106                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+      19: getstatic     #110                // Field net/minecraft/class_274$class_275.field_1472:Lnet/minecraft/class_274$class_275;
+      22: iconst_0
+      23: aconst_null
+      24: invokevirtual #114                // Method net/minecraft/class_269.method_1168:(Ljava/lang/String;Lnet/minecraft/class_274;Lnet/minecraft/class_2561;Lnet/minecraft/class_274$class_275;ZLnet/minecraft/class_9022;)Lnet/minecraft/class_266;
+      27: astore_2
+      28: aload_2
+      29: areturn
+
+  private static int read(net.minecraft.class_269, java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #96                 // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore_3
+       6: aload_3
+       7: ifnonnull     12
+      10: iconst_0
+      11: ireturn
+      12: aload_0
+      13: aload_2
+      14: invokestatic  #129                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+      17: aload_3
+      18: invokevirtual #133                // Method net/minecraft/class_269.method_55430:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9013;
+      21: astore        4
+      23: aload         4
+      25: ifnonnull     32
+      28: iconst_0
+      29: goto          39
+      32: aload         4
+      34: invokeinterface #139,  1          // InterfaceMethod net/minecraft/class_9013.method_55397:()I
+      39: ireturn
+
+  private static void write(net.minecraft.class_269, java.lang.String, java.lang.String, int);
+    Code:
+       0: aload_0
+       1: aload_2
+       2: invokestatic  #129                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+       5: aload_0
+       6: aload_1
+       7: invokestatic  #146                // Method objective:(Lnet/minecraft/class_269;Ljava/lang/String;)Lnet/minecraft/class_266;
+      10: invokevirtual #150                // Method net/minecraft/class_269.method_1180:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9014;
+      13: iload_3
+      14: invokeinterface #156,  2          // InterfaceMethod net/minecraft/class_9014.method_55410:(I)V
+      19: return
+
+  private static java.lang.String slotKey(int, int);
+    Code:
+       0: ldc           #162                // String #j%02ds%02d
+       2: iconst_2
+       3: anewarray     #4                  // class java/lang/Object
+       6: dup
+       7: iconst_0
+       8: iload_0
+       9: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      12: aastore
+      13: dup
+      14: iconst_1
+      15: iload_1
+      16: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      19: aastore
+      20: invokestatic  #174                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      23: areturn
+
+  private static java.lang.String modifierKey(int, int);
+    Code:
+       0: ldc           #178                // String #j%02dd%02d
+       2: iconst_2
+       3: anewarray     #4                  // class java/lang/Object
+       6: dup
+       7: iconst_0
+       8: iload_0
+       9: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      12: aastore
+      13: dup
+      14: iconst_1
+      15: iload_1
+      16: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      19: aastore
+      20: invokestatic  #174                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      23: areturn
+
+  private static int currentDay(net.minecraft.class_269);
+    Code:
+       0: aload_0
+       1: ldc           #41                 // String safio.cal
+       3: ldc           #183                // String #day
+       5: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+       8: ireturn
+
+  private static int displayDay(net.minecraft.class_269);
+    Code:
+       0: aload_0
+       1: ldc           #41                 // String safio.cal
+       3: ldc           #188                // String #preview
+       5: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+       8: iconst_1
+       9: if_icmpne     23
+      12: aload_0
+      13: ldc           #41                 // String safio.cal
+      15: ldc           #190                // String #preview_day
+      17: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      20: goto          27
+      23: aload_0
+      24: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      27: ireturn
+
+  private static int modifierCount(net.minecraft.class_269);
+    Code:
+       0: iconst_0
+       1: istore_1
+       2: iconst_1
+       3: istore_2
+       4: iload_2
+       5: bipush        30
+       7: if_icmpgt     50
+      10: iconst_1
+      11: istore_3
+      12: iload_3
+      13: iconst_5
+      14: if_icmpgt     44
+      17: aload_0
+      18: ldc           #47                 // String safio.mods
+      20: iload_2
+      21: iload_3
+      22: invokestatic  #195                // Method modifierKey:(II)Ljava/lang/String;
+      25: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      28: iconst_1
+      29: if_icmpeq     35
+      32: goto          38
+      35: iinc          1, 1
+      38: iinc          3, 1
+      41: goto          12
+      44: iinc          2, 1
+      47: goto          4
+      50: iload_1
+      51: ireturn
+
+  private static boolean started(net.minecraft.class_269);
+    Code:
+       0: aload_0
+       1: ldc           #41                 // String safio.cal
+       3: ldc           #202                // String #started
+       5: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+       8: iconst_1
+       9: if_icmpne     16
+      12: iconst_1
+      13: goto          17
+      16: iconst_0
+      17: ireturn
+
+  private static java.lang.String nextEvent(net.minecraft.class_269, java.time.ZonedDateTime);
+    Code:
+       0: aload_0
+       1: invokestatic  #207                // Method displayDay:(Lnet/minecraft/class_269;)I
+       4: istore_2
+       5: aload_0
+       6: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+       9: ifne          15
+      12: ldc           #211                // String Esperando inicio del evento
+      14: areturn
+      15: aload_0
+      16: ldc           #41                 // String safio.cal
+      18: ldc           #188                // String #preview
+      20: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      23: iconst_1
+      24: if_icmpne     30
+      27: ldc           #213                // String ENSAYO: giros automaticos pausados
+      29: areturn
+      30: aload_1
+      31: invokestatic  #217                // Method pe/safio/ui/CalendarRules.inHours:(Ljava/time/ZonedDateTime;)Z
+      34: ifeq          48
+      37: iload_2
+      38: iconst_1
+      39: if_icmplt     48
+      42: iload_2
+      43: bipush        30
+      45: if_icmple     51
+      48: ldc           #219                // String Fuera de jornada
+      50: areturn
+      51: aload_1
+      52: invokevirtual #224                // Method java/time/ZonedDateTime.getHour:()I
+      55: bipush        60
+      57: imul
+      58: aload_1
+      59: invokevirtual #227                // Method java/time/ZonedDateTime.getMinute:()I
+      62: iadd
+      63: istore_3
+      64: iload_2
+      65: invokestatic  #231                // Method pe/safio/ui/CalendarRules.slotsForDay:(I)Ljava/util/List;
+      68: invokeinterface #237,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      73: astore        4
+      75: aload         4
+      77: invokeinterface #243,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      82: ifeq          168
+      85: aload         4
+      87: invokeinterface #247,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      92: checkcast     #12                 // class pe/safio/ui/CalendarRules$Slot
+      95: astore        5
+      97: aload_0
+      98: ldc           #44                 // String safio.slots
+     100: iload_2
+     101: aload         5
+     103: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+     106: invokestatic  #252                // Method slotKey:(II)Ljava/lang/String;
+     109: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     112: ifne          75
+     115: aload         5
+     117: invokevirtual #255                // Method pe/safio/ui/CalendarRules$Slot.minuteOfDay:()I
+     120: iload_3
+     121: if_icmpge     127
+     124: goto          75
+     127: ldc_w         #257                // String %02d:%02d %s
+     130: iconst_3
+     131: anewarray     #4                  // class java/lang/Object
+     134: dup
+     135: iconst_0
+     136: aload         5
+     138: invokevirtual #260                // Method pe/safio/ui/CalendarRules$Slot.hour:()I
+     141: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     144: aastore
+     145: dup
+     146: iconst_1
+     147: aload         5
+     149: invokevirtual #263                // Method pe/safio/ui/CalendarRules$Slot.minute:()I
+     152: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     155: aastore
+     156: dup
+     157: iconst_2
+     158: aload         5
+     160: invokevirtual #267                // Method pe/safio/ui/CalendarRules$Slot.label:()Ljava/lang/String;
+     163: aastore
+     164: invokestatic  #174                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     167: areturn
+     168: ldc_w         #269                // String Sin mas eventos programados hoy
+     171: areturn
+
+  public static void tick(net.minecraft.server.MinecraftServer, java.time.ZonedDateTime);
+    Code:
+       0: aload_0
+       1: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       4: astore_2
+       5: aload_2
+       6: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+       9: ifne          19
+      12: aload_0
+      13: aload_2
+      14: aload_1
+      15: invokestatic  #285                // Method sendSnapshot:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)V
+      18: return
+      19: aload_1
+      20: invokevirtual #291                // Method java/time/ZonedDateTime.toLocalDate:()Ljava/time/LocalDate;
+      23: invokestatic  #295                // Method pe/safio/ui/CalendarRules.dateKey:(Ljava/time/LocalDate;)I
+      26: istore_3
+      27: aload_2
+      28: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      31: istore        4
+      33: iload         4
+      35: aload_2
+      36: ldc           #41                 // String safio.cal
+      38: ldc_w         #297                // String #date
+      41: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      44: iload_3
+      45: aload_1
+      46: invokestatic  #217                // Method pe/safio/ui/CalendarRules.inHours:(Ljava/time/ZonedDateTime;)Z
+      49: iconst_1
+      50: invokestatic  #301                // Method pe/safio/ui/CalendarRules.nextDay:(IIIZZ)I
+      53: istore        5
+      55: iload         5
+      57: iload         4
+      59: if_icmple     136
+      62: aload_2
+      63: ldc           #41                 // String safio.cal
+      65: ldc           #183                // String #day
+      67: iload         5
+      69: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      72: aload_2
+      73: ldc           #41                 // String safio.cal
+      75: ldc_w         #297                // String #date
+      78: iload_3
+      79: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      82: aload_2
+      83: ldc_w         #305                // String safio.dia
+      86: ldc_w         #307                // String #dia
+      89: iload         5
+      91: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      94: aload_0
+      95: invokevirtual #311                // Method net/minecraft/server/MinecraftServer.method_3734:()Lnet/minecraft/class_2170;
+      98: aload_0
+      99: invokevirtual #315                // Method net/minecraft/server/MinecraftServer.method_3739:()Lnet/minecraft/class_2168;
+     102: iconst_4
+     103: invokevirtual #321                // Method net/minecraft/class_2168.method_9206:(I)Lnet/minecraft/class_2168;
+     106: ldc_w         #323                // String function safio:actualizar_fase
+     109: invokevirtual #327                // Method net/minecraft/class_2170.method_44252:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     112: aload_0
+     113: invokevirtual #331                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     116: iload         5
+     118: invokedynamic #343,  0            // InvokeDynamic #1:makeConcatWithConstants:(I)Ljava/lang/String;
+     123: invokestatic  #106                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+     126: getstatic     #349                // Field net/minecraft/class_124.field_1065:Lnet/minecraft/class_124;
+     129: invokevirtual #355                // Method net/minecraft/class_5250.method_27692:(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;
+     132: iconst_0
+     133: invokevirtual #361                // Method net/minecraft/class_3324.method_43514:(Lnet/minecraft/class_2561;Z)V
+     136: aload_2
+     137: ldc           #41                 // String safio.cal
+     139: ldc           #188                // String #preview
+     141: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     144: iconst_1
+     145: if_icmpne     155
+     148: aload_0
+     149: aload_2
+     150: aload_1
+     151: invokestatic  #285                // Method sendSnapshot:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)V
+     154: return
+     155: aload_0
+     156: aload_2
+     157: invokestatic  #365                // Method resolvePending:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;)V
+     160: aload_2
+     161: ldc           #41                 // String safio.cal
+     163: ldc_w         #367                // String #auto
+     166: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     169: iconst_1
+     170: if_icmpne     186
+     173: aload_1
+     174: invokestatic  #217                // Method pe/safio/ui/CalendarRules.inHours:(Ljava/time/ZonedDateTime;)Z
+     177: ifeq          186
+     180: aload_0
+     181: aload_2
+     182: aload_1
+     183: invokestatic  #370                // Method dispatch:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)V
+     186: aload_0
+     187: aload_2
+     188: aload_1
+     189: invokestatic  #285                // Method sendSnapshot:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)V
+     192: return
+
+  public static void onServerStarted(net.minecraft.server.MinecraftServer);
+    Code:
+       0: aload_0
+       1: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       4: astore_1
+       5: aload_1
+       6: ldc           #41                 // String safio.cal
+       8: ldc_w         #378                // String #pending_slot
+      11: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      14: ifeq          86
+      17: aload_1
+      18: ldc           #41                 // String safio.cal
+      20: ldc_w         #380                // String #pending_day
+      23: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      26: istore_2
+      27: aload_1
+      28: ldc           #41                 // String safio.cal
+      30: ldc_w         #378                // String #pending_slot
+      33: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      36: istore_3
+      37: aload_1
+      38: ldc           #41                 // String safio.cal
+      40: ldc_w         #378                // String #pending_slot
+      43: iconst_0
+      44: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      47: aload_1
+      48: ldc           #41                 // String safio.cal
+      50: ldc_w         #380                // String #pending_day
+      53: iconst_0
+      54: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      57: aload_1
+      58: ldc           #41                 // String safio.cal
+      60: ldc_w         #382                // String #pending_end
+      63: iconst_0
+      64: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      67: getstatic     #384                // Field LOG:Lorg/slf4j/Logger;
+      70: ldc_w         #386                // String [SAFIO] Giro interrumpido j{} evento{}: no se acredit�. Se puede reintentar dentro de la ventana.
+      73: iload_2
+      74: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      77: iload_3
+      78: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      81: invokeinterface #392,  4          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V
+      86: return
+
+  private static void resolvePending(net.minecraft.server.MinecraftServer, net.minecraft.class_269);
+    Code:
+       0: aload_1
+       1: ldc           #41                 // String safio.cal
+       3: ldc_w         #378                // String #pending_slot
+       6: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+       9: istore_3
+      10: iload_3
+      11: ifne          15
+      14: return
+      15: aload_1
+      16: ldc           #41                 // String safio.cal
+      18: ldc_w         #394                // String #roulette_done
+      21: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      24: istore        4
+      26: iload         4
+      28: aload_1
+      29: ldc           #41                 // String safio.cal
+      31: ldc_w         #382                // String #pending_end
+      34: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      37: dup
+      38: istore_2
+      39: if_icmpne     154
+      42: aload_1
+      43: ldc           #41                 // String safio.cal
+      45: ldc_w         #396                // String #pending_created_at
+      48: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      51: istore        5
+      53: iload         5
+      55: ifle          153
+      58: invokestatic  #401                // Method pe/safio/ui/JornadaClock.now:()Ljava/time/ZonedDateTime;
+      61: invokevirtual #405                // Method java/time/ZonedDateTime.toEpochSecond:()J
+      64: iload         5
+      66: i2l
+      67: lsub
+      68: ldc2_w        #406                // long 6l
+      71: lcmp
+      72: iflt          153
+      75: aload_1
+      76: ldc_w         #409                // String safio.anim
+      79: ldc_w         #411                // String #solicitud
+      82: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      85: ifne          153
+      88: aload_1
+      89: ldc_w         #409                // String safio.anim
+      92: ldc_w         #413                // String #animando
+      95: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      98: ifne          153
+     101: getstatic     #384                // Field LOG:Lorg/slf4j/Logger;
+     104: ldc_w         #415                // String [SAFIO] Giro programado no arranc�: liberando la cola sin premio.
+     107: invokeinterface #418,  2          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;)V
+     112: aload_1
+     113: ldc           #41                 // String safio.cal
+     115: ldc_w         #378                // String #pending_slot
+     118: iconst_0
+     119: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     122: aload_1
+     123: ldc           #41                 // String safio.cal
+     125: ldc_w         #380                // String #pending_day
+     128: iconst_0
+     129: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     132: aload_1
+     133: ldc           #41                 // String safio.cal
+     135: ldc_w         #396                // String #pending_created_at
+     138: iconst_0
+     139: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     142: aload_1
+     143: ldc_w         #420                // String safio.ruleta
+     146: ldc_w         #422                // String #forzado
+     149: iconst_0
+     150: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     153: return
+     154: aload_1
+     155: ldc           #41                 // String safio.cal
+     157: ldc_w         #380                // String #pending_day
+     160: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     163: istore        5
+     165: aload_1
+     166: ldc_w         #420                // String safio.ruleta
+     169: ldc_w         #424                // String #resultado
+     172: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     175: istore        6
+     177: iload         5
+     179: invokestatic  #231                // Method pe/safio/ui/CalendarRules.slotsForDay:(I)Ljava/util/List;
+     182: invokeinterface #428,  1          // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+     187: iload_3
+     188: invokedynamic #441,  0            // InvokeDynamic #2:test:(I)Ljava/util/function/Predicate;
+     193: invokeinterface #447,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+     198: invokeinterface #451,  1          // InterfaceMethod java/util/stream/Stream.findFirst:()Ljava/util/Optional;
+     203: aconst_null
+     204: invokevirtual #457                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+     207: checkcast     #12                 // class pe/safio/ui/CalendarRules$Slot
+     210: astore        7
+     212: aload         7
+     214: ifnull        364
+     217: iload         6
+     219: aload         7
+     221: invokevirtual #460                // Method pe/safio/ui/CalendarRules$Slot.result:()I
+     224: if_icmpne     364
+     227: aload_1
+     228: ldc           #44                 // String safio.slots
+     230: iload         5
+     232: iload_3
+     233: invokestatic  #252                // Method slotKey:(II)Ljava/lang/String;
+     236: iconst_1
+     237: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     240: aload         7
+     242: invokevirtual #462                // Method pe/safio/ui/CalendarRules$Slot.difficulty:()I
+     245: ifle          361
+     248: aload_1
+     249: ldc           #47                 // String safio.mods
+     251: iload         5
+     253: aload         7
+     255: invokevirtual #462                // Method pe/safio/ui/CalendarRules$Slot.difficulty:()I
+     258: invokestatic  #195                // Method modifierKey:(II)Ljava/lang/String;
+     261: dup
+     262: astore        8
+     264: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     267: ifne          361
+     270: aload_1
+     271: ldc           #47                 // String safio.mods
+     273: aload         8
+     275: iconst_1
+     276: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     279: iload         5
+     281: aload         7
+     283: invokevirtual #462                // Method pe/safio/ui/CalendarRules$Slot.difficulty:()I
+     286: invokestatic  #466                // Method pe/safio/ui/DifficultyCatalog.get:(II)Lpe/safio/ui/DifficultyCatalog$Rule;
+     289: astore        9
+     291: aload         9
+     293: ifnull        304
+     296: aload         9
+     298: invokevirtual #468                // Method pe/safio/ui/DifficultyCatalog$Rule.name:()Ljava/lang/String;
+     301: goto          307
+     304: ldc_w         #470                // String Reservada para expansion futura
+     307: astore        10
+     309: aload_0
+     310: invokevirtual #331                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     313: iload         5
+     315: aload         7
+     317: invokevirtual #462                // Method pe/safio/ui/CalendarRules$Slot.difficulty:()I
+     320: aload         10
+     322: aload         9
+     324: ifnull        340
+     327: aload         9
+     329: invokevirtual #473                // Method pe/safio/ui/DifficultyCatalog$Rule.effect:()Ljava/lang/String;
+     332: invokedynamic #478,  0            // InvokeDynamic #3:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+     337: goto          343
+     340: ldc_w         #480                // String
+     343: invokedynamic #485,  0            // InvokeDynamic #4:makeConcatWithConstants:(IILjava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+     348: invokestatic  #106                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+     351: getstatic     #349                // Field net/minecraft/class_124.field_1065:Lnet/minecraft/class_124;
+     354: invokevirtual #355                // Method net/minecraft/class_5250.method_27692:(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;
+     357: iconst_0
+     358: invokevirtual #361                // Method net/minecraft/class_3324.method_43514:(Lnet/minecraft/class_2561;Z)V
+     361: goto          402
+     364: getstatic     #384                // Field LOG:Lorg/slf4j/Logger;
+     367: ldc_w         #487                // String [SAFIO] Resultado inesperado en giro programado. Dia {} evento {} resultado {}
+     370: iconst_3
+     371: anewarray     #4                  // class java/lang/Object
+     374: dup
+     375: iconst_0
+     376: iload         5
+     378: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     381: aastore
+     382: dup
+     383: iconst_1
+     384: iload_3
+     385: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     388: aastore
+     389: dup
+     390: iconst_2
+     391: iload         6
+     393: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     396: aastore
+     397: invokeinterface #490,  3          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;[Ljava/lang/Object;)V
+     402: aload_1
+     403: ldc           #41                 // String safio.cal
+     405: ldc_w         #378                // String #pending_slot
+     408: iconst_0
+     409: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     412: aload_1
+     413: ldc           #41                 // String safio.cal
+     415: ldc_w         #380                // String #pending_day
+     418: iconst_0
+     419: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     422: aload_1
+     423: ldc           #41                 // String safio.cal
+     425: ldc_w         #396                // String #pending_created_at
+     428: iconst_0
+     429: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     432: return
+
+  private static void dispatch(net.minecraft.server.MinecraftServer, net.minecraft.class_269, java.time.ZonedDateTime);
+    Code:
+       0: aload_1
+       1: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+       4: istore_3
+       5: iload_3
+       6: iconst_1
+       7: if_icmplt     16
+      10: iload_3
+      11: bipush        30
+      13: if_icmple     17
+      16: return
+      17: aload_1
+      18: ldc           #41                 // String safio.cal
+      20: ldc_w         #378                // String #pending_slot
+      23: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      26: ifeq          30
+      29: return
+      30: aload_1
+      31: ldc_w         #409                // String safio.anim
+      34: ldc_w         #413                // String #animando
+      37: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      40: ifeq          44
+      43: return
+      44: aload_1
+      45: ldc_w         #409                // String safio.anim
+      48: ldc_w         #411                // String #solicitud
+      51: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      54: ifeq          58
+      57: return
+      58: aload_1
+      59: ldc_w         #498                // String safio.estado
+      62: ldc_w         #500                // String #evento
+      65: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      68: ifeq          72
+      71: return
+      72: aload_1
+      73: ldc_w         #502                // String safio.live
+      76: ldc_w         #504                // String #type
+      79: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      82: ifeq          86
+      85: return
+      86: aload_0
+      87: invokevirtual #331                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+      90: invokevirtual #508                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+      93: invokeinterface #511,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      98: ifeq          102
+     101: return
+     102: aload_2
+     103: invokevirtual #224                // Method java/time/ZonedDateTime.getHour:()I
+     106: bipush        60
+     108: imul
+     109: aload_2
+     110: invokevirtual #227                // Method java/time/ZonedDateTime.getMinute:()I
+     113: iadd
+     114: istore        4
+     116: iload_3
+     117: invokestatic  #231                // Method pe/safio/ui/CalendarRules.slotsForDay:(I)Ljava/util/List;
+     120: invokeinterface #237,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     125: astore        5
+     127: aload         5
+     129: invokeinterface #243,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     134: ifeq          195
+     137: aload         5
+     139: invokeinterface #247,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     144: checkcast     #12                 // class pe/safio/ui/CalendarRules$Slot
+     147: astore        6
+     149: aload_1
+     150: ldc           #44                 // String safio.slots
+     152: iload_3
+     153: aload         6
+     155: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+     158: invokestatic  #252                // Method slotKey:(II)Ljava/lang/String;
+     161: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     164: iconst_1
+     165: if_icmpeq     127
+     168: aload         6
+     170: iload         4
+     172: bipush        8
+     174: invokestatic  #515                // Method pe/safio/ui/CalendarRules.withinWindow:(Lpe/safio/ui/CalendarRules$Slot;II)Z
+     177: ifne          183
+     180: goto          127
+     183: aload_0
+     184: aload_1
+     185: iload_3
+     186: aload         6
+     188: invokestatic  #519                // Method launchSlot:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;ILpe/safio/ui/CalendarRules$Slot;)Z
+     191: pop
+     192: goto          195
+     195: return
+
+  private static boolean launchSlot(net.minecraft.server.MinecraftServer, net.minecraft.class_269, int, pe.safio.ui.CalendarRules$Slot);
+    Code:
+       0: aload_1
+       1: ldc           #44                 // String safio.slots
+       3: iload_2
+       4: aload_3
+       5: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+       8: invokestatic  #252                // Method slotKey:(II)Ljava/lang/String;
+      11: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      14: iconst_1
+      15: if_icmpne     20
+      18: iconst_0
+      19: ireturn
+      20: aload_1
+      21: ldc           #41                 // String safio.cal
+      23: ldc_w         #378                // String #pending_slot
+      26: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      29: ifeq          34
+      32: iconst_0
+      33: ireturn
+      34: aload_1
+      35: ldc_w         #409                // String safio.anim
+      38: ldc_w         #413                // String #animando
+      41: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      44: ifeq          49
+      47: iconst_0
+      48: ireturn
+      49: aload_1
+      50: ldc_w         #498                // String safio.estado
+      53: ldc_w         #500                // String #evento
+      56: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      59: ifeq          64
+      62: iconst_0
+      63: ireturn
+      64: aload_1
+      65: ldc_w         #502                // String safio.live
+      68: ldc_w         #504                // String #type
+      71: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      74: ifeq          79
+      77: iconst_0
+      78: ireturn
+      79: aload_0
+      80: invokevirtual #331                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+      83: invokevirtual #508                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+      86: invokeinterface #511,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      91: ifeq          96
+      94: iconst_0
+      95: ireturn
+      96: aload_1
+      97: ldc           #41                 // String safio.cal
+      99: ldc_w         #394                // String #roulette_done
+     102: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     105: istore        4
+     107: aload_1
+     108: ldc           #41                 // String safio.cal
+     110: ldc_w         #378                // String #pending_slot
+     113: aload_3
+     114: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+     117: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     120: aload_1
+     121: ldc           #41                 // String safio.cal
+     123: ldc_w         #380                // String #pending_day
+     126: iload_2
+     127: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     130: aload_1
+     131: ldc           #41                 // String safio.cal
+     133: ldc_w         #382                // String #pending_end
+     136: iload         4
+     138: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     141: aload_1
+     142: ldc           #41                 // String safio.cal
+     144: ldc_w         #396                // String #pending_created_at
+     147: invokestatic  #401                // Method pe/safio/ui/JornadaClock.now:()Ljava/time/ZonedDateTime;
+     150: invokevirtual #405                // Method java/time/ZonedDateTime.toEpochSecond:()J
+     153: l2i
+     154: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     157: aload_1
+     158: ldc_w         #420                // String safio.ruleta
+     161: ldc_w         #422                // String #forzado
+     164: aload_3
+     165: invokevirtual #460                // Method pe/safio/ui/CalendarRules$Slot.result:()I
+     168: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     171: aload_1
+     172: ldc_w         #409                // String safio.anim
+     175: ldc_w         #411                // String #solicitud
+     178: iconst_1
+     179: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     182: iconst_1
+     183: ireturn
+
+  private static int executeSlot(net.minecraft.class_2168, int);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_2
+       8: aload_2
+       9: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      12: ifeq          32
+      15: aload_2
+      16: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      19: iconst_1
+      20: if_icmplt     32
+      23: aload_2
+      24: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      27: bipush        30
+      29: if_icmple     41
+      32: aload_0
+      33: ldc_w         #529                // String No hay jornada real activa. Usa /safio calendario iniciar durante el horario.
+      36: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      39: iconst_0
+      40: ireturn
+      41: aload_2
+      42: ldc           #41                 // String safio.cal
+      44: ldc           #188                // String #preview
+      46: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      49: iconst_1
+      50: if_icmpne     62
+      53: aload_0
+      54: ldc_w         #534                // String Termina el ensayo primero: /safio calendario ensayo terminar
+      57: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      60: iconst_0
+      61: ireturn
+      62: aload_2
+      63: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      66: invokestatic  #231                // Method pe/safio/ui/CalendarRules.slotsForDay:(I)Ljava/util/List;
+      69: invokeinterface #428,  1          // InterfaceMethod java/util/List.stream:()Ljava/util/stream/Stream;
+      74: iload_1
+      75: invokedynamic #539,  0            // InvokeDynamic #5:test:(I)Ljava/util/function/Predicate;
+      80: invokeinterface #447,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      85: invokeinterface #451,  1          // InterfaceMethod java/util/stream/Stream.findFirst:()Ljava/util/Optional;
+      90: aconst_null
+      91: invokevirtual #457                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      94: checkcast     #12                 // class pe/safio/ui/CalendarRules$Slot
+      97: astore_3
+      98: aload_3
+      99: ifnonnull     111
+     102: aload_0
+     103: ldc_w         #541                // String El evento no existe en esta jornada (p.ej. REVIIL el Dia 7).
+     106: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     109: iconst_0
+     110: ireturn
+     111: aload_0
+     112: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+     115: aload_2
+     116: aload_2
+     117: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+     120: aload_3
+     121: invokestatic  #519                // Method launchSlot:(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/class_269;ILpe/safio/ui/CalendarRules$Slot;)Z
+     124: istore        4
+     126: aload_0
+     127: iload         4
+     129: ifeq          144
+     132: aload_3
+     133: invokevirtual #267                // Method pe/safio/ui/CalendarRules$Slot.label:()Ljava/lang/String;
+     136: invokedynamic #544,  0            // InvokeDynamic #6:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+     141: goto          147
+     144: ldc_w         #546                // String No se pudo girar: sin jugadores, evento ocupado, o ya ejecutado.
+     147: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     150: iload         4
+     152: ifeq          159
+     155: iconst_1
+     156: goto          160
+     159: iconst_0
+     160: ireturn
+
+  private static void sendSnapshot(net.minecraft.server.MinecraftServer, net.minecraft.class_269, java.time.ZonedDateTime);
+    Code:
+       0: getstatic     #551                // Field snapshotSeconds:I
+       3: iconst_1
+       4: iadd
+       5: dup
+       6: putstatic     #551                // Field snapshotSeconds:I
+       9: iconst_5
+      10: if_icmpge     14
+      13: return
+      14: iconst_0
+      15: putstatic     #551                // Field snapshotSeconds:I
+      18: new           #553                // class pe/safio/ui/CalendarSnapshot
+      21: dup
+      22: aload_1
+      23: invokestatic  #207                // Method displayDay:(Lnet/minecraft/class_269;)I
+      26: aload_1
+      27: invokestatic  #555                // Method modifierCount:(Lnet/minecraft/class_269;)I
+      30: aload_1
+      31: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      34: aload_1
+      35: ldc           #41                 // String safio.cal
+      37: ldc_w         #367                // String #auto
+      40: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      43: iconst_1
+      44: if_icmpne     51
+      47: iconst_1
+      48: goto          52
+      51: iconst_0
+      52: aload_1
+      53: ldc           #41                 // String safio.cal
+      55: ldc           #188                // String #preview
+      57: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      60: iconst_1
+      61: if_icmpne     68
+      64: iconst_1
+      65: goto          69
+      68: iconst_0
+      69: aload_1
+      70: aload_2
+      71: invokestatic  #557                // Method nextEvent:(Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)Ljava/lang/String;
+      74: invokespecial #560                // Method pe/safio/ui/CalendarSnapshot."<init>":(IIZZZLjava/lang/String;)V
+      77: astore_3
+      78: aload_0
+      79: invokevirtual #331                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+      82: invokevirtual #508                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+      85: invokeinterface #237,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      90: astore        4
+      92: aload         4
+      94: invokeinterface #243,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      99: ifeq          137
+     102: aload         4
+     104: invokeinterface #247,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     109: checkcast     #562                // class net/minecraft/class_3222
+     112: astore        5
+     114: aload         5
+     116: getstatic     #566                // Field pe/safio/ui/CalendarSnapshot.ID:Lnet/minecraft/class_8710$class_9154;
+     119: invokestatic  #572                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.canSend:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710$class_9154;)Z
+     122: ifne          128
+     125: goto          92
+     128: aload         5
+     130: aload_3
+     131: invokestatic  #576                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.send:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710;)V
+     134: goto          92
+     137: return
+
+  private static void reply(net.minecraft.class_2168, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #592,  0            // InvokeDynamic #7:get:(Ljava/lang/String;)Ljava/util/function/Supplier;
+       7: iconst_0
+       8: invokevirtual #596                // Method net/minecraft/class_2168.method_9226:(Ljava/util/function/Supplier;Z)V
+      11: return
+
+  private static int status(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_1
+       8: aload_0
+       9: aload_1
+      10: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      13: aload_1
+      14: invokestatic  #555                // Method modifierCount:(Lnet/minecraft/class_269;)I
+      17: aload_1
+      18: ldc           #41                 // String safio.cal
+      20: ldc_w         #367                // String #auto
+      23: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      26: iconst_1
+      27: if_icmpne     36
+      30: ldc_w         #600                // String SI
+      33: goto          39
+      36: ldc_w         #602                // String NO
+      39: aload_1
+      40: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      43: aload_1
+      44: ldc           #41                 // String safio.cal
+      46: ldc           #188                // String #preview
+      48: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      51: iconst_1
+      52: if_icmpne     59
+      55: iconst_1
+      56: goto          60
+      59: iconst_0
+      60: invokedynamic #607,  0            // InvokeDynamic #8:makeConcatWithConstants:(IILjava/lang/String;ZZ)Ljava/lang/String;
+      65: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      68: aload_0
+      69: aload_1
+      70: invokestatic  #401                // Method pe/safio/ui/JornadaClock.now:()Ljava/time/ZonedDateTime;
+      73: invokestatic  #557                // Method nextEvent:(Lnet/minecraft/class_269;Ljava/time/ZonedDateTime;)Ljava/lang/String;
+      76: invokedynamic #610,  0            // InvokeDynamic #9:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      81: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      84: iconst_1
+      85: ireturn
+
+  private static int start(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_1
+       8: aload_1
+       9: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      12: ifeq          24
+      15: aload_0
+      16: ldc_w         #613                // String Calendario ya iniciado; no se borra progreso.
+      19: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      22: iconst_0
+      23: ireturn
+      24: aload_1
+      25: ldc           #41                 // String safio.cal
+      27: ldc           #202                // String #started
+      29: iconst_1
+      30: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      33: aload_1
+      34: ldc           #41                 // String safio.cal
+      36: ldc_w         #367                // String #auto
+      39: iconst_0
+      40: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      43: aload_0
+      44: ldc_w         #615                // String Calendario armado. La jornada 1 inicia al abrir entre 16:00 y 23:00 Lima. AUTO DESACTIVADO.
+      47: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      50: iconst_1
+      51: ireturn
+
+  private static int startNow(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_1
+       8: aload_1
+       9: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      12: ifeq          24
+      15: aload_0
+      16: ldc_w         #618                // String Ya iniciado. No se cambia un calendario existente.
+      19: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      22: iconst_0
+      23: ireturn
+      24: invokestatic  #401                // Method pe/safio/ui/JornadaClock.now:()Ljava/time/ZonedDateTime;
+      27: astore_2
+      28: aload_1
+      29: ldc           #41                 // String safio.cal
+      31: ldc           #202                // String #started
+      33: iconst_1
+      34: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      37: aload_1
+      38: ldc           #41                 // String safio.cal
+      40: ldc           #183                // String #day
+      42: iconst_1
+      43: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      46: aload_1
+      47: ldc           #41                 // String safio.cal
+      49: ldc_w         #297                // String #date
+      52: aload_2
+      53: invokevirtual #291                // Method java/time/ZonedDateTime.toLocalDate:()Ljava/time/LocalDate;
+      56: invokestatic  #295                // Method pe/safio/ui/CalendarRules.dateKey:(Ljava/time/LocalDate;)I
+      59: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      62: aload_1
+      63: ldc           #41                 // String safio.cal
+      65: ldc_w         #367                // String #auto
+      68: iconst_0
+      69: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      72: aload_1
+      73: ldc_w         #305                // String safio.dia
+      76: ldc_w         #307                // String #dia
+      79: iconst_1
+      80: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      83: aload_0
+      84: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+      87: invokevirtual #311                // Method net/minecraft/server/MinecraftServer.method_3734:()Lnet/minecraft/class_2170;
+      90: aload_0
+      91: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+      94: invokevirtual #315                // Method net/minecraft/server/MinecraftServer.method_3739:()Lnet/minecraft/class_2168;
+      97: iconst_4
+      98: invokevirtual #321                // Method net/minecraft/class_2168.method_9206:(I)Lnet/minecraft/class_2168;
+     101: ldc_w         #323                // String function safio:actualizar_fase
+     104: invokevirtual #327                // Method net/minecraft/class_2170.method_44252:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     107: aload_0
+     108: ldc_w         #620                // String ATENCION: jornada 1 INICIADA ahora (para pruebas). Se guarda en el mundo. AUTO apagado.
+     111: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     114: iconst_1
+     115: ireturn
+
+  private static int auto(net.minecraft.class_2168, boolean);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_2
+       8: aload_2
+       9: invokestatic  #209                // Method started:(Lnet/minecraft/class_269;)Z
+      12: ifne          24
+      15: aload_0
+      16: ldc_w         #625                // String Primero ejecuta /safio calendario iniciar
+      19: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      22: iconst_0
+      23: ireturn
+      24: aload_2
+      25: ldc           #41                 // String safio.cal
+      27: ldc_w         #367                // String #auto
+      30: iload_1
+      31: ifeq          38
+      34: iconst_1
+      35: goto          39
+      38: iconst_0
+      39: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      42: aload_0
+      43: iload_1
+      44: ifeq          53
+      47: ldc_w         #627                // String ACTIVADOS
+      50: goto          56
+      53: ldc_w         #629                // String DESACTIVADOS
+      56: invokedynamic #632,  0            // InvokeDynamic #10:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      61: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      64: iconst_1
+      65: ireturn
+
+  private static int preview(net.minecraft.class_2168, int);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_2
+       8: aload_2
+       9: ldc           #41                 // String safio.cal
+      11: ldc           #188                // String #preview
+      13: iconst_1
+      14: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      17: aload_2
+      18: ldc           #41                 // String safio.cal
+      20: ldc           #190                // String #preview_day
+      22: iload_1
+      23: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      26: aload_0
+      27: iload_1
+      28: invokedynamic #636,  0            // InvokeDynamic #11:makeConcatWithConstants:(I)Ljava/lang/String;
+      33: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      36: iconst_1
+      37: ireturn
+
+  private static int endPreview(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_1
+       8: aload_1
+       9: ldc           #41                 // String safio.cal
+      11: ldc           #188                // String #preview
+      13: iconst_0
+      14: invokestatic  #303                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+      17: aload_0
+      18: ldc_w         #639                // String Ensayo terminado; vuelves a la jornada real.
+      21: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      24: iconst_1
+      25: ireturn
+
+  private static int pending(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: invokevirtual #527                // Method net/minecraft/class_2168.method_9211:()Lnet/minecraft/server/MinecraftServer;
+       4: invokevirtual #281                // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       7: astore_1
+       8: aload_1
+       9: invokestatic  #192                // Method currentDay:(Lnet/minecraft/class_269;)I
+      12: istore_2
+      13: iload_2
+      14: iconst_1
+      15: if_icmplt     24
+      18: iload_2
+      19: bipush        30
+      21: if_icmple     33
+      24: aload_0
+      25: ldc_w         #642                // String No hay jornada real activa.
+      28: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+      31: iconst_1
+      32: ireturn
+      33: iload_2
+      34: invokestatic  #231                // Method pe/safio/ui/CalendarRules.slotsForDay:(I)Ljava/util/List;
+      37: astore_3
+      38: aload_3
+      39: invokeinterface #237,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      44: astore        4
+      46: aload         4
+      48: invokeinterface #243,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      53: ifeq          146
+      56: aload         4
+      58: invokeinterface #247,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      63: checkcast     #12                 // class pe/safio/ui/CalendarRules$Slot
+      66: astore        5
+      68: aload_0
+      69: ldc_w         #644                // String %02d:%02d %-17s %s
+      72: iconst_4
+      73: anewarray     #4                  // class java/lang/Object
+      76: dup
+      77: iconst_0
+      78: aload         5
+      80: invokevirtual #260                // Method pe/safio/ui/CalendarRules$Slot.hour:()I
+      83: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      86: aastore
+      87: dup
+      88: iconst_1
+      89: aload         5
+      91: invokevirtual #263                // Method pe/safio/ui/CalendarRules$Slot.minute:()I
+      94: invokestatic  #168                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      97: aastore
+      98: dup
+      99: iconst_2
+     100: aload         5
+     102: invokevirtual #267                // Method pe/safio/ui/CalendarRules$Slot.label:()Ljava/lang/String;
+     105: aastore
+     106: dup
+     107: iconst_3
+     108: aload_1
+     109: ldc           #44                 // String safio.slots
+     111: iload_2
+     112: aload         5
+     114: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+     117: invokestatic  #252                // Method slotKey:(II)Ljava/lang/String;
+     120: invokestatic  #185                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     123: iconst_1
+     124: if_icmpne     133
+     127: ldc_w         #646                // String HECHO
+     130: goto          136
+     133: ldc_w         #650                // String PENDIENTE
+     136: aastore
+     137: invokestatic  #174                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     140: invokestatic  #532                // Method reply:(Lnet/minecraft/class_2168;Ljava/lang/String;)V
+     143: goto          46
+     146: iconst_1
+     147: ireturn
+
+  private static net.minecraft.class_2561 lambda$reply$13(java.lang.String);
+    Code:
+       0: aload_0
+       1: invokedynamic #657,  0            // InvokeDynamic #12:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       6: invokestatic  #106                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+       9: getstatic     #660                // Field net/minecraft/class_124.field_1075:Lnet/minecraft/class_124;
+      12: invokevirtual #355                // Method net/minecraft/class_5250.method_27692:(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;
+      15: areturn
+
+  private static boolean lambda$executeSlot$12(int, pe.safio.ui.CalendarRules$Slot);
+    Code:
+       0: aload_1
+       1: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+       4: iload_0
+       5: if_icmpne     12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: ireturn
+
+  private static boolean lambda$resolvePending$11(int, pe.safio.ui.CalendarRules$Slot);
+    Code:
+       0: aload_1
+       1: invokevirtual #250                // Method pe/safio/ui/CalendarRules$Slot.id:()I
+       4: iload_0
+       5: if_icmpne     12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: ireturn
+
+  private static void lambda$init$10(com.mojang.brigadier.CommandDispatcher, net.minecraft.class_7157, net.minecraft.class_2170$class_5364);
+    Code:
+       0: aload_0
+       1: ldc_w         #666                // String safio
+       4: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+       7: invokedynamic #679,  0            // InvokeDynamic #13:test:()Ljava/util/function/Predicate;
+      12: invokevirtual #685                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.requires:(Ljava/util/function/Predicate;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      15: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      18: ldc_w         #687                // String calendario
+      21: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      24: ldc_w         #689                // String estado
+      27: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      30: invokedynamic #699,  0            // InvokeDynamic #14:run:()Lcom/mojang/brigadier/Command;
+      35: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      38: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      41: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      44: ldc_w         #709                // String iniciar
+      47: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      50: invokedynamic #714,  0            // InvokeDynamic #15:run:()Lcom/mojang/brigadier/Command;
+      55: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      58: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      61: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      64: ldc_w         #716                // String iniciar_ahora
+      67: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      70: invokedynamic #721,  0            // InvokeDynamic #16:run:()Lcom/mojang/brigadier/Command;
+      75: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      78: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+      81: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+      84: ldc_w         #723                // String automatico
+      87: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      90: ldc_w         #725                // String activar
+      93: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+      96: invokedynamic #730,  0            // InvokeDynamic #17:run:()Lcom/mojang/brigadier/Command;
+     101: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     104: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     107: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     110: ldc_w         #732                // String desactivar
+     113: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+     116: invokedynamic #737,  0            // InvokeDynamic #18:run:()Lcom/mojang/brigadier/Command;
+     121: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     124: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     127: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     130: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     133: ldc_w         #739                // String ensayo
+     136: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+     139: ldc_w         #741                // String dia
+     142: iconst_1
+     143: bipush        30
+     145: invokestatic  #747                // Method com/mojang/brigadier/arguments/IntegerArgumentType.integer:(II)Lcom/mojang/brigadier/arguments/IntegerArgumentType;
+     148: invokestatic  #751                // Method net/minecraft/class_2170.method_9244:(Ljava/lang/String;Lcom/mojang/brigadier/arguments/ArgumentType;)Lcom/mojang/brigadier/builder/RequiredArgumentBuilder;
+     151: invokedynamic #756,  0            // InvokeDynamic #19:run:()Lcom/mojang/brigadier/Command;
+     156: invokevirtual #759                // Method com/mojang/brigadier/builder/RequiredArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     159: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     162: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     165: ldc_w         #761                // String terminar
+     168: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+     171: invokedynamic #766,  0            // InvokeDynamic #20:run:()Lcom/mojang/brigadier/Command;
+     176: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     179: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     182: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     185: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     188: ldc_w         #768                // String pendientes
+     191: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+     194: invokedynamic #773,  0            // InvokeDynamic #21:run:()Lcom/mojang/brigadier/Command;
+     199: invokevirtual #703                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     202: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     205: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     208: ldc_w         #775                // String ejecutar
+     211: invokestatic  #670                // Method net/minecraft/class_2170.method_9247:(Ljava/lang/String;)Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;
+     214: ldc_w         #776                // String slot
+     217: iconst_1
+     218: bipush        9
+     220: invokestatic  #747                // Method com/mojang/brigadier/arguments/IntegerArgumentType.integer:(II)Lcom/mojang/brigadier/arguments/IntegerArgumentType;
+     223: invokestatic  #751                // Method net/minecraft/class_2170.method_9244:(Ljava/lang/String;Lcom/mojang/brigadier/arguments/ArgumentType;)Lcom/mojang/brigadier/builder/RequiredArgumentBuilder;
+     226: invokedynamic #781,  0            // InvokeDynamic #22:run:()Lcom/mojang/brigadier/Command;
+     231: invokevirtual #759                // Method com/mojang/brigadier/builder/RequiredArgumentBuilder.executes:(Lcom/mojang/brigadier/Command;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     234: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     237: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     240: invokevirtual #707                // Method com/mojang/brigadier/builder/LiteralArgumentBuilder.then:(Lcom/mojang/brigadier/builder/ArgumentBuilder;)Lcom/mojang/brigadier/builder/ArgumentBuilder;
+     243: checkcast     #681                // class com/mojang/brigadier/builder/LiteralArgumentBuilder
+     246: invokevirtual #786                // Method com/mojang/brigadier/CommandDispatcher.register:(Lcom/mojang/brigadier/builder/LiteralArgumentBuilder;)Lcom/mojang/brigadier/tree/LiteralCommandNode;
+     249: pop
+     250: return
+
+  private static int lambda$init$9(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: aload_0
+       8: ldc_w         #776                // String slot
+      11: invokestatic  #801                // Method com/mojang/brigadier/arguments/IntegerArgumentType.getInteger:(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)I
+      14: invokestatic  #803                // Method executeSlot:(Lnet/minecraft/class_2168;I)I
+      17: ireturn
+
+  private static int lambda$init$8(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: invokestatic  #806                // Method pending:(Lnet/minecraft/class_2168;)I
+      10: ireturn
+
+  private static int lambda$init$7(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: invokestatic  #808                // Method endPreview:(Lnet/minecraft/class_2168;)I
+      10: ireturn
+
+  private static int lambda$init$6(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: aload_0
+       8: ldc_w         #741                // String dia
+      11: invokestatic  #801                // Method com/mojang/brigadier/arguments/IntegerArgumentType.getInteger:(Lcom/mojang/brigadier/context/CommandContext;Ljava/lang/String;)I
+      14: invokestatic  #810                // Method preview:(Lnet/minecraft/class_2168;I)I
+      17: ireturn
+
+  private static int lambda$init$5(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: iconst_0
+       8: invokestatic  #812                // Method auto:(Lnet/minecraft/class_2168;Z)I
+      11: ireturn
+
+  private static int lambda$init$4(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: iconst_1
+       8: invokestatic  #812                // Method auto:(Lnet/minecraft/class_2168;Z)I
+      11: ireturn
+
+  private static int lambda$init$3(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: invokestatic  #814                // Method startNow:(Lnet/minecraft/class_2168;)I
+      10: ireturn
+
+  private static int lambda$init$2(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: invokestatic  #816                // Method start:(Lnet/minecraft/class_2168;)I
+      10: ireturn
+
+  private static int lambda$init$1(com.mojang.brigadier.context.CommandContext) throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    Code:
+       0: aload_0
+       1: invokevirtual #797                // Method com/mojang/brigadier/context/CommandContext.getSource:()Ljava/lang/Object;
+       4: checkcast     #317                // class net/minecraft/class_2168
+       7: invokestatic  #818                // Method status:(Lnet/minecraft/class_2168;)I
+      10: ireturn
+
+  private static boolean lambda$init$0(net.minecraft.class_2168);
+    Code:
+       0: aload_0
+       1: iconst_3
+       2: invokevirtual #822                // Method net/minecraft/class_2168.method_9259:(I)Z
+       5: ireturn
+
+  static {};
+    Code:
+       0: ldc_w         #825                // String SAFIO Calendar
+       3: invokestatic  #831                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/String;)Lorg/slf4j/Logger;
+       6: putstatic     #384                // Field LOG:Lorg/slf4j/Logger;
+       9: iconst_0
+      10: putstatic     #551                // Field snapshotSeconds:I
+      13: return
+}

@@ -1,0 +1,913 @@
+﻿Compiled from "WeekMissions.java"
+public final class pe.safio.ui.WeekMissions {
+  private static final java.lang.String MAINS = "safio.main7";
+
+  private static final java.lang.String SIDES = "safio.side7";
+
+  private static final java.lang.String UNLOCK = "safio.unlock";
+
+  private static int secondCounter;
+
+  private pe.safio.ui.WeekMissions();
+    Code:
+       0: aload_0
+       1: invokespecial #44                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void tick(net.minecraft.server.MinecraftServer, java.time.ZonedDateTime);
+    Code:
+       0: getstatic     #52                 // Field secondCounter:I
+       3: iconst_1
+       4: iadd
+       5: dup
+       6: putstatic     #52                 // Field secondCounter:I
+       9: iconst_5
+      10: if_icmpge     14
+      13: return
+      14: iconst_0
+      15: putstatic     #52                 // Field secondCounter:I
+      18: aload_0
+      19: invokevirtual #58                 // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+      22: astore_3
+      23: aload_3
+      24: ldc           #60                 // String safio.cal
+      26: ldc           #62                 // String #day
+      28: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      31: istore        4
+      33: aload_3
+      34: ldc           #60                 // String safio.cal
+      36: ldc           #68                 // String #preview
+      38: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      41: iconst_1
+      42: if_icmpne     56
+      45: aload_3
+      46: ldc           #60                 // String safio.cal
+      48: ldc           #70                 // String #preview_day
+      50: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      53: goto          57
+      56: iconst_0
+      57: istore        5
+      59: iload         5
+      61: ifle          69
+      64: iload         5
+      66: goto          71
+      69: iload         4
+      71: istore        6
+      73: aload_3
+      74: ldc           #60                 // String safio.cal
+      76: ldc           #74                 // String #started
+      78: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      81: iconst_1
+      82: if_icmpne     89
+      85: iconst_1
+      86: goto          90
+      89: iconst_0
+      90: istore        7
+      92: aload_1
+      93: invokestatic  #80                 // Method pe/safio/ui/CalendarRules.inHours:(Ljava/time/ZonedDateTime;)Z
+      96: istore        8
+      98: aload_3
+      99: ldc           #82                 // String safio.estado
+     101: ldc           #84                 // String #modo_prueba
+     103: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     106: iconst_1
+     107: if_icmpne     114
+     110: iconst_1
+     111: goto          115
+     114: iconst_0
+     115: istore        9
+     117: aload_3
+     118: ldc           #82                 // String safio.estado
+     120: ldc           #86                 // String #misiones
+     122: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     125: iconst_1
+     126: if_icmpne     133
+     129: iconst_1
+     130: goto          134
+     133: iconst_0
+     134: dup
+     135: istore_2
+     136: istore        10
+     138: aload_3
+     139: ldc           #82                 // String safio.estado
+     141: ldc           #88                 // String #submisiones
+     143: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     146: iconst_1
+     147: if_icmpeq     161
+     150: aload_3
+     151: ldc           #82                 // String safio.estado
+     153: ldc           #90                 // String #dia1_fecha
+     155: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     158: ifle          170
+     161: aload_3
+     162: ldc           #38                 // String safio.unlock
+     164: ldc           #94                 // String #d01
+     166: iconst_1
+     167: invokestatic  #98                 // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     170: iload         7
+     172: ifeq          226
+     175: iload         4
+     177: iconst_1
+     178: if_icmplt     226
+     181: iload         4
+     183: bipush        7
+     185: if_icmpgt     226
+     188: iload         8
+     190: ifeq          226
+     193: iload_2
+     194: ifeq          226
+     197: iload         5
+     199: ifne          226
+     202: aload_3
+     203: ldc           #38                 // String safio.unlock
+     205: ldc           #100                // String #d%02d
+     207: iconst_1
+     208: anewarray     #4                  // class java/lang/Object
+     211: dup
+     212: iconst_0
+     213: iload         4
+     215: invokestatic  #106                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     218: aastore
+     219: invokestatic  #112                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     222: iconst_1
+     223: invokestatic  #98                 // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     226: iconst_0
+     227: istore        11
+     229: iconst_1
+     230: istore        12
+     232: iload         12
+     234: bipush        7
+     236: if_icmpgt     286
+     239: aload_3
+     240: ldc           #38                 // String safio.unlock
+     242: ldc           #100                // String #d%02d
+     244: iconst_1
+     245: anewarray     #4                  // class java/lang/Object
+     248: dup
+     249: iconst_0
+     250: iload         12
+     252: invokestatic  #106                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     255: aastore
+     256: invokestatic  #112                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     259: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     262: iconst_1
+     263: if_icmpeq     269
+     266: goto          280
+     269: iload         11
+     271: iconst_1
+     272: iload         12
+     274: iconst_1
+     275: isub
+     276: ishl
+     277: ior
+     278: istore        11
+     280: iinc          12, 1
+     283: goto          232
+     286: lconst_0
+     287: lstore        12
+     289: iconst_1
+     290: istore        14
+     292: iload         14
+     294: bipush        7
+     296: if_icmpgt     376
+     299: iconst_1
+     300: istore        15
+     302: iload         15
+     304: iconst_5
+     305: if_icmpgt     370
+     308: aload_3
+     309: ldc           #114                // String safio.mods
+     311: ldc           #116                // String #j%02dd%02d
+     313: iconst_2
+     314: anewarray     #4                  // class java/lang/Object
+     317: dup
+     318: iconst_0
+     319: iload         14
+     321: invokestatic  #106                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     324: aastore
+     325: dup
+     326: iconst_1
+     327: iload         15
+     329: invokestatic  #106                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     332: aastore
+     333: invokestatic  #112                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     336: invokestatic  #66                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     339: iconst_1
+     340: if_icmpeq     346
+     343: goto          364
+     346: lload         12
+     348: lconst_1
+     349: iload         14
+     351: iconst_1
+     352: isub
+     353: iconst_5
+     354: imul
+     355: iload         15
+     357: iadd
+     358: iconst_1
+     359: isub
+     360: lshl
+     361: lor
+     362: lstore        12
+     364: iinc          15, 1
+     367: goto          302
+     370: iinc          14, 1
+     373: goto          292
+     376: invokestatic  #122                // Method pe/safio/ui/DifficultyEngine.previewDay:()I
+     379: istore        14
+     381: aload_0
+     382: invokevirtual #126                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     385: invokevirtual #132                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+     388: invokeinterface #138,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     393: astore        15
+     395: aload         15
+     397: invokeinterface #144,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     402: ifeq          948
+     405: aload         15
+     407: invokeinterface #148,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     412: checkcast     #150                // class net/minecraft/class_3222
+     415: astore        16
+     417: aload         16
+     419: invokevirtual #154                // Method net/minecraft/class_3222.method_7334:()Lcom/mojang/authlib/GameProfile;
+     422: invokevirtual #160                // Method com/mojang/authlib/GameProfile.getName:()Ljava/lang/String;
+     425: invokestatic  #166                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+     428: astore        19
+     430: aload_3
+     431: ldc           #32                 // String safio.main7
+     433: aload         19
+     435: invokestatic  #169                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;)I
+     438: istore        20
+     440: aload_3
+     441: ldc           #35                 // String safio.side7
+     443: aload         19
+     445: invokestatic  #169                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;)I
+     448: istore        21
+     450: aload_3
+     451: ldc           #171                // String safio.premio
+     453: aload         19
+     455: invokestatic  #169                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;)I
+     458: ifle          483
+     461: iload         20
+     463: iconst_1
+     464: iand
+     465: ifne          483
+     468: aload_3
+     469: ldc           #32                 // String safio.main7
+     471: aload         19
+     473: iload         20
+     475: iconst_1
+     476: ior
+     477: dup
+     478: istore        20
+     480: invokestatic  #174                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;I)V
+     483: iload         5
+     485: ifne          644
+     488: iload         7
+     490: ifeq          644
+     493: iload         4
+     495: iconst_2
+     496: if_icmplt     644
+     499: iload         4
+     501: bipush        6
+     503: if_icmpgt     644
+     506: iload         8
+     508: ifeq          644
+     511: iload_2
+     512: ifeq          644
+     515: iload         11
+     517: iconst_1
+     518: iload         4
+     520: iconst_1
+     521: isub
+     522: ishl
+     523: iand
+     524: ifeq          644
+     527: iload         20
+     529: iconst_1
+     530: iload         4
+     532: iconst_1
+     533: isub
+     534: ishl
+     535: iand
+     536: ifne          644
+     539: aload         16
+     541: iload         4
+     543: invokestatic  #178                // Method mainProgress:(Lnet/minecraft/class_3222;I)I
+     546: dup
+     547: istore        18
+     549: iload         4
+     551: invokestatic  #182                // Method pe/safio/ui/WeekMissionCatalog.main:(I)Lpe/safio/ui/WeekMissionCatalog$Main;
+     554: dup
+     555: astore        17
+     557: checkcast     #7                  // class pe/safio/ui/WeekMissionCatalog$Main
+     560: invokevirtual #185                // Method pe/safio/ui/WeekMissionCatalog$Main.total:()I
+     563: if_icmplt     644
+     566: aload_3
+     567: ldc           #32                 // String safio.main7
+     569: aload         19
+     571: iload         20
+     573: iconst_1
+     574: iload         4
+     576: iconst_1
+     577: isub
+     578: ishl
+     579: ior
+     580: dup
+     581: istore        20
+     583: invokestatic  #174                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;I)V
+     586: aload         16
+     588: getstatic     #191                // Field net/minecraft/class_1802.field_8687:Lnet/minecraft/class_1792;
+     591: aload         17
+     593: checkcast     #7                  // class pe/safio/ui/WeekMissionCatalog$Main
+     596: invokevirtual #194                // Method pe/safio/ui/WeekMissionCatalog$Main.emeralds:()I
+     599: invokestatic  #198                // Method reward:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;I)V
+     602: aload_0
+     603: invokevirtual #126                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     606: aload         16
+     608: invokevirtual #202                // Method net/minecraft/class_3222.method_5477:()Lnet/minecraft/class_2561;
+     611: invokeinterface #207,  1          // InterfaceMethod net/minecraft/class_2561.getString:()Ljava/lang/String;
+     616: iload         4
+     618: aload         17
+     620: checkcast     #7                  // class pe/safio/ui/WeekMissionCatalog$Main
+     623: invokevirtual #210                // Method pe/safio/ui/WeekMissionCatalog$Main.title:()Ljava/lang/String;
+     626: invokedynamic #222,  0            // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;ILjava/lang/String;)Ljava/lang/String;
+     631: invokestatic  #226                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+     634: getstatic     #232                // Field net/minecraft/class_124.field_1075:Lnet/minecraft/class_124;
+     637: invokevirtual #238                // Method net/minecraft/class_5250.method_27692:(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;
+     640: iconst_0
+     641: invokevirtual #242                // Method net/minecraft/class_3324.method_43514:(Lnet/minecraft/class_2561;Z)V
+     644: new           #244                // class java/util/ArrayList
+     647: dup
+     648: getstatic     #247                // Field pe/safio/ui/WeekMissionCatalog.SIDES:Ljava/util/List;
+     651: invokeinterface #250,  1          // InterfaceMethod java/util/List.size:()I
+     656: invokespecial #253                // Method java/util/ArrayList."<init>":(I)V
+     659: astore        22
+     661: getstatic     #247                // Field pe/safio/ui/WeekMissionCatalog.SIDES:Ljava/util/List;
+     664: invokeinterface #138,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     669: astore        23
+     671: aload         23
+     673: invokeinterface #144,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     678: ifeq          874
+     681: aload         23
+     683: invokeinterface #148,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     688: checkcast     #12                 // class pe/safio/ui/WeekMissionCatalog$Side
+     691: astore        24
+     693: aload         16
+     695: aload         24
+     697: invokevirtual #256                // Method pe/safio/ui/WeekMissionCatalog$Side.index:()I
+     700: invokestatic  #259                // Method sideProgress:(Lnet/minecraft/class_3222;I)I
+     703: istore        25
+     705: aload         22
+     707: aload         24
+     709: invokevirtual #262                // Method pe/safio/ui/WeekMissionCatalog$Side.target:()I
+     712: iload         25
+     714: invokestatic  #268                // Method java/lang/Math.min:(II)I
+     717: invokestatic  #106                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     720: invokevirtual #272                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+     723: pop
+     724: iload         5
+     726: ifne          671
+     729: iload         7
+     731: ifeq          671
+     734: iload         4
+     736: aload         24
+     738: invokevirtual #275                // Method pe/safio/ui/WeekMissionCatalog$Side.day:()I
+     741: if_icmplt     671
+     744: iload         4
+     746: bipush        30
+     748: if_icmpgt     671
+     751: iload         8
+     753: ifne          761
+     756: iload         9
+     758: ifeq          671
+     761: iload         11
+     763: iconst_1
+     764: aload         24
+     766: invokevirtual #275                // Method pe/safio/ui/WeekMissionCatalog$Side.day:()I
+     769: iconst_1
+     770: isub
+     771: ishl
+     772: iand
+     773: ifeq          671
+     776: iload         25
+     778: aload         24
+     780: invokevirtual #262                // Method pe/safio/ui/WeekMissionCatalog$Side.target:()I
+     783: if_icmplt     671
+     786: iload         21
+     788: iconst_1
+     789: aload         24
+     791: invokevirtual #256                // Method pe/safio/ui/WeekMissionCatalog$Side.index:()I
+     794: ishl
+     795: iand
+     796: ifeq          802
+     799: goto          671
+     802: aload_3
+     803: ldc           #35                 // String safio.side7
+     805: aload         19
+     807: iload         21
+     809: iconst_1
+     810: aload         24
+     812: invokevirtual #256                // Method pe/safio/ui/WeekMissionCatalog$Side.index:()I
+     815: ishl
+     816: ior
+     817: dup
+     818: istore        21
+     820: invokestatic  #174                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;I)V
+     823: aload         16
+     825: getstatic     #191                // Field net/minecraft/class_1802.field_8687:Lnet/minecraft/class_1792;
+     828: aload         24
+     830: invokevirtual #276                // Method pe/safio/ui/WeekMissionCatalog$Side.emeralds:()I
+     833: invokestatic  #198                // Method reward:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;I)V
+     836: aload         16
+     838: aload         24
+     840: invokevirtual #275                // Method pe/safio/ui/WeekMissionCatalog$Side.day:()I
+     843: aload         24
+     845: invokevirtual #277                // Method pe/safio/ui/WeekMissionCatalog$Side.title:()Ljava/lang/String;
+     848: aload         24
+     850: invokevirtual #276                // Method pe/safio/ui/WeekMissionCatalog$Side.emeralds:()I
+     853: invokedynamic #282,  0            // InvokeDynamic #1:makeConcatWithConstants:(ILjava/lang/String;I)Ljava/lang/String;
+     858: invokestatic  #226                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+     861: getstatic     #285                // Field net/minecraft/class_124.field_1060:Lnet/minecraft/class_124;
+     864: invokevirtual #238                // Method net/minecraft/class_5250.method_27692:(Lnet/minecraft/class_124;)Lnet/minecraft/class_5250;
+     867: iconst_0
+     868: invokevirtual #288                // Method net/minecraft/class_3222.method_7353:(Lnet/minecraft/class_2561;Z)V
+     871: goto          671
+     874: aload         16
+     876: getstatic     #294                // Field pe/safio/ui/WeekSnapshot.ID:Lnet/minecraft/class_8710$class_9154;
+     879: invokestatic  #300                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.canSend:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710$class_9154;)Z
+     882: ifne          888
+     885: goto          395
+     888: iload         6
+     890: iconst_1
+     891: if_icmplt     911
+     894: iload         6
+     896: bipush        7
+     898: if_icmpgt     911
+     901: aload         16
+     903: iload         6
+     905: invokestatic  #178                // Method mainProgress:(Lnet/minecraft/class_3222;I)I
+     908: goto          912
+     911: iconst_0
+     912: istore        24
+     914: aload         16
+     916: new           #290                // class pe/safio/ui/WeekSnapshot
+     919: dup
+     920: iload         6
+     922: iload         20
+     924: iload         11
+     926: iload         21
+     928: iload         24
+     930: lload         12
+     932: iload         14
+     934: aload         22
+     936: invokestatic  #304                // InterfaceMethod java/util/List.copyOf:(Ljava/util/Collection;)Ljava/util/List;
+     939: invokespecial #307                // Method pe/safio/ui/WeekSnapshot."<init>":(IIIIIJILjava/util/List;)V
+     942: invokestatic  #311                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.send:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710;)V
+     945: goto          395
+     948: return
+
+  private static int mainProgress(net.minecraft.class_3222, int);
+    Code:
+       0: iload_1
+       1: tableswitch   { // 1 to 6
+
+                     1: 40
+
+                     2: 48
+
+                     3: 56
+
+                     4: 66
+
+                     5: 76
+
+                     6: 100
+               default: 134
+          }
+      40: aload_0
+      41: iconst_0
+      42: invokestatic  #353                // Method enchantedDiamondPieces:(Lnet/minecraft/class_3222;Z)I
+      45: goto          135
+      48: aload_0
+      49: iconst_1
+      50: invokestatic  #353                // Method enchantedDiamondPieces:(Lnet/minecraft/class_3222;Z)I
+      53: goto          135
+      56: aload_0
+      57: getstatic     #356                // Field net/minecraft/class_1802.field_8536:Lnet/minecraft/class_1792;
+      60: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+      63: goto          135
+      66: aload_0
+      67: getstatic     #363                // Field net/minecraft/class_1802.field_8463:Lnet/minecraft/class_1792;
+      70: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+      73: goto          135
+      76: aload_0
+      77: getstatic     #366                // Field net/minecraft/class_1802.field_8782:Lnet/minecraft/class_1792;
+      80: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+      83: invokestatic  #370                // Method flag:(I)I
+      86: aload_0
+      87: getstatic     #373                // Field net/minecraft/class_1802.field_16308:Lnet/minecraft/class_1792;
+      90: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+      93: invokestatic  #370                // Method flag:(I)I
+      96: iadd
+      97: goto          135
+     100: aload_0
+     101: getstatic     #376                // Field net/minecraft/class_1802.field_8102:Lnet/minecraft/class_1792;
+     104: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     107: invokestatic  #370                // Method flag:(I)I
+     110: aload_0
+     111: getstatic     #379                // Field net/minecraft/class_1802.field_8107:Lnet/minecraft/class_1792;
+     114: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     117: bipush        32
+     119: if_icmplt     126
+     122: iconst_1
+     123: goto          127
+     126: iconst_0
+     127: invokestatic  #370                // Method flag:(I)I
+     130: iadd
+     131: goto          135
+     134: iconst_0
+     135: ireturn
+
+  private static int enchantedDiamondPieces(net.minecraft.class_3222, boolean);
+    Code:
+       0: iconst_4
+       1: anewarray     #382                // class net/minecraft/class_1792
+       4: dup
+       5: iconst_0
+       6: getstatic     #385                // Field net/minecraft/class_1802.field_8805:Lnet/minecraft/class_1792;
+       9: aastore
+      10: dup
+      11: iconst_1
+      12: getstatic     #388                // Field net/minecraft/class_1802.field_8058:Lnet/minecraft/class_1792;
+      15: aastore
+      16: dup
+      17: iconst_2
+      18: getstatic     #391                // Field net/minecraft/class_1802.field_8348:Lnet/minecraft/class_1792;
+      21: aastore
+      22: dup
+      23: iconst_3
+      24: getstatic     #394                // Field net/minecraft/class_1802.field_8285:Lnet/minecraft/class_1792;
+      27: aastore
+      28: astore_2
+      29: iconst_4
+      30: anewarray     #396                // class net/minecraft/class_1304
+      33: dup
+      34: iconst_0
+      35: getstatic     #400                // Field net/minecraft/class_1304.field_6169:Lnet/minecraft/class_1304;
+      38: aastore
+      39: dup
+      40: iconst_1
+      41: getstatic     #403                // Field net/minecraft/class_1304.field_6174:Lnet/minecraft/class_1304;
+      44: aastore
+      45: dup
+      46: iconst_2
+      47: getstatic     #406                // Field net/minecraft/class_1304.field_6172:Lnet/minecraft/class_1304;
+      50: aastore
+      51: dup
+      52: iconst_3
+      53: getstatic     #409                // Field net/minecraft/class_1304.field_6166:Lnet/minecraft/class_1304;
+      56: aastore
+      57: astore_3
+      58: iconst_0
+      59: istore        4
+      61: iconst_0
+      62: istore        5
+      64: iload         5
+      66: aload_2
+      67: arraylength
+      68: if_icmpge     136
+      71: aload_0
+      72: aload_3
+      73: iload         5
+      75: aaload
+      76: invokevirtual #417                // Method net/minecraft/class_3222.method_6118:(Lnet/minecraft/class_1304;)Lnet/minecraft/class_1799;
+      79: astore        6
+      81: aload         6
+      83: aload_2
+      84: iload         5
+      86: aaload
+      87: invokevirtual #423                // Method net/minecraft/class_1799.method_31574:(Lnet/minecraft/class_1792;)Z
+      90: ifne          96
+      93: goto          130
+      96: aload         6
+      98: getstatic     #429                // Field net/minecraft/class_9334.field_49633:Lnet/minecraft/class_9331;
+     101: getstatic     #435                // Field net/minecraft/class_9304.field_49385:Lnet/minecraft/class_9304;
+     104: invokevirtual #439                // Method net/minecraft/class_1799.method_57825:(Lnet/minecraft/class_9331;Ljava/lang/Object;)Ljava/lang/Object;
+     107: checkcast     #431                // class net/minecraft/class_9304
+     110: astore        7
+     112: iload_1
+     113: ifeq          127
+     116: aload         7
+     118: invokevirtual #442                // Method net/minecraft/class_9304.method_57543:()Z
+     121: ifeq          127
+     124: goto          130
+     127: iinc          4, 1
+     130: iinc          5, 1
+     133: goto          64
+     136: iload         4
+     138: ireturn
+
+  private static int sideProgress(net.minecraft.class_3222, int);
+    Code:
+       0: iload_1
+       1: tableswitch   { // 0 to 17
+
+                     0: 88
+
+                     1: 98
+
+                     2: 108
+
+                     3: 238
+
+                     4: 248
+
+                     5: 258
+
+                     6: 268
+
+                     7: 278
+
+                     8: 288
+
+                     9: 298
+
+                    10: 308
+
+                    11: 318
+
+                    12: 328
+
+                    13: 338
+
+                    14: 348
+
+                    15: 358
+
+                    16: 368
+
+                    17: 378
+               default: 388
+          }
+      88: aload_0
+      89: getstatic     #451                // Field net/minecraft/class_1802.field_8255:Lnet/minecraft/class_1792;
+      92: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+      95: goto          389
+      98: aload_0
+      99: getstatic     #454                // Field net/minecraft/class_1802.field_8810:Lnet/minecraft/class_1792;
+     102: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     105: goto          389
+     108: aload_0
+     109: getstatic     #457                // Field net/minecraft/class_1802.field_8789:Lnet/minecraft/class_1792;
+     112: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     115: aload_0
+     116: getstatic     #460                // Field net/minecraft/class_1802.field_8258:Lnet/minecraft/class_1792;
+     119: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     122: iadd
+     123: aload_0
+     124: getstatic     #463                // Field net/minecraft/class_1802.field_8893:Lnet/minecraft/class_1792;
+     127: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     130: iadd
+     131: aload_0
+     132: getstatic     #466                // Field net/minecraft/class_1802.field_8112:Lnet/minecraft/class_1792;
+     135: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     138: iadd
+     139: aload_0
+     140: getstatic     #469                // Field net/minecraft/class_1802.field_8368:Lnet/minecraft/class_1792;
+     143: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     146: iadd
+     147: aload_0
+     148: getstatic     #472                // Field net/minecraft/class_1802.field_8863:Lnet/minecraft/class_1792;
+     151: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     154: iadd
+     155: aload_0
+     156: getstatic     #475                // Field net/minecraft/class_1802.field_8754:Lnet/minecraft/class_1792;
+     159: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     162: iadd
+     163: aload_0
+     164: getstatic     #478                // Field net/minecraft/class_1802.field_8146:Lnet/minecraft/class_1792;
+     167: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     170: iadd
+     171: aload_0
+     172: getstatic     #481                // Field net/minecraft/class_1802.field_8390:Lnet/minecraft/class_1792;
+     175: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     178: iadd
+     179: aload_0
+     180: getstatic     #484                // Field net/minecraft/class_1802.field_8679:Lnet/minecraft/class_1792;
+     183: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     186: iadd
+     187: aload_0
+     188: getstatic     #487                // Field net/minecraft/class_1802.field_8349:Lnet/minecraft/class_1792;
+     191: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     194: iadd
+     195: aload_0
+     196: getstatic     #490                // Field net/minecraft/class_1802.field_8059:Lnet/minecraft/class_1792;
+     199: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     202: iadd
+     203: aload_0
+     204: getstatic     #493                // Field net/minecraft/class_1802.field_8417:Lnet/minecraft/class_1792;
+     207: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     210: iadd
+     211: aload_0
+     212: getstatic     #496                // Field net/minecraft/class_1802.field_8262:Lnet/minecraft/class_1792;
+     215: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     218: iadd
+     219: aload_0
+     220: getstatic     #499                // Field net/minecraft/class_1802.field_8286:Lnet/minecraft/class_1792;
+     223: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     226: iadd
+     227: aload_0
+     228: getstatic     #502                // Field net/minecraft/class_1802.field_8464:Lnet/minecraft/class_1792;
+     231: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     234: iadd
+     235: goto          389
+     238: aload_0
+     239: getstatic     #356                // Field net/minecraft/class_1802.field_8536:Lnet/minecraft/class_1792;
+     242: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     245: goto          389
+     248: aload_0
+     249: getstatic     #505                // Field net/minecraft/class_1802.field_8251:Lnet/minecraft/class_1792;
+     252: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     255: goto          389
+     258: aload_0
+     259: getstatic     #508                // Field net/minecraft/class_1802.field_8550:Lnet/minecraft/class_1792;
+     262: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     265: goto          389
+     268: aload_0
+     269: getstatic     #511                // Field net/minecraft/class_1802.field_8106:Lnet/minecraft/class_1792;
+     272: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     275: goto          389
+     278: aload_0
+     279: getstatic     #514                // Field net/minecraft/class_1802.field_8239:Lnet/minecraft/class_1792;
+     282: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     285: goto          389
+     288: aload_0
+     289: getstatic     #520                // Field net/minecraft/class_2246.field_10431:Lnet/minecraft/class_2248;
+     292: invokestatic  #524                // Method mined:(Lnet/minecraft/class_3222;Lnet/minecraft/class_2248;)I
+     295: goto          389
+     298: aload_0
+     299: getstatic     #527                // Field net/minecraft/class_1802.field_16306:Lnet/minecraft/class_1792;
+     302: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     305: goto          389
+     308: aload_0
+     309: getstatic     #530                // Field net/minecraft/class_1802.field_16311:Lnet/minecraft/class_1792;
+     312: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     315: goto          389
+     318: aload_0
+     319: getstatic     #533                // Field net/minecraft/class_1802.field_16539:Lnet/minecraft/class_1792;
+     322: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     325: goto          389
+     328: aload_0
+     329: getstatic     #536                // Field net/minecraft/class_1802.field_22420:Lnet/minecraft/class_1792;
+     332: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     335: goto          389
+     338: aload_0
+     339: getstatic     #539                // Field net/minecraft/class_1802.field_8378:Lnet/minecraft/class_1792;
+     342: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     345: goto          389
+     348: aload_0
+     349: getstatic     #542                // Field net/minecraft/class_1802.field_8280:Lnet/minecraft/class_1792;
+     352: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     355: goto          389
+     358: aload_0
+     359: getstatic     #545                // Field net/minecraft/class_1802.field_8868:Lnet/minecraft/class_1792;
+     362: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     365: goto          389
+     368: aload_0
+     369: getstatic     #548                // Field net/minecraft/class_1802.field_8529:Lnet/minecraft/class_1792;
+     372: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     375: goto          389
+     378: aload_0
+     379: getstatic     #551                // Field net/minecraft/class_1802.field_17346:Lnet/minecraft/class_1792;
+     382: invokestatic  #360                // Method crafted:(Lnet/minecraft/class_3222;Lnet/minecraft/class_1792;)I
+     385: goto          389
+     388: iconst_0
+     389: ireturn
+
+  private static int flag(int);
+    Code:
+       0: iload_0
+       1: ifle          8
+       4: iconst_1
+       5: goto          9
+       8: iconst_0
+       9: ireturn
+
+  private static int crafted(net.minecraft.class_3222, net.minecraft.class_1792);
+    Code:
+       0: aload_0
+       1: invokevirtual #558                // Method net/minecraft/class_3222.method_14248:()Lnet/minecraft/class_3442;
+       4: getstatic     #564                // Field net/minecraft/class_3468.field_15370:Lnet/minecraft/class_3448;
+       7: aload_1
+       8: invokevirtual #570                // Method net/minecraft/class_3442.method_15024:(Lnet/minecraft/class_3448;Ljava/lang/Object;)I
+      11: ireturn
+
+  private static int mined(net.minecraft.class_3222, net.minecraft.class_2248);
+    Code:
+       0: aload_0
+       1: invokevirtual #558                // Method net/minecraft/class_3222.method_14248:()Lnet/minecraft/class_3442;
+       4: getstatic     #574                // Field net/minecraft/class_3468.field_15427:Lnet/minecraft/class_3448;
+       7: aload_1
+       8: invokevirtual #570                // Method net/minecraft/class_3442.method_15024:(Lnet/minecraft/class_3448;Ljava/lang/Object;)I
+      11: ireturn
+
+  private static void reward(net.minecraft.class_3222, net.minecraft.class_1792, int);
+    Code:
+       0: iload_2
+       1: ifgt          5
+       4: return
+       5: new           #419                // class net/minecraft/class_1799
+       8: dup
+       9: aload_1
+      10: iload_2
+      11: invokespecial #578                // Method net/minecraft/class_1799."<init>":(Lnet/minecraft/class_1935;I)V
+      14: astore_3
+      15: aload_0
+      16: invokevirtual #582                // Method net/minecraft/class_3222.method_31548:()Lnet/minecraft/class_1661;
+      19: aload_3
+      20: invokevirtual #588                // Method net/minecraft/class_1661.method_7394:(Lnet/minecraft/class_1799;)Z
+      23: pop
+      24: aload_3
+      25: invokevirtual #591                // Method net/minecraft/class_1799.method_7960:()Z
+      28: ifne          38
+      31: aload_0
+      32: aload_3
+      33: iconst_0
+      34: invokevirtual #595                // Method net/minecraft/class_3222.method_7328:(Lnet/minecraft/class_1799;Z)Lnet/minecraft/class_1542;
+      37: pop
+      38: return
+
+  private static int read(net.minecraft.class_269, java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokestatic  #166                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+       6: invokestatic  #169                // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;)I
+       9: ireturn
+
+  private static int read(net.minecraft.class_269, java.lang.String, net.minecraft.class_9015);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #605                // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore_3
+       6: aload_3
+       7: ifnonnull     12
+      10: iconst_0
+      11: ireturn
+      12: aload_0
+      13: aload_2
+      14: aload_3
+      15: invokevirtual #611                // Method net/minecraft/class_269.method_55430:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9013;
+      18: astore        4
+      20: aload         4
+      22: ifnonnull     29
+      25: iconst_0
+      26: goto          36
+      29: aload         4
+      31: invokeinterface #616,  1          // InterfaceMethod net/minecraft/class_9013.method_55397:()I
+      36: ireturn
+
+  private static void write(net.minecraft.class_269, java.lang.String, java.lang.String, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokestatic  #166                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+       6: iload_3
+       7: invokestatic  #174                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Lnet/minecraft/class_9015;I)V
+      10: return
+
+  private static void write(net.minecraft.class_269, java.lang.String, net.minecraft.class_9015, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #605                // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore        4
+       7: aload         4
+       9: ifnonnull     31
+      12: aload_0
+      13: aload_1
+      14: getstatic     #625                // Field net/minecraft/class_274.field_1468:Lnet/minecraft/class_274;
+      17: aload_1
+      18: invokestatic  #226                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+      21: getstatic     #629                // Field net/minecraft/class_274$class_275.field_1472:Lnet/minecraft/class_274$class_275;
+      24: iconst_0
+      25: aconst_null
+      26: invokevirtual #633                // Method net/minecraft/class_269.method_1168:(Ljava/lang/String;Lnet/minecraft/class_274;Lnet/minecraft/class_2561;Lnet/minecraft/class_274$class_275;ZLnet/minecraft/class_9022;)Lnet/minecraft/class_266;
+      29: astore        4
+      31: aload_0
+      32: aload_2
+      33: aload         4
+      35: invokevirtual #637                // Method net/minecraft/class_269.method_1180:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9014;
+      38: iload_3
+      39: invokeinterface #642,  2          // InterfaceMethod net/minecraft/class_9014.method_55410:(I)V
+      44: return
+
+  static {};
+    Code:
+       0: iconst_0
+       1: putstatic     #52                 // Field secondCounter:I
+       4: return
+}

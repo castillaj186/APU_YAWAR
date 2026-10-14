@@ -1,0 +1,56 @@
+{
+  "roulette_appear": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_appear",
+        "stream": false
+      }
+    ]
+  },
+  "roulette_tick": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_tick",
+        "stream": false
+      }
+    ]
+  },
+  "roulette_result": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_result",
+        "stream": false
+      }
+    ]
+  },
+  "roulette_fill": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_fill",
+        "stream": false
+      }
+    ]
+  },
+  "roulette_finish": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_finish",
+        "stream": false
+      }
+    ]
+  },
+  "roulette_outro": {
+    "sounds": [
+      {
+        "name": "apuyawar_systems:roulette/roulette_outro",
+        "stream": false
+      }
+    ]
+  },
+  "inti_arrival": { "sounds": [{ "name": "apuyawar_systems:inti/inti_arrival", "stream": false }] },
+  "inti_glitch": { "sounds": [{ "name": "apuyawar_systems:inti/inti_glitch", "stream": false }] },
+  "inti_materialize": { "sounds": [{ "name": "apuyawar_systems:inti/inti_materialize", "stream": false }] },
+  "inti_reveal": { "sounds": [{ "name": "apuyawar_systems:inti/inti_reveal", "stream": false }] },
+  "inti_judgment": { "sounds": [{ "name": "apuyawar_systems:inti/inti_judgment", "stream": false }] },
+  "inti_fade": { "sounds": [{ "name": "apuyawar_systems:inti/inti_fade", "stream": false }] }
+}

@@ -1,0 +1,17 @@
+execute if score #tnt rj_k matches 1.. run function rojo:h/chk_tnt
+execute if score #cr rj_k matches 1.. run function rojo:h/chk_cr
+execute if score #ce rj_k matches 1.. run function rojo:h/chk_ce
+execute if score #cn rj_k matches 1.. run function rojo:h/chk_cn
+execute if score #zb rj_k matches 1.. run function rojo:h/chk_zb
+execute if score #sk rj_k matches 1.. run function rojo:h/chk_sk
+execute if score #sp rj_k matches 1.. run function rojo:h/chk_sp
+execute if score #ph rj_k matches 1.. run function rojo:h/chk_ph
+execute if score #hu rj_k matches 1.. run function rojo:h/chk_hu
+execute if score #wi rj_k matches 1.. run function rojo:h/chk_wi
+execute if score #vi rj_k matches 1.. run function rojo:h/chk_vi
+execute if score #st rj_k matches 1.. run function rojo:h/chk_st
+execute if score #hd rj_k matches 1.. run function rojo:h/chk_hd
+execute if score #mt rj_k matches 1.. run function rojo:h/chk_mt
+execute if score #gh rj_k matches 1.. run function rojo:h/chk_gh
+execute if score #vx rj_k matches 1.. run function rojo:h/chk_vx
+execute if score #rv rj_k matches 1.. run function rojo:h/chk_rv

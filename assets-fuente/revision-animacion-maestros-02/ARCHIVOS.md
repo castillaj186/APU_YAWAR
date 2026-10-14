@@ -1,0 +1,46 @@
+# Archivos nuevos de esta revisión
+
+Inventario relativo a assets-fuente/revision-animacion-maestros-02. Las carpetas respaldo y validacion-clases contienen copias y artefactos de comprobación. No forman parte del mod.
+
+- `ARCHIVOS.md`
+- `frames.csv`
+- `INFORME.md`
+- `manifest-integracion.json`
+- `preparar.ps1`
+- `PrepararMaestros.cs`
+- `respaldo/flash.png`
+- `respaldo/glow.png`
+- `respaldo/medallion.png`
+- `respaldo/pointer.png`
+- `respaldo/ring.png`
+- `respaldo/RouletteRenderer.java`
+- `respaldo/RouletteTimeline.java`
+- `respaldo/sector_amarillo.png`
+- `respaldo/sector_azul.png`
+- `respaldo/sector_morado.png`
+- `respaldo/sector_naranja.png`
+- `respaldo/sector_rojo.png`
+- `respaldo/sector_rosa.png`
+- `respaldo/sector_turquesa.png`
+- `respaldo/sector_verde.png`
+- `resultado_rojo_512.png`
+- `texturas/flash.png`
+- `texturas/glow.png`
+- `texturas/medallion.png`
+- `texturas/pointer.png`
+- `texturas/ring.png`
+- `texturas/sector_amarillo.png`
+- `texturas/sector_azul.png`
+- `texturas/sector_morado.png`
+- `texturas/sector_naranja.png`
+- `texturas/sector_rojo.png`
+- `texturas/sector_rosa.png`
+- `texturas/sector_turquesa.png`
+- `texturas/sector_verde.png`
+- `TimelineCheck.java`
+- `validacion-clases/pe/apuyawar/systems/roulette/RouletteTimeline.class`
+- `validacion-clases/TimelineCheck.class`
+- `ValidarMaestros.cs`
+- `vista_resultados.png`
+- `vista_secuencia.png`
+- `VistaAnimacion.cs`

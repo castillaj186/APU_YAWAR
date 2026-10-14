@@ -1,0 +1,1213 @@
+﻿Compiled from "NutriaLobby.java"
+public final class pe.safio.content.NutriaLobby {
+  public static final int Y;
+
+  public static final double ENTRY_X;
+
+  public static final double ENTRY_Y;
+
+  public static final double ENTRY_Z;
+
+  private static final int R;
+
+  private static final net.minecraft.class_2338 MARKER;
+
+  private static final net.minecraft.class_2338 FAUNA_MARKER;
+
+  private pe.safio.content.NutriaLobby();
+    Code:
+       0: aload_0
+       1: invokespecial #27                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static boolean exists(net.minecraft.class_3218);
+    Code:
+       0: aload_0
+       1: getstatic     #34                 // Field MARKER:Lnet/minecraft/class_2338;
+       4: invokevirtual #40                 // Method net/minecraft/class_3218.method_8320:(Lnet/minecraft/class_2338;)Lnet/minecraft/class_2680;
+       7: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+      10: invokevirtual #52                 // Method net/minecraft/class_2680.method_27852:(Lnet/minecraft/class_2248;)Z
+      13: ireturn
+
+  public static boolean populate(net.minecraft.class_3218);
+    Code:
+       0: aload_0
+       1: invokestatic  #56                 // Method exists:(Lnet/minecraft/class_3218;)Z
+       4: ifeq          23
+       7: aload_0
+       8: getstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+      11: invokevirtual #40                 // Method net/minecraft/class_3218.method_8320:(Lnet/minecraft/class_2338;)Lnet/minecraft/class_2680;
+      14: getstatic     #61                 // Field pe/safio/content/ContentBlocks.BLOQUE_CORAZON:Lnet/minecraft/class_2248;
+      17: invokevirtual #52                 // Method net/minecraft/class_2680.method_27852:(Lnet/minecraft/class_2248;)Z
+      20: ifeq          25
+      23: iconst_0
+      24: ireturn
+      25: bipush        10
+      27: anewarray     #63                 // class "[I"
+      30: dup
+      31: iconst_0
+      32: iconst_2
+      33: newarray       int
+      35: dup
+      36: iconst_0
+      37: bipush        -10
+      39: iastore
+      40: dup
+      41: iconst_1
+      42: bipush        -8
+      44: iastore
+      45: aastore
+      46: dup
+      47: iconst_1
+      48: iconst_2
+      49: newarray       int
+      51: dup
+      52: iconst_0
+      53: bipush        -12
+      55: iastore
+      56: dup
+      57: iconst_1
+      58: bipush        8
+      60: iastore
+      61: aastore
+      62: dup
+      63: iconst_2
+      64: iconst_2
+      65: newarray       int
+      67: dup
+      68: iconst_0
+      69: bipush        -6
+      71: iastore
+      72: dup
+      73: iconst_1
+      74: bipush        -20
+      76: iastore
+      77: aastore
+      78: dup
+      79: iconst_3
+      80: iconst_2
+      81: newarray       int
+      83: dup
+      84: iconst_0
+      85: iconst_5
+      86: iastore
+      87: dup
+      88: iconst_1
+      89: bipush        -19
+      91: iastore
+      92: aastore
+      93: dup
+      94: iconst_4
+      95: iconst_2
+      96: newarray       int
+      98: dup
+      99: iconst_0
+     100: bipush        12
+     102: iastore
+     103: dup
+     104: iconst_1
+     105: bipush        -6
+     107: iastore
+     108: aastore
+     109: dup
+     110: iconst_5
+     111: iconst_2
+     112: newarray       int
+     114: dup
+     115: iconst_0
+     116: bipush        -12
+     118: iastore
+     119: dup
+     120: iconst_1
+     121: bipush        15
+     123: iastore
+     124: aastore
+     125: dup
+     126: bipush        6
+     128: iconst_2
+     129: newarray       int
+     131: dup
+     132: iconst_0
+     133: bipush        10
+     135: iastore
+     136: dup
+     137: iconst_1
+     138: bipush        14
+     140: iastore
+     141: aastore
+     142: dup
+     143: bipush        7
+     145: iconst_2
+     146: newarray       int
+     148: dup
+     149: iconst_0
+     150: bipush        -16
+     152: iastore
+     153: dup
+     154: iconst_1
+     155: iconst_3
+     156: iastore
+     157: aastore
+     158: dup
+     159: bipush        8
+     161: iconst_2
+     162: newarray       int
+     164: dup
+     165: iconst_0
+     166: iconst_4
+     167: iastore
+     168: dup
+     169: iconst_1
+     170: bipush        12
+     172: iastore
+     173: aastore
+     174: dup
+     175: bipush        9
+     177: iconst_2
+     178: newarray       int
+     180: dup
+     181: iconst_0
+     182: bipush        17
+     184: iastore
+     185: dup
+     186: iconst_1
+     187: bipush        6
+     189: iastore
+     190: aastore
+     191: astore_1
+     192: getstatic     #69                 // Field pe/safio/content/ContentEntities.ALL:Ljava/util/List;
+     195: iconst_1
+     196: getstatic     #69                 // Field pe/safio/content/ContentEntities.ALL:Ljava/util/List;
+     199: invokeinterface #75,  1           // InterfaceMethod java/util/List.size:()I
+     204: invokeinterface #79,  3           // InterfaceMethod java/util/List.subList:(II)Ljava/util/List;
+     209: astore_2
+     210: bipush        10
+     212: anewarray     #81                 // class java/lang/String
+     215: dup
+     216: iconst_0
+     217: ldc           #83                 // String L�a - Jardinera
+     219: aastore
+     220: dup
+     221: iconst_1
+     222: ldc           #85                 // String Bubu - Nutria beb�
+     224: aastore
+     225: dup
+     226: iconst_2
+     227: ldc           #87                 // String Nico - Mercader
+     229: aastore
+     230: dup
+     231: iconst_3
+     232: ldc           #89                 // String Mia - M�sica
+     234: aastore
+     235: dup
+     236: iconst_4
+     237: ldc           #91                 // String Luna - Farol
+     239: aastore
+     240: dup
+     241: iconst_5
+     242: ldc           #93                 // String Menta - Gatito
+     244: aastore
+     245: dup
+     246: bipush        6
+     248: ldc           #95                 // String Nube - Lobito
+     250: aastore
+     251: dup
+     252: bipush        7
+     254: ldc           #97                 // String Coco - Carpincho
+     256: aastore
+     257: dup
+     258: bipush        8
+     260: ldc           #99                 // String Lavi - Conejito
+     262: aastore
+     263: dup
+     264: bipush        9
+     266: ldc           #101                // String P�o - Coral
+     268: aastore
+     269: astore_3
+     270: iconst_0
+     271: istore        4
+     273: iload         4
+     275: aload_2
+     276: invokeinterface #75,  1           // InterfaceMethod java/util/List.size:()I
+     281: if_icmpge     387
+     284: iload         4
+     286: aload_1
+     287: arraylength
+     288: if_icmpge     387
+     291: aload_2
+     292: iload         4
+     294: invokeinterface #109,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     299: checkcast     #111                // class net/minecraft/class_1299
+     302: aload_0
+     303: invokevirtual #115                // Method net/minecraft/class_1299.method_5883:(Lnet/minecraft/class_1937;)Lnet/minecraft/class_1297;
+     306: checkcast     #117                // class pe/safio/content/OtterEntity
+     309: astore        5
+     311: aload         5
+     313: ifnonnull     319
+     316: goto          381
+     319: aload         5
+     321: aload_1
+     322: iload         4
+     324: aaload
+     325: iconst_0
+     326: iaload
+     327: i2d
+     328: ldc2_w        #11                 // double 0.5d
+     331: dadd
+     332: ldc2_w        #14                 // double 177.0d
+     335: aload_1
+     336: iload         4
+     338: aaload
+     339: iconst_1
+     340: iaload
+     341: i2d
+     342: ldc2_w        #11                 // double 0.5d
+     345: dadd
+     346: fconst_0
+     347: fconst_0
+     348: invokevirtual #121                // Method pe/safio/content/OtterEntity.method_5808:(DDDFF)V
+     351: aload         5
+     353: aload_3
+     354: iload         4
+     356: aaload
+     357: invokestatic  #127                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+     360: invokevirtual #131                // Method pe/safio/content/OtterEntity.method_5665:(Lnet/minecraft/class_2561;)V
+     363: aload         5
+     365: iconst_1
+     366: invokevirtual #135                // Method pe/safio/content/OtterEntity.method_5880:(Z)V
+     369: aload         5
+     371: invokevirtual #138                // Method pe/safio/content/OtterEntity.method_5971:()V
+     374: aload_0
+     375: aload         5
+     377: invokevirtual #142                // Method net/minecraft/class_3218.method_8649:(Lnet/minecraft/class_1297;)Z
+     380: pop
+     381: iinc          4, 1
+     384: goto          273
+     387: aload_0
+     388: getstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+     391: invokevirtual #147                // Method net/minecraft/class_2338.method_10263:()I
+     394: getstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+     397: invokevirtual #150                // Method net/minecraft/class_2338.method_10264:()I
+     400: getstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+     403: invokevirtual #153                // Method net/minecraft/class_2338.method_10260:()I
+     406: getstatic     #61                 // Field pe/safio/content/ContentBlocks.BLOQUE_CORAZON:Lnet/minecraft/class_2248;
+     409: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     412: getstatic     #163                // Field pe/safio/content/SafioContent.LOG:Lorg/slf4j/Logger;
+     415: ldc           #165                // String Se instalaron los habitantes amistosos del lobby Nutria
+     417: invokeinterface #171,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+     422: iconst_1
+     423: ireturn
+
+  public static boolean isPopulated(net.minecraft.class_3218);
+    Code:
+       0: aload_0
+       1: invokestatic  #56                 // Method exists:(Lnet/minecraft/class_3218;)Z
+       4: ifeq          27
+       7: aload_0
+       8: getstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+      11: invokevirtual #40                 // Method net/minecraft/class_3218.method_8320:(Lnet/minecraft/class_2338;)Lnet/minecraft/class_2680;
+      14: getstatic     #61                 // Field pe/safio/content/ContentBlocks.BLOQUE_CORAZON:Lnet/minecraft/class_2248;
+      17: invokevirtual #52                 // Method net/minecraft/class_2680.method_27852:(Lnet/minecraft/class_2248;)Z
+      20: ifeq          27
+      23: iconst_1
+      24: goto          28
+      27: iconst_0
+      28: ireturn
+
+  public static boolean ensure(net.minecraft.class_3218);
+    Code:
+       0: aload_0
+       1: invokestatic  #56                 // Method exists:(Lnet/minecraft/class_3218;)Z
+       4: ifeq          9
+       7: iconst_0
+       8: ireturn
+       9: aload_0
+      10: invokestatic  #184                // Method construct:(Lnet/minecraft/class_3218;)V
+      13: iconst_1
+      14: ireturn
+
+  private static void place(net.minecraft.class_3218, int, int, int, net.minecraft.class_2248);
+    Code:
+       0: aload_0
+       1: new           #144                // class net/minecraft/class_2338
+       4: dup
+       5: iload_1
+       6: iload_2
+       7: iload_3
+       8: invokespecial #191                // Method net/minecraft/class_2338."<init>":(III)V
+      11: aload         4
+      13: invokevirtual #197                // Method net/minecraft/class_2248.method_9564:()Lnet/minecraft/class_2680;
+      16: iconst_3
+      17: invokevirtual #201                // Method net/minecraft/class_3218.method_8652:(Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z
+      20: pop
+      21: return
+
+  private static void pillar(net.minecraft.class_3218, int, int, int, int, net.minecraft.class_2248);
+    Code:
+       0: iload_3
+       1: istore        6
+       3: iload         6
+       5: iload         4
+       7: if_icmpgt     26
+      10: aload_0
+      11: iload_1
+      12: iload         6
+      14: iload_2
+      15: aload         5
+      17: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+      20: iinc          6, 1
+      23: goto          3
+      26: return
+
+  private static void fountain(net.minecraft.class_3218, int, int);
+    Code:
+       0: bipush        -3
+       2: istore_3
+       3: iload_3
+       4: iconst_3
+       5: if_icmpgt     104
+       8: bipush        -3
+      10: istore        4
+      12: iload         4
+      14: iconst_3
+      15: if_icmpgt     98
+      18: iload_3
+      19: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      22: iconst_3
+      23: if_icmpeq     35
+      26: iload         4
+      28: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      31: iconst_3
+      32: if_icmpne     55
+      35: aload_0
+      36: iload_1
+      37: iload_3
+      38: iadd
+      39: sipush        177
+      42: iload_2
+      43: iload         4
+      45: iadd
+      46: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+      49: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+      52: goto          92
+      55: iload_3
+      56: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      59: iconst_2
+      60: if_icmpgt     92
+      63: iload         4
+      65: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      68: iconst_2
+      69: if_icmple     75
+      72: goto          92
+      75: aload_0
+      76: iload_1
+      77: iload_3
+      78: iadd
+      79: sipush        177
+      82: iload_2
+      83: iload         4
+      85: iadd
+      86: getstatic     #219                // Field net/minecraft/class_2246.field_10382:Lnet/minecraft/class_2248;
+      89: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+      92: iinc          4, 1
+      95: goto          12
+      98: iinc          3, 1
+     101: goto          3
+     104: aload_0
+     105: iload_1
+     106: iload_2
+     107: sipush        177
+     110: sipush        180
+     113: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+     116: invokestatic  #221                // Method pillar:(Lnet/minecraft/class_3218;IIIILnet/minecraft/class_2248;)V
+     119: aload_0
+     120: iload_1
+     121: sipush        181
+     124: iload_2
+     125: getstatic     #224                // Field net/minecraft/class_2246.field_10174:Lnet/minecraft/class_2248;
+     128: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     131: iconst_4
+     132: anewarray     #63                 // class "[I"
+     135: dup
+     136: iconst_0
+     137: iconst_2
+     138: newarray       int
+     140: dup
+     141: iconst_0
+     142: iconst_1
+     143: iastore
+     144: dup
+     145: iconst_1
+     146: iconst_0
+     147: iastore
+     148: aastore
+     149: dup
+     150: iconst_1
+     151: iconst_2
+     152: newarray       int
+     154: dup
+     155: iconst_0
+     156: iconst_m1
+     157: iastore
+     158: dup
+     159: iconst_1
+     160: iconst_0
+     161: iastore
+     162: aastore
+     163: dup
+     164: iconst_2
+     165: iconst_2
+     166: newarray       int
+     168: dup
+     169: iconst_0
+     170: iconst_0
+     171: iastore
+     172: dup
+     173: iconst_1
+     174: iconst_1
+     175: iastore
+     176: aastore
+     177: dup
+     178: iconst_3
+     179: iconst_2
+     180: newarray       int
+     182: dup
+     183: iconst_0
+     184: iconst_0
+     185: iastore
+     186: dup
+     187: iconst_1
+     188: iconst_m1
+     189: iastore
+     190: aastore
+     191: astore_3
+     192: aload_3
+     193: arraylength
+     194: istore        4
+     196: iconst_0
+     197: istore        5
+     199: iload         5
+     201: iload         4
+     203: if_icmpge     244
+     206: aload_3
+     207: iload         5
+     209: aaload
+     210: astore        6
+     212: aload_0
+     213: iload_1
+     214: aload         6
+     216: iconst_0
+     217: iaload
+     218: iconst_3
+     219: imul
+     220: iadd
+     221: sipush        178
+     224: iload_2
+     225: aload         6
+     227: iconst_1
+     228: iaload
+     229: iconst_3
+     230: imul
+     231: iadd
+     232: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     235: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     238: iinc          5, 1
+     241: goto          199
+     244: return
+
+  private static void littleTree(net.minecraft.class_3218, int, int);
+    Code:
+       0: iconst_1
+       1: istore_3
+       2: iload_3
+       3: iconst_5
+       4: if_icmpgt     27
+       7: aload_0
+       8: iload_1
+       9: sipush        176
+      12: iload_3
+      13: iadd
+      14: iload_2
+      15: getstatic     #234                // Field pe/safio/content/ContentBlocks.TRONCO:Lnet/minecraft/class_2248;
+      18: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+      21: iinc          3, 1
+      24: goto          2
+      27: bipush        -3
+      29: istore_3
+      30: iload_3
+      31: iconst_3
+      32: if_icmpgt     137
+      35: bipush        -3
+      37: istore        4
+      39: iload         4
+      41: iconst_3
+      42: if_icmpgt     131
+      45: iconst_4
+      46: istore        5
+      48: iload         5
+      50: bipush        7
+      52: if_icmpgt     125
+      55: iload_3
+      56: iload_3
+      57: imul
+      58: iload         4
+      60: iload         4
+      62: imul
+      63: iadd
+      64: iload         5
+      66: iconst_5
+      67: isub
+      68: iload         5
+      70: iconst_5
+      71: isub
+      72: imul
+      73: iconst_2
+      74: imul
+      75: iadd
+      76: bipush        11
+      78: if_icmpgt     119
+      81: iload_3
+      82: ifne          99
+      85: iload         4
+      87: ifne          99
+      90: iload         5
+      92: iconst_5
+      93: if_icmpgt     99
+      96: goto          119
+      99: aload_0
+     100: iload_1
+     101: iload_3
+     102: iadd
+     103: sipush        176
+     106: iload         5
+     108: iadd
+     109: iload_2
+     110: iload         4
+     112: iadd
+     113: getstatic     #237                // Field pe/safio/content/ContentBlocks.HOJAS:Lnet/minecraft/class_2248;
+     116: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     119: iinc          5, 1
+     122: goto          48
+     125: iinc          4, 1
+     128: goto          39
+     131: iinc          3, 1
+     134: goto          30
+     137: aload_0
+     138: iload_1
+     139: sipush        184
+     142: iload_2
+     143: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     146: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     149: return
+
+  public static void construct(net.minecraft.class_3218);
+    Code:
+       0: getstatic     #163                // Field pe/safio/content/SafioContent.LOG:Lorg/slf4j/Logger;
+       3: ldc           #241                // String Construyendo lobby Nutria una sola vez (53x53)
+       5: invokeinterface #171,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+      10: bipush        -26
+      12: istore        4
+      14: iload         4
+      16: bipush        26
+      18: if_icmpgt     188
+      21: bipush        -26
+      23: istore_3
+      24: iload_3
+      25: bipush        26
+      27: if_icmpgt     182
+      30: iload         4
+      32: iload         4
+      34: imul
+      35: iload_3
+      36: iload_3
+      37: imul
+      38: iadd
+      39: istore_2
+      40: iload_2
+      41: sipush        676
+      44: if_icmple     50
+      47: goto          176
+      50: iload         4
+      52: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      55: iconst_3
+      56: if_icmple     67
+      59: iload_3
+      60: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+      63: iconst_3
+      64: if_icmpgt     73
+      67: getstatic     #244                // Field pe/safio/content/ContentBlocks.TABLONES:Lnet/minecraft/class_2248;
+      70: goto          76
+      73: getstatic     #247                // Field pe/safio/content/ContentBlocks.PRADERA:Lnet/minecraft/class_2248;
+      76: dup
+      77: astore        5
+      79: astore        6
+      81: iload_2
+      82: sipush        576
+      85: if_icmple     93
+      88: getstatic     #250                // Field pe/safio/content/ContentBlocks.LADRILLOS:Lnet/minecraft/class_2248;
+      91: astore        5
+      93: iload         4
+      95: iload         4
+      97: imul
+      98: iload_3
+      99: iload_3
+     100: imul
+     101: iadd
+     102: bipush        81
+     104: if_icmpge     112
+     107: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+     110: astore        5
+     112: aload_0
+     113: iload         4
+     115: sipush        176
+     118: iload_3
+     119: aload         5
+     121: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     124: iload_2
+     125: sipush        625
+     128: if_icmpge     144
+     131: aload_0
+     132: iload         4
+     134: sipush        175
+     137: iload_3
+     138: getstatic     #253                // Field net/minecraft/class_2246.field_9978:Lnet/minecraft/class_2248;
+     141: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     144: iload_2
+     145: sipush        576
+     148: if_icmple     176
+     151: iload         4
+     153: iload_3
+     154: iadd
+     155: iconst_3
+     156: iand
+     157: ifeq          163
+     160: goto          176
+     163: aload_0
+     164: iload         4
+     166: sipush        177
+     169: iload_3
+     170: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     173: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     176: iinc          3, 1
+     179: goto          24
+     182: iinc          4, 1
+     185: goto          14
+     188: bipush        -7
+     190: istore        4
+     192: iload         4
+     194: bipush        7
+     196: if_icmpgt     289
+     199: bipush        -7
+     201: istore_3
+     202: iload_3
+     203: bipush        7
+     205: if_icmpgt     283
+     208: iload         4
+     210: iload         4
+     212: imul
+     213: iload_3
+     214: iload_3
+     215: imul
+     216: iadd
+     217: istore_2
+     218: iload_2
+     219: bipush        49
+     221: if_icmpgt     243
+     224: iload_2
+     225: bipush        36
+     227: if_icmplt     243
+     230: aload_0
+     231: iload         4
+     233: sipush        176
+     236: iload_3
+     237: getstatic     #250                // Field pe/safio/content/ContentBlocks.LADRILLOS:Lnet/minecraft/class_2248;
+     240: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     243: iload         4
+     245: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     248: iload_3
+     249: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     252: if_icmpne     277
+     255: iload_2
+     256: bipush        28
+     258: if_icmplt     264
+     261: goto          277
+     264: aload_0
+     265: iload         4
+     267: sipush        176
+     270: iload_3
+     271: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     274: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     277: iinc          3, 1
+     280: goto          202
+     283: iinc          4, 1
+     286: goto          192
+     289: iconst_4
+     290: anewarray     #63                 // class "[I"
+     293: dup
+     294: iconst_0
+     295: iconst_2
+     296: newarray       int
+     298: dup
+     299: iconst_0
+     300: bipush        -14
+     302: iastore
+     303: dup
+     304: iconst_1
+     305: bipush        -14
+     307: iastore
+     308: aastore
+     309: dup
+     310: iconst_1
+     311: iconst_2
+     312: newarray       int
+     314: dup
+     315: iconst_0
+     316: bipush        14
+     318: iastore
+     319: dup
+     320: iconst_1
+     321: bipush        -14
+     323: iastore
+     324: aastore
+     325: dup
+     326: iconst_2
+     327: iconst_2
+     328: newarray       int
+     330: dup
+     331: iconst_0
+     332: bipush        -14
+     334: iastore
+     335: dup
+     336: iconst_1
+     337: bipush        14
+     339: iastore
+     340: aastore
+     341: dup
+     342: iconst_3
+     343: iconst_2
+     344: newarray       int
+     346: dup
+     347: iconst_0
+     348: bipush        14
+     350: iastore
+     351: dup
+     352: iconst_1
+     353: bipush        14
+     355: iastore
+     356: aastore
+     357: astore        5
+     359: aload         5
+     361: arraylength
+     362: istore_3
+     363: iconst_0
+     364: istore_1
+     365: iload_1
+     366: iload_3
+     367: if_icmpge     473
+     370: aload         5
+     372: iload_1
+     373: aaload
+     374: astore        6
+     376: aload         6
+     378: iconst_0
+     379: iaload
+     380: istore        7
+     382: aload         6
+     384: iconst_1
+     385: iaload
+     386: istore        8
+     388: bipush        -5
+     390: istore        9
+     392: iload         9
+     394: iconst_5
+     395: if_icmpgt     459
+     398: bipush        -5
+     400: istore        10
+     402: iload         10
+     404: iconst_5
+     405: if_icmpgt     453
+     408: iload         9
+     410: iload         9
+     412: imul
+     413: iload         10
+     415: iload         10
+     417: imul
+     418: iadd
+     419: bipush        25
+     421: if_icmple     427
+     424: goto          447
+     427: aload_0
+     428: iload         7
+     430: iload         9
+     432: iadd
+     433: sipush        176
+     436: iload         8
+     438: iload         10
+     440: iadd
+     441: getstatic     #244                // Field pe/safio/content/ContentBlocks.TABLONES:Lnet/minecraft/class_2248;
+     444: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     447: iinc          10, 1
+     450: goto          402
+     453: iinc          9, 1
+     456: goto          392
+     459: aload_0
+     460: iload         7
+     462: iload         8
+     464: invokestatic  #255                // Method littleTree:(Lnet/minecraft/class_3218;II)V
+     467: iinc          1, 1
+     470: goto          365
+     473: aload_0
+     474: bipush        -15
+     476: iconst_0
+     477: invokestatic  #257                // Method fountain:(Lnet/minecraft/class_3218;II)V
+     480: aload_0
+     481: bipush        15
+     483: iconst_0
+     484: invokestatic  #257                // Method fountain:(Lnet/minecraft/class_3218;II)V
+     487: bipush        -7
+     489: istore        6
+     491: iload         6
+     493: bipush        7
+     495: if_icmpgt     615
+     498: bipush        -24
+     500: istore_3
+     501: iload_3
+     502: bipush        -12
+     504: if_icmpgt     609
+     507: iload         6
+     509: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     512: bipush        7
+     514: if_icmpgt     530
+     517: aload_0
+     518: iload         6
+     520: sipush        176
+     523: iload_3
+     524: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+     527: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     530: iload         6
+     532: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     535: bipush        6
+     537: if_icmpgt     565
+     540: iload_3
+     541: bipush        -23
+     543: if_icmplt     565
+     546: iload_3
+     547: bipush        -13
+     549: if_icmpgt     565
+     552: aload_0
+     553: iload         6
+     555: sipush        183
+     558: iload_3
+     559: getstatic     #250                // Field pe/safio/content/ContentBlocks.LADRILLOS:Lnet/minecraft/class_2248;
+     562: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     565: iload         6
+     567: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     570: bipush        7
+     572: if_icmpgt     603
+     575: iload_3
+     576: bipush        -24
+     578: if_icmpeq     590
+     581: iload_3
+     582: bipush        -12
+     584: if_icmpeq     590
+     587: goto          603
+     590: aload_0
+     591: iload         6
+     593: sipush        184
+     596: iload_3
+     597: getstatic     #244                // Field pe/safio/content/ContentBlocks.TABLONES:Lnet/minecraft/class_2248;
+     600: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     603: iinc          3, 1
+     606: goto          501
+     609: iinc          6, 1
+     612: goto          491
+     615: iconst_2
+     616: newarray       int
+     618: dup
+     619: iconst_0
+     620: bipush        -6
+     622: iastore
+     623: dup
+     624: iconst_1
+     625: bipush        6
+     627: iastore
+     628: astore        6
+     630: aload         6
+     632: arraylength
+     633: istore_3
+     634: iconst_0
+     635: istore_1
+     636: iload_1
+     637: iload_3
+     638: if_icmpge     727
+     641: aload         6
+     643: iload_1
+     644: iaload
+     645: istore        7
+     647: iconst_2
+     648: newarray       int
+     650: dup
+     651: iconst_0
+     652: bipush        -22
+     654: iastore
+     655: dup
+     656: iconst_1
+     657: bipush        -14
+     659: iastore
+     660: astore        8
+     662: aload         8
+     664: arraylength
+     665: istore        9
+     667: iconst_0
+     668: istore        10
+     670: iload         10
+     672: iload         9
+     674: if_icmpge     721
+     677: aload         8
+     679: iload         10
+     681: iaload
+     682: istore        11
+     684: aload_0
+     685: iload         7
+     687: iload         11
+     689: sipush        177
+     692: sipush        183
+     695: getstatic     #234                // Field pe/safio/content/ContentBlocks.TRONCO:Lnet/minecraft/class_2248;
+     698: invokestatic  #221                // Method pillar:(Lnet/minecraft/class_3218;IIIILnet/minecraft/class_2248;)V
+     701: aload_0
+     702: iload         7
+     704: sipush        183
+     707: iload         11
+     709: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     712: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     715: iinc          10, 1
+     718: goto          670
+     721: iinc          1, 1
+     724: goto          636
+     727: bipush        -6
+     729: istore        7
+     731: iload         7
+     733: bipush        6
+     735: if_icmpgt     797
+     738: bipush        -23
+     740: istore_3
+     741: iload_3
+     742: bipush        -13
+     744: if_icmpgt     791
+     747: iload         7
+     749: invokestatic  #214                // Method java/lang/Math.abs:(I)I
+     752: bipush        6
+     754: if_icmpeq     772
+     757: iload_3
+     758: bipush        -23
+     760: if_icmpeq     772
+     763: iload_3
+     764: bipush        -13
+     766: if_icmpeq     772
+     769: goto          785
+     772: aload_0
+     773: iload         7
+     775: sipush        185
+     778: iload_3
+     779: getstatic     #237                // Field pe/safio/content/ContentBlocks.HOJAS:Lnet/minecraft/class_2248;
+     782: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     785: iinc          3, 1
+     788: goto          741
+     791: iinc          7, 1
+     794: goto          731
+     797: iconst_2
+     798: newarray       int
+     800: dup
+     801: iconst_0
+     802: bipush        -3
+     804: iastore
+     805: dup
+     806: iconst_1
+     807: iconst_3
+     808: iastore
+     809: astore        7
+     811: aload         7
+     813: arraylength
+     814: istore        8
+     816: iconst_0
+     817: istore        9
+     819: iload         9
+     821: iload         8
+     823: if_icmpge     856
+     826: aload         7
+     828: iload         9
+     830: iaload
+     831: istore        10
+     833: aload_0
+     834: iload         10
+     836: bipush        -12
+     838: sipush        177
+     841: sipush        180
+     844: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+     847: invokestatic  #221                // Method pillar:(Lnet/minecraft/class_3218;IIIILnet/minecraft/class_2248;)V
+     850: iinc          9, 1
+     853: goto          819
+     856: bipush        -3
+     858: istore        7
+     860: iload         7
+     862: iconst_3
+     863: if_icmpgt     886
+     866: aload_0
+     867: iload         7
+     869: sipush        181
+     872: bipush        -12
+     874: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     877: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     880: iinc          7, 1
+     883: goto          860
+     886: iconst_2
+     887: newarray       int
+     889: dup
+     890: iconst_0
+     891: bipush        -9
+     893: iastore
+     894: dup
+     895: iconst_1
+     896: bipush        9
+     898: iastore
+     899: astore        7
+     901: aload         7
+     903: arraylength
+     904: istore        8
+     906: iconst_0
+     907: istore        9
+     909: iload         9
+     911: iload         8
+     913: if_icmpge     1003
+     916: aload         7
+     918: iload         9
+     920: iaload
+     921: istore        10
+     923: iconst_2
+     924: newarray       int
+     926: dup
+     927: iconst_0
+     928: bipush        -21
+     930: iastore
+     931: dup
+     932: iconst_1
+     933: bipush        21
+     935: iastore
+     936: astore        11
+     938: aload         11
+     940: arraylength
+     941: istore        12
+     943: iconst_0
+     944: istore        13
+     946: iload         13
+     948: iload         12
+     950: if_icmpge     997
+     953: aload         11
+     955: iload         13
+     957: iaload
+     958: istore        14
+     960: aload_0
+     961: iload         10
+     963: iload         14
+     965: sipush        177
+     968: sipush        179
+     971: getstatic     #244                // Field pe/safio/content/ContentBlocks.TABLONES:Lnet/minecraft/class_2248;
+     974: invokestatic  #221                // Method pillar:(Lnet/minecraft/class_3218;IIIILnet/minecraft/class_2248;)V
+     977: aload_0
+     978: iload         10
+     980: sipush        180
+     983: iload         14
+     985: getstatic     #227                // Field pe/safio/content/ContentBlocks.LAMPARA:Lnet/minecraft/class_2248;
+     988: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+     991: iinc          13, 1
+     994: goto          946
+     997: iinc          9, 1
+    1000: goto          909
+    1003: aload_0
+    1004: getstatic     #34                 // Field MARKER:Lnet/minecraft/class_2338;
+    1007: invokevirtual #147                // Method net/minecraft/class_2338.method_10263:()I
+    1010: getstatic     #34                 // Field MARKER:Lnet/minecraft/class_2338;
+    1013: invokevirtual #150                // Method net/minecraft/class_2338.method_10264:()I
+    1016: getstatic     #34                 // Field MARKER:Lnet/minecraft/class_2338;
+    1019: invokevirtual #153                // Method net/minecraft/class_2338.method_10260:()I
+    1022: getstatic     #46                 // Field pe/safio/content/ContentBlocks.PIEDRA:Lnet/minecraft/class_2248;
+    1025: invokestatic  #157                // Method place:(Lnet/minecraft/class_3218;IIILnet/minecraft/class_2248;)V
+    1028: aload_0
+    1029: ldc2_w        #258                // double -7.0d
+    1032: dconst_1
+    1033: ldc_w         #261                // String Nila - Guia Nutria
+    1036: invokestatic  #265                // Method spawnOtter:(Lnet/minecraft/class_3218;DDLjava/lang/String;)V
+    1039: aload_0
+    1040: ldc2_w        #266                // double 7.0d
+    1043: dconst_1
+    1044: ldc_w         #269                // String Milo - Jardinero
+    1047: invokestatic  #265                // Method spawnOtter:(Lnet/minecraft/class_3218;DDLjava/lang/String;)V
+    1050: aload_0
+    1051: dconst_0
+    1052: ldc2_w        #270                // double 12.0d
+    1055: ldc_w         #273                // String Pipo - Explorador
+    1058: invokestatic  #265                // Method spawnOtter:(Lnet/minecraft/class_3218;DDLjava/lang/String;)V
+    1061: aload_0
+    1062: ldc2_w        #274                // double 3.0d
+    1065: ldc2_w        #276                // double -17.0d
+    1068: ldc_w         #279                // String Lumi - Recepcion
+    1071: invokestatic  #265                // Method spawnOtter:(Lnet/minecraft/class_3218;DDLjava/lang/String;)V
+    1074: getstatic     #163                // Field pe/safio/content/SafioContent.LOG:Lorg/slf4j/Logger;
+    1077: ldc_w         #281                // String Lobby Nutria listo; guarda su marcador y no lo reconstruiras al entrar
+    1080: invokeinterface #171,  2          // InterfaceMethod org/slf4j/Logger.info:(Ljava/lang/String;)V
+    1085: return
+
+  private static void spawnOtter(net.minecraft.class_3218, double, double, java.lang.String);
+    Code:
+       0: getstatic     #300                // Field pe/safio/content/ContentEntities.OTTER:Lnet/minecraft/class_1299;
+       3: aload_0
+       4: invokevirtual #115                // Method net/minecraft/class_1299.method_5883:(Lnet/minecraft/class_1937;)Lnet/minecraft/class_1297;
+       7: checkcast     #117                // class pe/safio/content/OtterEntity
+      10: astore        6
+      12: aload         6
+      14: ifnonnull     18
+      17: return
+      18: aload         6
+      20: dload_1
+      21: ldc2_w        #11                 // double 0.5d
+      24: dadd
+      25: ldc2_w        #14                 // double 177.0d
+      28: dload_3
+      29: ldc2_w        #11                 // double 0.5d
+      32: dadd
+      33: fconst_0
+      34: fconst_0
+      35: invokevirtual #121                // Method pe/safio/content/OtterEntity.method_5808:(DDDFF)V
+      38: aload         6
+      40: aload         5
+      42: invokestatic  #127                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+      45: invokevirtual #131                // Method pe/safio/content/OtterEntity.method_5665:(Lnet/minecraft/class_2561;)V
+      48: aload         6
+      50: iconst_1
+      51: invokevirtual #135                // Method pe/safio/content/OtterEntity.method_5880:(Z)V
+      54: aload         6
+      56: invokevirtual #138                // Method pe/safio/content/OtterEntity.method_5971:()V
+      59: aload_0
+      60: aload         6
+      62: invokevirtual #142                // Method net/minecraft/class_3218.method_8649:(Lnet/minecraft/class_1297;)Z
+      65: pop
+      66: return
+
+  static {};
+    Code:
+       0: new           #144                // class net/minecraft/class_2338
+       3: dup
+       4: iconst_0
+       5: sipush        174
+       8: iconst_0
+       9: invokespecial #191                // Method net/minecraft/class_2338."<init>":(III)V
+      12: putstatic     #34                 // Field MARKER:Lnet/minecraft/class_2338;
+      15: new           #144                // class net/minecraft/class_2338
+      18: dup
+      19: iconst_2
+      20: sipush        174
+      23: iconst_0
+      24: invokespecial #191                // Method net/minecraft/class_2338."<init>":(III)V
+      27: putstatic     #58                 // Field FAUNA_MARKER:Lnet/minecraft/class_2338;
+      30: return
+}

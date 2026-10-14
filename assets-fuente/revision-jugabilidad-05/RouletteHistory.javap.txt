@@ -1,0 +1,381 @@
+﻿Compiled from "RouletteHistory.java"
+public final class pe.safio.ui.RouletteHistory {
+  private static final java.lang.String OBJ = "safio.hist";
+
+  private static final int LIMIT = 512;
+
+  private static int lastRouletteDone;
+
+  private static int lastSequence;
+
+  private static final java.util.Map<java.util.UUID, java.lang.Integer> sent;
+
+  private pe.safio.ui.RouletteHistory();
+    Code:
+       0: aload_0
+       1: invokespecial #41                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void onServerStarted(net.minecraft.server.MinecraftServer);
+    Code:
+       0: aload_0
+       1: invokevirtual #52                 // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       4: ldc           #54                 // String safio.cal
+       6: ldc           #56                 // String #roulette_done
+       8: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      11: putstatic     #62                 // Field lastRouletteDone:I
+      14: iconst_m1
+      15: putstatic     #64                 // Field lastSequence:I
+      18: getstatic     #66                 // Field sent:Ljava/util/Map;
+      21: invokeinterface #71,  1           // InterfaceMethod java/util/Map.clear:()V
+      26: return
+
+  public static void tick(net.minecraft.server.MinecraftServer, java.time.ZonedDateTime);
+    Code:
+       0: aload_0
+       1: invokevirtual #52                 // Method net/minecraft/server/MinecraftServer.method_3845:()Lnet/minecraft/class_2995;
+       4: astore_3
+       5: aload_3
+       6: ldc           #54                 // String safio.cal
+       8: ldc           #56                 // String #roulette_done
+      10: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      13: istore        4
+      15: iload         4
+      17: getstatic     #62                 // Field lastRouletteDone:I
+      20: if_icmpeq     257
+      23: iload         4
+      25: putstatic     #62                 // Field lastRouletteDone:I
+      28: aload_3
+      29: ldc           #77                 // String safio.ruleta
+      31: ldc           #79                 // String #resultado
+      33: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      36: istore        5
+      38: iload         5
+      40: iconst_1
+      41: if_icmplt     257
+      44: iload         5
+      46: bipush        8
+      48: if_icmpgt     257
+      51: aload_3
+      52: ldc           #54                 // String safio.cal
+      54: ldc           #81                 // String #day
+      56: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      59: istore        6
+      61: aload_1
+      62: invokevirtual #87                 // Method java/time/ZonedDateTime.toLocalDate:()Ljava/time/LocalDate;
+      65: invokestatic  #93                 // Method pe/safio/ui/CalendarRules.dateKey:(Ljava/time/LocalDate;)I
+      68: istore        7
+      70: aload_1
+      71: invokevirtual #97                 // Method java/time/ZonedDateTime.getHour:()I
+      74: bipush        60
+      76: imul
+      77: aload_1
+      78: invokevirtual #100                // Method java/time/ZonedDateTime.getMinute:()I
+      81: iadd
+      82: istore        8
+      84: aload_3
+      85: ldc           #54                 // String safio.cal
+      87: ldc           #102                // String #pending_slot
+      89: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      92: istore        9
+      94: aload_3
+      95: ldc           #54                 // String safio.cal
+      97: ldc           #104                // String #pending_day
+      99: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     102: istore        10
+     104: iload         9
+     106: ifle          120
+     109: iload         10
+     111: iload         6
+     113: if_icmpne     120
+     116: iconst_1
+     117: goto          121
+     120: iconst_2
+     121: istore        11
+     123: aload_3
+     124: ldc           #29                 // String safio.hist
+     126: ldc           #108                // String #seq
+     128: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     131: iconst_1
+     132: iadd
+     133: istore        12
+     135: iload         12
+     137: iconst_1
+     138: isub
+     139: sipush        512
+     142: irem
+     143: iconst_1
+     144: iadd
+     145: istore        13
+     147: aload_3
+     148: ldc           #29                 // String safio.hist
+     150: ldc           #108                // String #seq
+     152: iload         12
+     154: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     157: aload_3
+     158: ldc           #29                 // String safio.hist
+     160: iload         13
+     162: ldc           #114                // String d
+     164: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     167: iload         6
+     169: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     172: aload_3
+     173: ldc           #29                 // String safio.hist
+     175: iload         13
+     177: ldc           #120                // String f
+     179: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     182: iload         7
+     184: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     187: aload_3
+     188: ldc           #29                 // String safio.hist
+     190: iload         13
+     192: ldc           #122                // String t
+     194: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     197: iload         8
+     199: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     202: aload_3
+     203: ldc           #29                 // String safio.hist
+     205: iload         13
+     207: ldc           #124                // String c
+     209: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     212: iload         5
+     214: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     217: aload_3
+     218: ldc           #29                 // String safio.hist
+     220: iload         13
+     222: ldc           #126                // String s
+     224: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     227: iload         11
+     229: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     232: aload_3
+     233: ldc           #29                 // String safio.hist
+     235: iload         13
+     237: ldc           #128                // String e
+     239: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     242: iload         11
+     244: iconst_1
+     245: if_icmpne     253
+     248: iload         9
+     250: goto          254
+     253: iconst_0
+     254: invokestatic  #112                // Method write:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;I)V
+     257: aload_3
+     258: ldc           #29                 // String safio.hist
+     260: ldc           #108                // String #seq
+     262: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     265: dup
+     266: istore_2
+     267: getstatic     #64                 // Field lastSequence:I
+     270: if_icmpeq     285
+     273: iload_2
+     274: putstatic     #64                 // Field lastSequence:I
+     277: getstatic     #66                 // Field sent:Ljava/util/Map;
+     280: invokeinterface #71,  1           // InterfaceMethod java/util/Map.clear:()V
+     285: aload_0
+     286: invokevirtual #134                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     289: invokevirtual #140                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+     292: invokeinterface #146,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     297: ifeq          309
+     300: getstatic     #66                 // Field sent:Ljava/util/Map;
+     303: invokeinterface #71,  1           // InterfaceMethod java/util/Map.clear:()V
+     308: return
+     309: aconst_null
+     310: astore        5
+     312: aload_0
+     313: invokevirtual #134                // Method net/minecraft/server/MinecraftServer.method_3760:()Lnet/minecraft/class_3324;
+     316: invokevirtual #140                // Method net/minecraft/class_3324.method_14571:()Ljava/util/List;
+     319: invokeinterface #150,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     324: astore        6
+     326: aload         6
+     328: invokeinterface #155,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     333: ifeq          436
+     336: aload         6
+     338: invokeinterface #159,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     343: checkcast     #161                // class net/minecraft/class_3222
+     346: astore        7
+     348: aload         7
+     350: invokevirtual #165                // Method net/minecraft/class_3222.method_5667:()Ljava/util/UUID;
+     353: astore        8
+     355: getstatic     #66                 // Field sent:Ljava/util/Map;
+     358: aload         8
+     360: iconst_m1
+     361: invokestatic  #171                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     364: invokeinterface #175,  3          // InterfaceMethod java/util/Map.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     369: checkcast     #167                // class java/lang/Integer
+     372: invokevirtual #178                // Method java/lang/Integer.intValue:()I
+     375: iload_2
+     376: if_icmpeq     326
+     379: aload         7
+     381: getstatic     #182                // Field pe/safio/ui/RouletteHistorySnapshot.ID:Lnet/minecraft/class_8710$class_9154;
+     384: invokestatic  #188                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.canSend:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710$class_9154;)Z
+     387: ifne          393
+     390: goto          326
+     393: aload         5
+     395: ifnonnull     411
+     398: new           #14                 // class pe/safio/ui/RouletteHistorySnapshot
+     401: dup
+     402: aload_3
+     403: invokestatic  #194                // Method entries:(Lnet/minecraft/class_269;)Ljava/util/List;
+     406: invokespecial #197                // Method pe/safio/ui/RouletteHistorySnapshot."<init>":(Ljava/util/List;)V
+     409: astore        5
+     411: aload         7
+     413: aload         5
+     415: invokestatic  #201                // Method net/fabricmc/fabric/api/networking/v1/ServerPlayNetworking.send:(Lnet/minecraft/class_3222;Lnet/minecraft/class_8710;)V
+     418: getstatic     #66                 // Field sent:Ljava/util/Map;
+     421: aload         8
+     423: iload_2
+     424: invokestatic  #171                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     427: invokeinterface #204,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     432: pop
+     433: goto          326
+     436: return
+
+  private static java.util.List<pe.safio.ui.RouletteHistorySnapshot$Entry> entries(net.minecraft.class_269);
+    Code:
+       0: aload_0
+       1: ldc           #29                 // String safio.hist
+       3: ldc           #108                // String #seq
+       5: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+       8: istore_1
+       9: sipush        512
+      12: iconst_0
+      13: iload_1
+      14: invokestatic  #231                // Method java/lang/Math.max:(II)I
+      17: invokestatic  #234                // Method java/lang/Math.min:(II)I
+      20: istore_2
+      21: new           #236                // class java/util/ArrayList
+      24: dup
+      25: iload_2
+      26: invokespecial #239                // Method java/util/ArrayList."<init>":(I)V
+      29: astore_3
+      30: iconst_0
+      31: istore        4
+      33: iload         4
+      35: iload_2
+      36: if_icmpge     149
+      39: iload_1
+      40: iload         4
+      42: isub
+      43: iconst_1
+      44: isub
+      45: sipush        512
+      48: irem
+      49: iconst_1
+      50: iadd
+      51: istore        5
+      53: aload_3
+      54: new           #12                 // class pe/safio/ui/RouletteHistorySnapshot$Entry
+      57: dup
+      58: aload_0
+      59: ldc           #29                 // String safio.hist
+      61: iload         5
+      63: ldc           #114                // String d
+      65: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+      68: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      71: aload_0
+      72: ldc           #29                 // String safio.hist
+      74: iload         5
+      76: ldc           #120                // String f
+      78: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+      81: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      84: aload_0
+      85: ldc           #29                 // String safio.hist
+      87: iload         5
+      89: ldc           #122                // String t
+      91: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+      94: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+      97: aload_0
+      98: ldc           #29                 // String safio.hist
+     100: iload         5
+     102: ldc           #124                // String c
+     104: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     107: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     110: aload_0
+     111: ldc           #29                 // String safio.hist
+     113: iload         5
+     115: ldc           #126                // String s
+     117: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     120: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     123: aload_0
+     124: ldc           #29                 // String safio.hist
+     126: iload         5
+     128: ldc           #128                // String e
+     130: invokestatic  #118                // Method key:(ILjava/lang/String;)Ljava/lang/String;
+     133: invokestatic  #60                 // Method read:(Lnet/minecraft/class_269;Ljava/lang/String;Ljava/lang/String;)I
+     136: invokespecial #244                // Method pe/safio/ui/RouletteHistorySnapshot$Entry."<init>":(IIIIII)V
+     139: invokevirtual #248                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+     142: pop
+     143: iinc          4, 1
+     146: goto          33
+     149: aload_3
+     150: invokestatic  #252                // InterfaceMethod java/util/List.copyOf:(Ljava/util/Collection;)Ljava/util/List;
+     153: areturn
+
+  private static java.lang.String key(int, java.lang.String);
+    Code:
+       0: iload_0
+       1: aload_1
+       2: invokedynamic #270,  0            // InvokeDynamic #0:makeConcatWithConstants:(ILjava/lang/String;)Ljava/lang/String;
+       7: areturn
+
+  private static int read(net.minecraft.class_269, java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #275                // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore_3
+       6: aload_3
+       7: ifnonnull     12
+      10: iconst_0
+      11: ireturn
+      12: aload_0
+      13: aload_2
+      14: invokestatic  #283                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+      17: aload_3
+      18: invokevirtual #287                // Method net/minecraft/class_269.method_55430:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9013;
+      21: astore        4
+      23: aload         4
+      25: ifnonnull     32
+      28: iconst_0
+      29: goto          39
+      32: aload         4
+      34: invokeinterface #292,  1          // InterfaceMethod net/minecraft/class_9013.method_55397:()I
+      39: ireturn
+
+  private static void write(net.minecraft.class_269, java.lang.String, java.lang.String, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #275                // Method net/minecraft/class_269.method_1170:(Ljava/lang/String;)Lnet/minecraft/class_266;
+       5: astore        4
+       7: aload         4
+       9: ifnonnull     31
+      12: aload_0
+      13: aload_1
+      14: getstatic     #300                // Field net/minecraft/class_274.field_1468:Lnet/minecraft/class_274;
+      17: aload_1
+      18: invokestatic  #306                // InterfaceMethod net/minecraft/class_2561.method_43470:(Ljava/lang/String;)Lnet/minecraft/class_5250;
+      21: getstatic     #310                // Field net/minecraft/class_274$class_275.field_1472:Lnet/minecraft/class_274$class_275;
+      24: iconst_0
+      25: aconst_null
+      26: invokevirtual #314                // Method net/minecraft/class_269.method_1168:(Ljava/lang/String;Lnet/minecraft/class_274;Lnet/minecraft/class_2561;Lnet/minecraft/class_274$class_275;ZLnet/minecraft/class_9022;)Lnet/minecraft/class_266;
+      29: astore        4
+      31: aload_0
+      32: aload_2
+      33: invokestatic  #283                // InterfaceMethod net/minecraft/class_9015.method_55422:(Ljava/lang/String;)Lnet/minecraft/class_9015;
+      36: aload         4
+      38: invokevirtual #318                // Method net/minecraft/class_269.method_1180:(Lnet/minecraft/class_9015;Lnet/minecraft/class_266;)Lnet/minecraft/class_9014;
+      41: iload_3
+      42: invokeinterface #323,  2          // InterfaceMethod net/minecraft/class_9014.method_55410:(I)V
+      47: return
+
+  static {};
+    Code:
+       0: iconst_m1
+       1: putstatic     #64                 // Field lastSequence:I
+       4: new           #326                // class java/util/HashMap
+       7: dup
+       8: invokespecial #327                // Method java/util/HashMap."<init>":()V
+      11: putstatic     #66                 // Field sent:Ljava/util/Map;
+      14: return
+}
