@@ -33,6 +33,11 @@ public final class SurvivalPanelScreen extends Screen {
     /** F8: herramienta de desarrollo oculta, apagada por defecto y sin ningún
      * indicio visible en la vista normal. Ver {@link #renderDiagnostic}. */
     private static boolean diagnosticMode = false;
+    /** F10: prueba A/B oculta que reemplaza {@code renderBackground()} (y por
+     * tanto el blur de fondo) por un simple {@code fill()} oscuro, para
+     * comparar en vivo si el blur en sí es parte de la causa del desenfoque,
+     * independientemente de {@link ViewportFix}. Apagado por defecto. */
+    private static boolean skipBlurBackground = false;
 
     public SurvivalPanelScreen() { super(Text.literal("APU YAWAR")); }
 
@@ -61,11 +66,22 @@ public final class SurvivalPanelScreen extends Screen {
     }
 
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        if (skipBlurBackground) {
+            // F10, prueba A/B: evita renderBackground() (y por tanto el blur
+            // de fondo) por completo, para aislar si el blur EN SÍ influye en
+            // el desenfoque del panel, independientemente de ViewportFix.
+            context.fill(0, 0, this.width, this.height, 0xCC000000);
+        } else {
+            this.renderBackground(context, mouseX, mouseY, delta);
+        }
         // Ver ViewportFix: el blur de fondo deja el viewport de GL en el
         // tamaño de su propio framebuffer interno, no en el de la ventana.
         // Sin este reinicio, todo lo dibujado a continuación (panel, íconos,
         // catálogos) se renderiza con un viewport incorrecto y se ve borroso.
+        // Se mantiene también cuando skipBlurBackground está activo: si no
+        // hubo blur, esta llamada no tiene nada que corregir (el viewport ya
+        // estaba bien) y no debería cambiar nada — eso en sí mismo es parte
+        // de la prueba.
         ViewportFix.restoreAfterBackground(this.client);
         int[] box = panelBox();
         // Sobrecarga de 10 argumentos: destino (box[2],box[3]) y región muestreada
@@ -134,9 +150,11 @@ public final class SurvivalPanelScreen extends Screen {
      * </ul> */
     private void renderDiagnostic(DrawContext context, int[] box) {
         int dx = 12, dy = 12, colW = 170, rowH = 56;
-        context.fill(dx - 4, dy - 4, dx + colW * 2 + 4, dy + rowH * 4 + 14, 0xE8000000);
+        context.fill(dx - 4, dy - 4, dx + colW * 2 + 4, dy + rowH * 4 + 26, 0xE8000000);
         context.drawText(this.textRenderer, "F9 ViewportFix: " + (ViewportFix.enabled ? "ON (corregido)" : "OFF (defecto original)"),
                 dx, dy + rowH * 4 + 2, ViewportFix.enabled ? 0xFF55FF55 : 0xFFFF5555, false);
+        context.drawText(this.textRenderer, "F10 sin blur de fondo: " + (skipBlurBackground ? "ON (fill plano)" : "OFF (renderBackground normal)"),
+                dx, dy + rowH * 4 + 14, skipBlurBackground ? 0xFF55FF55 : 0xFFAAAAAA, false);
 
         // Fila 1: A (cuadrícula fill) | C (texto nativo)
         context.drawText(this.textRenderer, "A: fill (control)", dx, dy, 0xFFFFFF00, false);
@@ -188,6 +206,8 @@ public final class SurvivalPanelScreen extends Screen {
         // sesión, el panel CON y SIN la corrección del viewport. Herramienta
         // de verificación oculta, sin indicio en la vista normal.
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F9) { ViewportFix.enabled = !ViewportFix.enabled; return true; }
+        // F10: ver skipBlurBackground.
+        if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F10) { skipBlurBackground = !skipBlurBackground; return true; }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
