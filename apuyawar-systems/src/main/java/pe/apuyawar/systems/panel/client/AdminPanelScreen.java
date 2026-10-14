@@ -26,8 +26,6 @@ import java.util.Map;
  * (Staff + Creative) antes de ejecutar nada real.
  */
 public final class AdminPanelScreen extends Screen {
-    private boolean suppressBackgroundDuringWidgetRender = false;
-
     private enum Section { JUGADORES, ANUNCIOS, RULETA, ECONOMIA, EVENTOS, STAFF, HERRAMIENTAS }
     private Section section = Section.JUGADORES;
     private TextFieldWidget announceField;
@@ -126,25 +124,20 @@ public final class AdminPanelScreen extends Screen {
             ClientPlayNetworking.send(new AdminTeleportToPayload(name));
     }
 
-    /** Screen.render() vuelve a llamar a renderBackground() antes de pintar widgets.
-     * Evitamos aplicar blur sobre nuestro panel ya dibujado; el primer fondo
-     * se pinta normalmente al comienzo de render(). */
+    /** {@code Screen.render()} vuelve a llamar a {@code renderBackground()}
+     * internamente antes de pintar los widgets (botones de sección, campos de
+     * texto); eso aplicaba una segunda pasada de blur sobre el panel ya
+     * dibujado. El fondo real de esta pantalla es el {@code fill()} oscuro de
+     * {@link #render}, así que se sobrescribe como no-op para bloquear esa
+     * llamada oculta. */
     @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (!suppressBackgroundDuringWidgetRender) {
-            super.renderBackground(context, mouseX, mouseY, delta);
-        }
     }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        context.fill(0, 0, this.width, this.height, 0xCC000000);
         ViewportFix.restoreAfterBackground(this.client);
         context.fill(0, 0, 135, this.height, 0xC0151008);
         context.drawText(this.textRenderer, "Panel Administrativo", 10, 8, 0xFFFFD700, true);
-        suppressBackgroundDuringWidgetRender = true;
-        try {
-            super.render(context, mouseX, mouseY, delta);
-        } finally {
-            suppressBackgroundDuringWidgetRender = false;
-        }
+        super.render(context, mouseX, mouseY, delta);
         int ry = 36;
         switch (section) {
             case JUGADORES -> context.drawText(this.textRenderer, "Jugadores conectados: usa los botones de la derecha para teletransportarte.", 140, ry, 0xFFFFFFFF, false);

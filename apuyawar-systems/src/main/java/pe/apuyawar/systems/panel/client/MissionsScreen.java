@@ -15,8 +15,6 @@ import pe.apuyawar.systems.missions.MissionDefinition;
  * y se aplica con {@link #applySync}.
  */
 public final class MissionsScreen extends Screen {
-    private boolean suppressBackgroundDuringWidgetRender = false;
-
     private int[] progress = new int[MissionCatalog.ALL.size()];
     private boolean[] rewarded = new boolean[MissionCatalog.ALL.size()];
     private int selected = 0;
@@ -30,13 +28,12 @@ public final class MissionsScreen extends Screen {
         this.rewarded = rewarded;
     }
 
-    /** Mismo factor que {@link SurvivalPanelScreen#panelBox()} (incluida la
-     * prueba A/B de {@link PanelScale#rawMode}, F7), para que ambas pantallas
-     * muestren el panel con el mismo factor de escala y evitar un muestreo
-     * fraccionario arbitrario de texels. */
+    /** Mismo ratio limpio 1/n que {@link SurvivalPanelScreen#panelBox()}, para
+     * que ambas pantallas muestren el panel con el mismo factor de escala y
+     * evitar un muestreo fraccionario arbitrario de texels. */
     private int[] panelBox() {
         float ideal = Math.min(this.width * 0.92f / PanelTextures.PANEL_W, this.height * 0.92f / PanelTextures.PANEL_H);
-        float scale = PanelScale.resolve(ideal);
+        float scale = PanelScale.snap(ideal);
         int w = Math.round(PanelTextures.PANEL_W * scale), h = Math.round(PanelTextures.PANEL_H * scale);
         int x = (this.width - w) / 2, y = (this.height - h) / 2;
         return new int[]{x, y, w, h};
@@ -56,16 +53,15 @@ public final class MissionsScreen extends Screen {
         }).dimensions(fx, fy + fh - 20, 110, 18).build());
     }
 
-    /** Screen.render() vuelve a llamar a renderBackground() antes de pintar widgets.
-     * Evitamos aplicar blur sobre nuestro panel ya dibujado; el primer fondo
-     * se pinta normalmente al comienzo de render(). */
+    /** {@code Screen.render()} vuelve a llamar a {@code renderBackground()}
+     * internamente antes de pintar los widgets (botón "Volver"); eso aplicaba
+     * una segunda pasada de blur sobre el panel ya dibujado. El fondo real de
+     * esta pantalla es el {@code fill()} oscuro de {@link #render}, así que se
+     * sobrescribe como no-op para bloquear esa llamada oculta. */
     @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (!suppressBackgroundDuringWidgetRender) {
-            super.renderBackground(context, mouseX, mouseY, delta);
-        }
     }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context, mouseX, mouseY, delta);
+        context.fill(0, 0, this.width, this.height, 0xCC000000);
         ViewportFix.restoreAfterBackground(this.client);
         int[] box = panelBox();
         context.drawTexture(PanelTextures.PANEL, box[0], box[1], box[2], box[3], 0f, 0f,
@@ -106,12 +102,7 @@ public final class MissionsScreen extends Screen {
             context.drawText(this.textRenderer, "Estado: " + state, detailX, detailY + 64, complete ? 0xFF55FF55 : 0xFFAAAAAA, false);
         }
         context.disableScissor();
-        suppressBackgroundDuringWidgetRender = true;
-        try {
-            super.render(context, mouseX, mouseY, delta);
-        } finally {
-            suppressBackgroundDuringWidgetRender = false;
-        }
+        super.render(context, mouseX, mouseY, delta);
     }
 
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
