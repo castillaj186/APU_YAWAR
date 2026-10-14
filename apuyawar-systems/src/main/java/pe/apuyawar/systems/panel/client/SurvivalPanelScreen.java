@@ -10,6 +10,9 @@ import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import org.lwjgl.opengl.GL11;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pe.apuyawar.systems.network.MissionsRequestPayload;
 
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.List;
  * ({@link MissionsScreen}); las otras tres cambian el contenido de la zona derecha.
  */
 public final class SurvivalPanelScreen extends Screen {
+    private static final Logger LOGGER = LoggerFactory.getLogger("apuyawar-panel-k");
     private enum Tab { MOBS, ITEMS, SEARCH }
     private enum SearchMode { RECIPES, HOSTILE_MOBS }
     private Tab tab = Tab.MOBS;
@@ -38,6 +42,14 @@ public final class SurvivalPanelScreen extends Screen {
      * comparar en vivo si el blur en sí es parte de la causa del desenfoque,
      * independientemente de {@link ViewportFix}. Apagado por defecto. */
     private static boolean skipBlurBackground = false;
+    /** F12: usa {@link PanelTextures#DEBUG_PANEL_NEAREST} (mismo bitmap que
+     * {@link PanelTextures#PANEL}, solo con {@code blur:false}) para el fondo
+     * del panel REAL a tamaño completo, en vez del recorte pequeño de
+     * diagnóstico — prueba controlada de nearest vs bilineal sin tocar el
+     * master de producción. Apagado por defecto. (No se usa F11: coincide
+     * con el atajo de pantalla completa de Minecraft, que se procesa en un
+     * callback aparte y no se puede interceptar desde Screen.keyPressed.) */
+    private static boolean useNearestPanelDebug = false;
 
     public SurvivalPanelScreen() { super(Text.literal("APU YAWAR")); }
 
@@ -66,6 +78,7 @@ public final class SurvivalPanelScreen extends Screen {
     }
 
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        logViewport("A-entrada (antes de renderBackground)");
         if (skipBlurBackground) {
             // F10, prueba A/B: evita renderBackground() (y por tanto el blur
             // de fondo) por completo, para aislar si el blur EN SÍ influye en
@@ -83,6 +96,7 @@ public final class SurvivalPanelScreen extends Screen {
         // estaba bien) y no debería cambiar nada — eso en sí mismo es parte
         // de la prueba.
         ViewportFix.restoreAfterBackground(this.client);
+        logViewport("B-tras renderBackground + ViewportFix");
         int[] box = panelBox();
         // Sobrecarga de 10 argumentos: destino (box[2],box[3]) y región muestreada
         // (PANEL_W,PANEL_H) son parámetros INDEPENDIENTES. La de 8 argumentos usada
@@ -90,7 +104,11 @@ public final class SurvivalPanelScreen extends Screen {
         // que al pedir un destino más chico que la textura recortaba una esquina
         // ampliada en vez de escalar la imagen completa — esa era la causa real del
         // "zoom"/recorte.
-        context.drawTexture(PanelTextures.PANEL, box[0], box[1], box[2], box[3], 0f, 0f,
+        // F12: en producción siempre PanelTextures.PANEL (blur:true); el
+        // interruptor solo cambia qué identificador se usa, nunca el .mcmeta
+        // real ni el archivo master.
+        var panelTexture = useNearestPanelDebug ? PanelTextures.DEBUG_PANEL_NEAREST : PanelTextures.PANEL;
+        context.drawTexture(panelTexture, box[0], box[1], box[2], box[3], 0f, 0f,
                 PanelTextures.PANEL_W, PanelTextures.PANEL_H, PanelTextures.PANEL_W, PanelTextures.PANEL_H);
         drawSlot(context, box, PanelLayout.SLOT_MOBS, PanelTextures.ICON_MOBS, mouseX, mouseY, tab == Tab.MOBS);
         drawSlot(context, box, PanelLayout.SLOT_ITEMS, PanelTextures.ICON_ITEMS, mouseX, mouseY, tab == Tab.ITEMS);
@@ -118,11 +136,47 @@ public final class SurvivalPanelScreen extends Screen {
             case SEARCH -> renderSearch(context, fx, fy, fw, fh);
         }
         context.disableScissor();
+        // G-antes: mismo elemento grande (recorte detallado de panel.png) que
+        // G-después en renderDiagnostic, dibujado aquí ANTES de super.render(),
+        // en posición separada, mismo tamaño y mismo filtro — comparación
+        // directa pedida explícitamente para descartar que super.render() (u
+        // otra operación entre medio) afecte lo ya dibujado.
+        if (diagnosticMode) drawPanelSample(context, 12, 300, 110, PanelTextures.PANEL, "G-antes de super.render()");
         searchField.visible = tab == Tab.SEARCH;
         super.render(context, mouseX, mouseY, delta);
+        logViewport("C-tras super.render() (antes del diagnóstico F8)");
         // F8 sigue existiendo como herramienta de desarrollo oculta (sin ningún
         // indicio visible en la vista normal, por pedido explícito del usuario).
         if (diagnosticMode) renderDiagnostic(context, box);
+    }
+
+    /** Registra el viewport REAL de OpenGL (no el valor que creemos haber
+     * pedido) junto con las dimensiones de ventana/framebuffer, para
+     * verificar con datos — no solo con la lectura de bytecode — si
+     * {@link ViewportFix} efectivamente deja el viewport esperado en cada
+     * punto del frame. Solo registra mientras F8 está activo, para no llenar
+     * el log durante el juego normal. */
+    private void logViewport(String label) {
+        if (!diagnosticMode || this.client == null) return;
+        int[] vp = new int[4];
+        GL11.glGetIntegerv(GL11.GL_VIEWPORT, vp);
+        var window = this.client.getWindow();
+        LOGGER.info("[PanelK] {} -> GL_VIEWPORT=({},{},{},{}) screen={}x{} (logico) fb={}x{} scaleFactor={}",
+                label, vp[0], vp[1], vp[2], vp[3], this.width, this.height,
+                window.getFramebufferWidth(), window.getFramebufferHeight(), window.getScaleFactor());
+    }
+
+    /** Dibuja un recorte de 220x220 texels del borde superior de
+     * {@code panel.png} (zona con detalle: filigrana dorada + parte del
+     * resplandor central), escalado al mismo destino en todas las llamadas,
+     * para comparar el mismo contenido antes/después de distintos puntos del
+     * render. Usa la textura de producción salvo que se pase la variante de
+     * depuración explícitamente. */
+    private void drawPanelSample(DrawContext context, int x, int y, int destSize, net.minecraft.util.Identifier tex, String label) {
+        context.fill(x - 2, y - 12, x + destSize + 2, y + destSize + 2, 0xE0000000);
+        context.drawText(this.textRenderer, label, x, y - 10, 0xFFFFFF00, false);
+        context.drawTexture(tex, x, y, destSize, destSize, 700f, 0f, 220, 220,
+                PanelTextures.PANEL_W, PanelTextures.PANEL_H);
     }
 
     /** Pantalla de comparación de nitidez (F8, oculta, apagada por defecto).
@@ -150,11 +204,18 @@ public final class SurvivalPanelScreen extends Screen {
      * </ul> */
     private void renderDiagnostic(DrawContext context, int[] box) {
         int dx = 12, dy = 12, colW = 170, rowH = 56;
-        context.fill(dx - 4, dy - 4, dx + colW * 2 + 4, dy + rowH * 4 + 26, 0xE8000000);
+        context.fill(dx - 4, dy - 4, dx + colW * 2 + 4, dy + rowH * 4 + 40, 0xE8000000);
         context.drawText(this.textRenderer, "F9 ViewportFix: " + (ViewportFix.enabled ? "ON (corregido)" : "OFF (defecto original)"),
                 dx, dy + rowH * 4 + 2, ViewportFix.enabled ? 0xFF55FF55 : 0xFFFF5555, false);
         context.drawText(this.textRenderer, "F10 sin blur de fondo: " + (skipBlurBackground ? "ON (fill plano)" : "OFF (renderBackground normal)"),
                 dx, dy + rowH * 4 + 14, skipBlurBackground ? 0xFF55FF55 : 0xFFAAAAAA, false);
+        context.drawText(this.textRenderer, "F12 panel nearest: " + (useNearestPanelDebug ? "ON (debug)" : "OFF (bilineal producción)"),
+                dx, dy + rowH * 4 + 26, useNearestPanelDebug ? 0xFF55FF55 : 0xFFAAAAAA, false);
+
+        // G-después: MISMO recorte grande de panel.png que G-antes (dibujado
+        // en render() antes de super.render()), misma textura y tamaño, en
+        // otra posición — comparación directa antes/después de super.render().
+        drawPanelSample(context, dx + colW, 300, 110, PanelTextures.PANEL, "G-después de super.render()");
 
         // Fila 1: A (cuadrícula fill) | C (texto nativo)
         context.drawText(this.textRenderer, "A: fill (control)", dx, dy, 0xFFFFFF00, false);
@@ -208,6 +269,9 @@ public final class SurvivalPanelScreen extends Screen {
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F9) { ViewportFix.enabled = !ViewportFix.enabled; return true; }
         // F10: ver skipBlurBackground.
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F10) { skipBlurBackground = !skipBlurBackground; return true; }
+        // F12 (no F11: coincide con pantalla completa, atajo global de
+        // Minecraft que no pasa por Screen.keyPressed y se activaría igual).
+        if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_F12) { useNearestPanelDebug = !useNearestPanelDebug; return true; }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
