@@ -25,6 +25,8 @@ import java.util.List;
  * ({@link MissionsScreen}); las otras tres cambian el contenido de la zona derecha.
  */
 public final class SurvivalPanelScreen extends Screen {
+    private boolean suppressBackgroundDuringWidgetRender = false;
+
     private static final Logger LOGGER = LoggerFactory.getLogger("apuyawar-panel-k");
     private enum Tab { MOBS, ITEMS, SEARCH }
     private enum SearchMode { RECIPES, HOSTILE_MOBS }
@@ -105,6 +107,14 @@ public final class SurvivalPanelScreen extends Screen {
         return new int[]{x, y, w, h};
     }
 
+    /** Screen.render() vuelve a llamar a renderBackground() antes de pintar widgets.
+     * Evitamos aplicar blur sobre nuestro panel ya dibujado; el primer fondo
+     * se pinta normalmente al comienzo de render(). */
+    @Override public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (!suppressBackgroundDuringWidgetRender) {
+            super.renderBackground(context, mouseX, mouseY, delta);
+        }
+    }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         logViewport("A-entrada (antes de renderBackground)");
         if (skipBlurBackground) {
@@ -174,7 +184,12 @@ public final class SurvivalPanelScreen extends Screen {
         // (ver GX/GY/G_SIZE más abajo, columna 3 junto al resto del overlay).
         if (diagnosticMode) drawPanelSample(context, GX, GY_ANTES, G_SIZE, PanelTextures.PANEL, "G-antes");
         searchField.visible = tab == Tab.SEARCH;
-        super.render(context, mouseX, mouseY, delta);
+        suppressBackgroundDuringWidgetRender = true;
+        try {
+            super.render(context, mouseX, mouseY, delta);
+        } finally {
+            suppressBackgroundDuringWidgetRender = false;
+        }
         logViewport("C-tras super.render() (antes del diagnóstico F8)");
         // F8 sigue existiendo como herramienta de desarrollo oculta (sin ningún
         // indicio visible en la vista normal, por pedido explícito del usuario).
