@@ -26,8 +26,14 @@ public final class SurvivalPanelScreen extends Screen {
     private enum SearchMode { RECIPES, HOSTILE_MOBS }
     private Tab tab = Tab.MOBS;
     private SearchMode searchMode = SearchMode.RECIPES;
-    private final CatalogGrid mobGrid = new CatalogGrid(MobCatalog.ENTRIES, MobCatalog.FUTURE_SLOTS);
-    private final CatalogGrid itemGrid = new CatalogGrid(ItemCatalog.ENTRIES, ItemCatalog.FUTURE_SLOTS);
+    // El CellRenderer de mobs (y su caché de entidades de vista previa) vive en
+    // esta instancia de pantalla: se descarta junto con ella (al cerrar el panel
+    // o al presionar K de nuevo) sin necesitar limpieza explícita — ver
+    // MobCellRenderer para el razonamiento completo del ciclo de vida/caché.
+    private final CatalogGrid<MobCatalogEntry> mobGrid = new CatalogGrid<>(
+            MobCatalog.ENTRIES, MobCatalog.FUTURE_SLOTS, new MobCellRenderer(), e -> e.displayName().getString());
+    private final CatalogGrid<CatalogEntry> itemGrid = new CatalogGrid<>(
+            ItemCatalog.ENTRIES, ItemCatalog.FUTURE_SLOTS, new ItemCellRenderer(), CatalogEntry::name);
     private TextFieldWidget searchField;
     private List<String> searchResults = List.of();
 
@@ -196,8 +202,9 @@ public final class SurvivalPanelScreen extends Screen {
                 }
             }
         } else {
-            for (CatalogEntry entry : MobCatalog.ENTRIES) {
-                if (entry.name().toLowerCase().contains(needle)) searchResults.add(entry.name());
+            for (MobCatalogEntry entry : MobCatalog.ENTRIES) {
+                String name = entry.displayName().getString();
+                if (name.toLowerCase().contains(needle)) searchResults.add(name);
             }
         }
     }

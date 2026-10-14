@@ -4,34 +4,45 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * Cuadrícula reutilizable de catálogo: íconos reales + espacios "?" de contenido
- * bloqueado/futuro, con scroll y selección. Usada por las pestañas de Mobs y
- * Objetos para no duplicar la misma lógica de cuadrícula dos veces.
+ * Cuadrícula reutilizable de catálogo: contenido real (vía {@link CellRenderer},
+ * una estrategia específica por tipo de contenido) + espacios "?" de contenido
+ * bloqueado/futuro, con scroll, hover y selección. Genérica sobre el tipo de
+ * entrada para que Objetos (ítems 2D) y Mobs (entidades 3D) compartan la misma
+ * gestión de layout/scroll/hover/selección sin compartir el renderizado de cada
+ * celda, que es fundamentalmente distinto entre ambos — ver {@link ItemCellRenderer}
+ * y {@link MobCellRenderer}.
  */
-final class CatalogGrid {
+final class CatalogGrid<T> {
     private static final int CELL = 40;
-    /** Entero a propósito. El atlas de ítems vanilla se muestrea con
-     * GL_NEAREST (por eso los ítems se ven pixelados/nítidos en cualquier
-     * inventario); con un factor NO entero (antes 1.7f) cada píxel de
-     * destino cae en un texel distinto de forma irregular — un patrón de
-     * aliasing que se percibe como "sucio"/borroso aunque no haya ningún
-     * blur real. Con un entero, cada texel se repite un número exacto de
-     * veces y el resultado es tan nítido como el ítem nativo, solo más
-     * grande (confirmado: los huevos de aparición vanilla, que no usan
-     * ninguna textura nuestra, se veían borrosos solo aquí, con el 1.7f). */
-    private static final int ICON_SCALE = 2;
     private static final int INFO_HEIGHT = 12;
-    private final List<CatalogEntry> entries;
+    private final List<T> entries;
     private final int futureSlots;
+    private final CellRenderer<T> cellRenderer;
+    private final Function<T, String> nameExtractor;
     private int scroll = 0;
     private int selected = -1;
-    CatalogGrid(List<CatalogEntry> entries, int futureSlots) {
+
+    /** Dibuja únicamente el CONTENIDO de una celda normal (ya desbloqueada) de
+     * tamaño {@code cellW x cellH} con esquina superior izquierda en
+     * {@code (cx,cy)}. El fondo, el hover y el borde de selección ya los dibuja
+     * {@link CatalogGrid#render}; cada estrategia solo dibuja su ícono/entidad. */
+    @FunctionalInterface
+    interface CellRenderer<T> {
+        void render(DrawContext ctx, TextRenderer tr, T entry, int cx, int cy, int cellW, int cellH, boolean hover, boolean selected);
+    }
+
+    CatalogGrid(List<T> entries, int futureSlots, CellRenderer<T> cellRenderer, Function<T, String> nameExtractor) {
         this.entries = entries;
         this.futureSlots = futureSlots;
+        this.cellRenderer = cellRenderer;
+        this.nameExtractor = nameExtractor;
     }
+
     private int totalSlots() { return entries.size() + futureSlots; }
+
     void render(DrawContext ctx, TextRenderer tr, int x, int y, int w, int h, int mouseX, int mouseY) {
         int cols = Math.max(1, w / CELL);
         int rows = Math.max(1, (h - INFO_HEIGHT) / CELL);
@@ -45,21 +56,17 @@ final class CatalogGrid {
                 int cx = x + col * CELL, cy = y + row * CELL;
                 int cellW = CELL - 4, cellH = CELL - 4;
                 boolean hover = mouseX >= cx && mouseX < cx + cellW && mouseY >= cy && mouseY < cy + cellH;
+                boolean isSelected = index == selected;
                 ctx.fill(cx, cy, cx + cellW, cy + cellH, 0x55000000);
-                if (index == selected) drawOutline(ctx, cx, cy, cellW, cellH, 0xFFFFD700);
+                if (isSelected) drawOutline(ctx, cx, cy, cellW, cellH, 0xFFFFD700);
                 else if (hover) drawOutline(ctx, cx, cy, cellW, cellH, 0x90FFFFFF);
                 if (index < entries.size()) {
-                    // Ícono real agrandado: el renderizador de ítems ya usa el mismo
-                    // MatrixStack de este DrawContext, así que empujar una escala
-                    // ENTERA antes de dibujar lo agranda sin deformarlo ni introducir
-                    // aliasing (ver comentario de ICON_SCALE).
-                    ctx.getMatrices().push();
-                    int pad = (cellW - 16 * ICON_SCALE) / 2;
-                    ctx.getMatrices().translate(cx + pad, cy + pad, 0);
-                    ctx.getMatrices().scale(ICON_SCALE, ICON_SCALE, 1f);
-                    ctx.drawItem(entries.get(index).icon(), 0, 0);
-                    ctx.getMatrices().pop();
+                    cellRenderer.render(ctx, tr, entries.get(index), cx, cy, cellW, cellH, hover, isSelected);
                 } else {
+                    // Contenido futuro no desbloqueado: símbolo "?" dibujado por código,
+                    // nunca el modelo/nombre de ninguna criatura real — no debe confundirse
+                    // con una entidad que falló al renderizarse (eso lo maneja cada
+                    // CellRenderer con su propio fallback, no este símbolo).
                     ctx.getMatrices().push();
                     ctx.getMatrices().translate(cx + cellW / 2f - 3, cy + cellH / 2f - 4, 0);
                     ctx.getMatrices().scale(1.6f, 1.6f, 1f);
@@ -70,7 +77,7 @@ final class CatalogGrid {
         }
         int infoY = y + rows * CELL + 2;
         if (selected >= 0 && selected < entries.size()) {
-            ctx.drawText(tr, entries.get(selected).name(), x, infoY, 0xFFFFFFFF, true);
+            ctx.drawText(tr, nameExtractor.apply(entries.get(selected)), x, infoY, 0xFFFFFFFF, true);
         } else if (selected >= entries.size() && selected < totalSlots()) {
             ctx.drawText(tr, "??? (contenido no desbloqueado)", x, infoY, 0xFFAAAAAA, true);
         }
