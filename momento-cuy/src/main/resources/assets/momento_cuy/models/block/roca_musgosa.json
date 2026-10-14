@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/roca_musgosa/side",
+    "up": "momento_cuy:block/roca_musgosa/top",
+    "down": "momento_cuy:block/roca_musgosa/bottom",
+    "north": "momento_cuy:block/roca_musgosa/side",
+    "south": "momento_cuy:block/roca_musgosa/side_alt",
+    "west": "momento_cuy:block/roca_musgosa/side_alt",
+    "east": "momento_cuy:block/roca_musgosa/side"
+  }
+}

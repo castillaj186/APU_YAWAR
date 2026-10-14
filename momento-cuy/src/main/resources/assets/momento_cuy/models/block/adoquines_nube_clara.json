@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/adoquines_nube_clara/side",
+    "up": "momento_cuy:block/adoquines_nube_clara/top",
+    "down": "momento_cuy:block/adoquines_nube_clara/bottom",
+    "north": "momento_cuy:block/adoquines_nube_clara/side",
+    "south": "momento_cuy:block/adoquines_nube_clara/side_alt",
+    "west": "momento_cuy:block/adoquines_nube_clara/side_alt",
+    "east": "momento_cuy:block/adoquines_nube_clara/side"
+  }
+}

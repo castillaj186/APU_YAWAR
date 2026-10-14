@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/flor_solar_dorada/side",
+    "up": "momento_cuy:block/flor_solar_dorada/top",
+    "down": "momento_cuy:block/flor_solar_dorada/bottom",
+    "north": "momento_cuy:block/flor_solar_dorada/side",
+    "south": "momento_cuy:block/flor_solar_dorada/side_alt",
+    "west": "momento_cuy:block/flor_solar_dorada/side_alt",
+    "east": "momento_cuy:block/flor_solar_dorada/side"
+  }
+}

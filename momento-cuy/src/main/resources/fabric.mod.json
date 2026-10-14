@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "momento_cuy",
+  "version": "${version}",
+  "name": "APU YAWAR: Momento Cuy",
+  "description": "Dimension de islas flotantes, bloques tematicos y el Cuy Jardinero",
+  "authors": [
+    "Equipo APU YAWAR"
+  ],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pe.apuyawar.momentocuy.MomentoCuy"
+    ],
+    "client": [
+      "pe.apuyawar.momentocuy.client.MomentoCuyClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

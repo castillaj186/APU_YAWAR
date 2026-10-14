@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/baldosa_ornamental_lavanda/side",
+    "up": "momento_cuy:block/baldosa_ornamental_lavanda/top",
+    "down": "momento_cuy:block/baldosa_ornamental_lavanda/bottom",
+    "north": "momento_cuy:block/baldosa_ornamental_lavanda/side",
+    "south": "momento_cuy:block/baldosa_ornamental_lavanda/side_alt",
+    "west": "momento_cuy:block/baldosa_ornamental_lavanda/side_alt",
+    "east": "momento_cuy:block/baldosa_ornamental_lavanda/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/viga_puente_reforzada/side",
+    "up": "momento_cuy:block/viga_puente_reforzada/top",
+    "down": "momento_cuy:block/viga_puente_reforzada/bottom",
+    "north": "momento_cuy:block/viga_puente_reforzada/side",
+    "south": "momento_cuy:block/viga_puente_reforzada/side_alt",
+    "west": "momento_cuy:block/viga_puente_reforzada/side_alt",
+    "east": "momento_cuy:block/viga_puente_reforzada/side"
+  }
+}

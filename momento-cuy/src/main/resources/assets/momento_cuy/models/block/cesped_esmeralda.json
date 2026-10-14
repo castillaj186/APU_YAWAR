@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/cesped_esmeralda/side",
+    "up": "momento_cuy:block/cesped_esmeralda/top",
+    "down": "momento_cuy:block/cesped_esmeralda/bottom",
+    "north": "momento_cuy:block/cesped_esmeralda/side",
+    "south": "momento_cuy:block/cesped_esmeralda/side_alt",
+    "west": "momento_cuy:block/cesped_esmeralda/side_alt",
+    "east": "momento_cuy:block/cesped_esmeralda/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/flor_estrella_azul/side",
+    "up": "momento_cuy:block/flor_estrella_azul/top",
+    "down": "momento_cuy:block/flor_estrella_azul/bottom",
+    "north": "momento_cuy:block/flor_estrella_azul/side",
+    "south": "momento_cuy:block/flor_estrella_azul/side_alt",
+    "west": "momento_cuy:block/flor_estrella_azul/side_alt",
+    "east": "momento_cuy:block/flor_estrella_azul/side"
+  }
+}

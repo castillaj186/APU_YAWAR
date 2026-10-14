@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/roca_vetas_turquesas/side",
+    "up": "momento_cuy:block/roca_vetas_turquesas/top",
+    "down": "momento_cuy:block/roca_vetas_turquesas/bottom",
+    "north": "momento_cuy:block/roca_vetas_turquesas/side",
+    "south": "momento_cuy:block/roca_vetas_turquesas/side_alt",
+    "west": "momento_cuy:block/roca_vetas_turquesas/side_alt",
+    "east": "momento_cuy:block/roca_vetas_turquesas/side"
+  }
+}

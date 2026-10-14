@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/mineral_aguamarina/side",
+    "up": "momento_cuy:block/mineral_aguamarina/top",
+    "down": "momento_cuy:block/mineral_aguamarina/bottom",
+    "north": "momento_cuy:block/mineral_aguamarina/side",
+    "south": "momento_cuy:block/mineral_aguamarina/side_alt",
+    "west": "momento_cuy:block/mineral_aguamarina/side_alt",
+    "east": "momento_cuy:block/mineral_aguamarina/side"
+  }
+}

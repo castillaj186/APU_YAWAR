@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/cuarzo_rosa_perlado/side",
+    "up": "momento_cuy:block/cuarzo_rosa_perlado/top",
+    "down": "momento_cuy:block/cuarzo_rosa_perlado/bottom",
+    "north": "momento_cuy:block/cuarzo_rosa_perlado/side",
+    "south": "momento_cuy:block/cuarzo_rosa_perlado/side_alt",
+    "west": "momento_cuy:block/cuarzo_rosa_perlado/side_alt",
+    "east": "momento_cuy:block/cuarzo_rosa_perlado/side"
+  }
+}

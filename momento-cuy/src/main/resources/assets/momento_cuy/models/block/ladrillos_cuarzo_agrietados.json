@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/ladrillos_cuarzo_agrietados/side",
+    "up": "momento_cuy:block/ladrillos_cuarzo_agrietados/top",
+    "down": "momento_cuy:block/ladrillos_cuarzo_agrietados/bottom",
+    "north": "momento_cuy:block/ladrillos_cuarzo_agrietados/side",
+    "south": "momento_cuy:block/ladrillos_cuarzo_agrietados/side_alt",
+    "west": "momento_cuy:block/ladrillos_cuarzo_agrietados/side_alt",
+    "east": "momento_cuy:block/ladrillos_cuarzo_agrietados/side"
+  }
+}

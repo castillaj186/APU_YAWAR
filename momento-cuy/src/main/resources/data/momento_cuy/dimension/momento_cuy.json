@@ -1,0 +1,17 @@
+{
+  "type": "momento_cuy:momento_cuy",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "momento_cuy:cielo_momento_cuy",
+      "lakes": false,
+      "features": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        }
+      ]
+    }
+  }
+}

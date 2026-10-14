@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/plataforma_segura/side",
+    "up": "momento_cuy:block/plataforma_segura/top",
+    "down": "momento_cuy:block/plataforma_segura/bottom",
+    "north": "momento_cuy:block/plataforma_segura/side",
+    "south": "momento_cuy:block/plataforma_segura/side_alt",
+    "west": "momento_cuy:block/plataforma_segura/side_alt",
+    "east": "momento_cuy:block/plataforma_segura/side"
+  }
+}

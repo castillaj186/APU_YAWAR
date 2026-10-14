@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/tierra_arcillosa/side",
+    "up": "momento_cuy:block/tierra_arcillosa/top",
+    "down": "momento_cuy:block/tierra_arcillosa/bottom",
+    "north": "momento_cuy:block/tierra_arcillosa/side",
+    "south": "momento_cuy:block/tierra_arcillosa/side_alt",
+    "west": "momento_cuy:block/tierra_arcillosa/side_alt",
+    "east": "momento_cuy:block/tierra_arcillosa/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/piedra_runica_antigua/side",
+    "up": "momento_cuy:block/piedra_runica_antigua/top",
+    "down": "momento_cuy:block/piedra_runica_antigua/bottom",
+    "north": "momento_cuy:block/piedra_runica_antigua/side",
+    "south": "momento_cuy:block/piedra_runica_antigua/side_alt",
+    "west": "momento_cuy:block/piedra_runica_antigua/side_alt",
+    "east": "momento_cuy:block/piedra_runica_antigua/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/cristal_prismatico_rosa/side",
+    "up": "momento_cuy:block/cristal_prismatico_rosa/top",
+    "down": "momento_cuy:block/cristal_prismatico_rosa/bottom",
+    "north": "momento_cuy:block/cristal_prismatico_rosa/side",
+    "south": "momento_cuy:block/cristal_prismatico_rosa/side_alt",
+    "west": "momento_cuy:block/cristal_prismatico_rosa/side_alt",
+    "east": "momento_cuy:block/cristal_prismatico_rosa/side"
+  }
+}

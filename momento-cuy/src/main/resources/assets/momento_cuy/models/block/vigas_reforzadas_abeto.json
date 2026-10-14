@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/vigas_reforzadas_abeto/side",
+    "up": "momento_cuy:block/vigas_reforzadas_abeto/top",
+    "down": "momento_cuy:block/vigas_reforzadas_abeto/bottom",
+    "north": "momento_cuy:block/vigas_reforzadas_abeto/side",
+    "south": "momento_cuy:block/vigas_reforzadas_abeto/side_alt",
+    "west": "momento_cuy:block/vigas_reforzadas_abeto/side_alt",
+    "east": "momento_cuy:block/vigas_reforzadas_abeto/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/mosaico_cerezo/side",
+    "up": "momento_cuy:block/mosaico_cerezo/top",
+    "down": "momento_cuy:block/mosaico_cerezo/bottom",
+    "north": "momento_cuy:block/mosaico_cerezo/side",
+    "south": "momento_cuy:block/mosaico_cerezo/side_alt",
+    "west": "momento_cuy:block/mosaico_cerezo/side_alt",
+    "east": "momento_cuy:block/mosaico_cerezo/side"
+  }
+}

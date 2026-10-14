@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/piedra_pulida_azulada/side",
+    "up": "momento_cuy:block/piedra_pulida_azulada/top",
+    "down": "momento_cuy:block/piedra_pulida_azulada/bottom",
+    "north": "momento_cuy:block/piedra_pulida_azulada/side",
+    "south": "momento_cuy:block/piedra_pulida_azulada/side_alt",
+    "west": "momento_cuy:block/piedra_pulida_azulada/side_alt",
+    "east": "momento_cuy:block/piedra_pulida_azulada/side"
+  }
+}

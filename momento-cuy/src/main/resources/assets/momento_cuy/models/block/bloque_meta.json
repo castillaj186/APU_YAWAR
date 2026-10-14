@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/bloque_meta/side",
+    "up": "momento_cuy:block/bloque_meta/top",
+    "down": "momento_cuy:block/bloque_meta/bottom",
+    "north": "momento_cuy:block/bloque_meta/side",
+    "south": "momento_cuy:block/bloque_meta/side_alt",
+    "west": "momento_cuy:block/bloque_meta/side_alt",
+    "east": "momento_cuy:block/bloque_meta/side"
+  }
+}

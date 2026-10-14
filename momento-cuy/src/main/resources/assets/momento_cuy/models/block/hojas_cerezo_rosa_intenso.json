@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/hojas_cerezo_rosa_intenso/side",
+    "up": "momento_cuy:block/hojas_cerezo_rosa_intenso/top",
+    "down": "momento_cuy:block/hojas_cerezo_rosa_intenso/bottom",
+    "north": "momento_cuy:block/hojas_cerezo_rosa_intenso/side",
+    "south": "momento_cuy:block/hojas_cerezo_rosa_intenso/side_alt",
+    "west": "momento_cuy:block/hojas_cerezo_rosa_intenso/side_alt",
+    "east": "momento_cuy:block/hojas_cerezo_rosa_intenso/side"
+  }
+}

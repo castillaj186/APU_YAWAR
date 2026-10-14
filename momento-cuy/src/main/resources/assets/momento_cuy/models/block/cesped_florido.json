@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/cesped_florido/side",
+    "up": "momento_cuy:block/cesped_florido/top",
+    "down": "momento_cuy:block/cesped_florido/bottom",
+    "north": "momento_cuy:block/cesped_florido/side",
+    "south": "momento_cuy:block/cesped_florido/side_alt",
+    "west": "momento_cuy:block/cesped_florido/side_alt",
+    "east": "momento_cuy:block/cesped_florido/side"
+  }
+}

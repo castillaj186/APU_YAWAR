@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/vidrio_rosado/side",
+    "up": "momento_cuy:block/vidrio_rosado/top",
+    "down": "momento_cuy:block/vidrio_rosado/bottom",
+    "north": "momento_cuy:block/vidrio_rosado/side",
+    "south": "momento_cuy:block/vidrio_rosado/side_alt",
+    "west": "momento_cuy:block/vidrio_rosado/side_alt",
+    "east": "momento_cuy:block/vidrio_rosado/side"
+  }
+}

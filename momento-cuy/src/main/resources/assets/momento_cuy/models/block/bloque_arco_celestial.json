@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/bloque_arco_celestial/side",
+    "up": "momento_cuy:block/bloque_arco_celestial/top",
+    "down": "momento_cuy:block/bloque_arco_celestial/bottom",
+    "north": "momento_cuy:block/bloque_arco_celestial/side",
+    "south": "momento_cuy:block/bloque_arco_celestial/side_alt",
+    "west": "momento_cuy:block/bloque_arco_celestial/side_alt",
+    "east": "momento_cuy:block/bloque_arco_celestial/side"
+  }
+}

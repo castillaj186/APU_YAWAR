@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/baldosa_activadora/side",
+    "up": "momento_cuy:block/baldosa_activadora/top",
+    "down": "momento_cuy:block/baldosa_activadora/bottom",
+    "north": "momento_cuy:block/baldosa_activadora/side",
+    "south": "momento_cuy:block/baldosa_activadora/side_alt",
+    "west": "momento_cuy:block/baldosa_activadora/side_alt",
+    "east": "momento_cuy:block/baldosa_activadora/side"
+  }
+}

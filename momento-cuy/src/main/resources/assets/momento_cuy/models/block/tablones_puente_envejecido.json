@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/tablones_puente_envejecido/side",
+    "up": "momento_cuy:block/tablones_puente_envejecido/top",
+    "down": "momento_cuy:block/tablones_puente_envejecido/bottom",
+    "north": "momento_cuy:block/tablones_puente_envejecido/side",
+    "south": "momento_cuy:block/tablones_puente_envejecido/side_alt",
+    "west": "momento_cuy:block/tablones_puente_envejecido/side_alt",
+    "east": "momento_cuy:block/tablones_puente_envejecido/side"
+  }
+}

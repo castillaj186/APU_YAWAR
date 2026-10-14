@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/seto_jardin/side",
+    "up": "momento_cuy:block/seto_jardin/top",
+    "down": "momento_cuy:block/seto_jardin/bottom",
+    "north": "momento_cuy:block/seto_jardin/side",
+    "south": "momento_cuy:block/seto_jardin/side_alt",
+    "west": "momento_cuy:block/seto_jardin/side_alt",
+    "east": "momento_cuy:block/seto_jardin/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/adoquines_acantilado/side",
+    "up": "momento_cuy:block/adoquines_acantilado/top",
+    "down": "momento_cuy:block/adoquines_acantilado/bottom",
+    "north": "momento_cuy:block/adoquines_acantilado/side",
+    "south": "momento_cuy:block/adoquines_acantilado/side_alt",
+    "west": "momento_cuy:block/adoquines_acantilado/side_alt",
+    "east": "momento_cuy:block/adoquines_acantilado/side"
+  }
+}

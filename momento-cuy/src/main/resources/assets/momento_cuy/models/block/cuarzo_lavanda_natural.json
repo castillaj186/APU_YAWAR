@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/cuarzo_lavanda_natural/side",
+    "up": "momento_cuy:block/cuarzo_lavanda_natural/top",
+    "down": "momento_cuy:block/cuarzo_lavanda_natural/bottom",
+    "north": "momento_cuy:block/cuarzo_lavanda_natural/side",
+    "south": "momento_cuy:block/cuarzo_lavanda_natural/side_alt",
+    "west": "momento_cuy:block/cuarzo_lavanda_natural/side_alt",
+    "east": "momento_cuy:block/cuarzo_lavanda_natural/side"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/roca_azul_profunda/side",
+    "up": "momento_cuy:block/roca_azul_profunda/top",
+    "down": "momento_cuy:block/roca_azul_profunda/bottom",
+    "north": "momento_cuy:block/roca_azul_profunda/side",
+    "south": "momento_cuy:block/roca_azul_profunda/side_alt",
+    "west": "momento_cuy:block/roca_azul_profunda/side_alt",
+    "east": "momento_cuy:block/roca_azul_profunda/side"
+  }
+}

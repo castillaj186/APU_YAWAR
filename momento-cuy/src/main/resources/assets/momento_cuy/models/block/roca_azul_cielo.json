@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/roca_azul_cielo/side",
+    "up": "momento_cuy:block/roca_azul_cielo/top",
+    "down": "momento_cuy:block/roca_azul_cielo/bottom",
+    "north": "momento_cuy:block/roca_azul_cielo/side",
+    "south": "momento_cuy:block/roca_azul_cielo/side_alt",
+    "west": "momento_cuy:block/roca_azul_cielo/side_alt",
+    "east": "momento_cuy:block/roca_azul_cielo/side"
+  }
+}

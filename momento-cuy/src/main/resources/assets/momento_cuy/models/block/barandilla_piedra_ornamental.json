@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/barandilla_piedra_ornamental/side",
+    "up": "momento_cuy:block/barandilla_piedra_ornamental/top",
+    "down": "momento_cuy:block/barandilla_piedra_ornamental/bottom",
+    "north": "momento_cuy:block/barandilla_piedra_ornamental/side",
+    "south": "momento_cuy:block/barandilla_piedra_ornamental/side_alt",
+    "west": "momento_cuy:block/barandilla_piedra_ornamental/side_alt",
+    "east": "momento_cuy:block/barandilla_piedra_ornamental/side"
+  }
+}

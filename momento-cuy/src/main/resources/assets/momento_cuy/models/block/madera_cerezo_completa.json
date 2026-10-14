@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/madera_cerezo_completa/side",
+    "up": "momento_cuy:block/madera_cerezo_completa/top",
+    "down": "momento_cuy:block/madera_cerezo_completa/bottom",
+    "north": "momento_cuy:block/madera_cerezo_completa/side",
+    "south": "momento_cuy:block/madera_cerezo_completa/side_alt",
+    "west": "momento_cuy:block/madera_cerezo_completa/side_alt",
+    "east": "momento_cuy:block/madera_cerezo_completa/side"
+  }
+}

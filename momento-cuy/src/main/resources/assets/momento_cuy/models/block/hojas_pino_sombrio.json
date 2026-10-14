@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/hojas_pino_sombrio/side",
+    "up": "momento_cuy:block/hojas_pino_sombrio/top",
+    "down": "momento_cuy:block/hojas_pino_sombrio/bottom",
+    "north": "momento_cuy:block/hojas_pino_sombrio/side",
+    "south": "momento_cuy:block/hojas_pino_sombrio/side_alt",
+    "west": "momento_cuy:block/hojas_pino_sombrio/side_alt",
+    "east": "momento_cuy:block/hojas_pino_sombrio/side"
+  }
+}

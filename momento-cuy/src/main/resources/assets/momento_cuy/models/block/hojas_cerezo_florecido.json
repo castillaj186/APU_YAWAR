@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/hojas_cerezo_florecido/side",
+    "up": "momento_cuy:block/hojas_cerezo_florecido/top",
+    "down": "momento_cuy:block/hojas_cerezo_florecido/bottom",
+    "north": "momento_cuy:block/hojas_cerezo_florecido/side",
+    "south": "momento_cuy:block/hojas_cerezo_florecido/side_alt",
+    "west": "momento_cuy:block/hojas_cerezo_florecido/side_alt",
+    "east": "momento_cuy:block/hojas_cerezo_florecido/side"
+  }
+}

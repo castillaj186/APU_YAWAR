@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/vidrio_transparente_puro/side",
+    "up": "momento_cuy:block/vidrio_transparente_puro/top",
+    "down": "momento_cuy:block/vidrio_transparente_puro/bottom",
+    "north": "momento_cuy:block/vidrio_transparente_puro/side",
+    "south": "momento_cuy:block/vidrio_transparente_puro/side_alt",
+    "west": "momento_cuy:block/vidrio_transparente_puro/side_alt",
+    "east": "momento_cuy:block/vidrio_transparente_puro/side"
+  }
+}

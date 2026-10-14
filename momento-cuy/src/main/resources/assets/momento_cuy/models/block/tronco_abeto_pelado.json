@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/tronco_abeto_pelado/side",
+    "up": "momento_cuy:block/tronco_abeto_pelado/top",
+    "down": "momento_cuy:block/tronco_abeto_pelado/bottom",
+    "north": "momento_cuy:block/tronco_abeto_pelado/side",
+    "south": "momento_cuy:block/tronco_abeto_pelado/side_alt",
+    "west": "momento_cuy:block/tronco_abeto_pelado/side_alt",
+    "east": "momento_cuy:block/tronco_abeto_pelado/side"
+  }
+}

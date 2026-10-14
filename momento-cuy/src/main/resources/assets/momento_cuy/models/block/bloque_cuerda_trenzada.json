@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/bloque_cuerda_trenzada/side",
+    "up": "momento_cuy:block/bloque_cuerda_trenzada/top",
+    "down": "momento_cuy:block/bloque_cuerda_trenzada/bottom",
+    "north": "momento_cuy:block/bloque_cuerda_trenzada/side",
+    "south": "momento_cuy:block/bloque_cuerda_trenzada/side_alt",
+    "west": "momento_cuy:block/bloque_cuerda_trenzada/side_alt",
+    "east": "momento_cuy:block/bloque_cuerda_trenzada/side"
+  }
+}

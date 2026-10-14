@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "momento_cuy:block/vitral_encantado/side",
+    "up": "momento_cuy:block/vitral_encantado/top",
+    "down": "momento_cuy:block/vitral_encantado/bottom",
+    "north": "momento_cuy:block/vitral_encantado/side",
+    "south": "momento_cuy:block/vitral_encantado/side_alt",
+    "west": "momento_cuy:block/vitral_encantado/side_alt",
+    "east": "momento_cuy:block/vitral_encantado/side"
+  }
+}
