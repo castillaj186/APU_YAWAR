@@ -34,3 +34,35 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
     withSourcesJar()
 }
+
+// Causa real de "los comandos de apuyawar-lighting nunca se registran" /
+// "ningun log de ApuYawarLightingClient aparece": Loom cachea el jar
+// remapeado de una dependencia de proyecto (modImplementation project(...))
+// en .gradle/loom-cache/remapped_mods/, en una ruta separada de
+// apuyawar-lighting/build/libs/. Esa cache esta indexada por (id, version)
+// del mod, no por el contenido real del jar -- como mod_version nunca
+// cambia entre iteraciones de desarrollo, Loom seguia sirviendo la copia
+// remapeada de la PRIMERA vez que se corrio runClient, sin importar cuantas
+// veces se recompilara apuyawar-lighting despues. Se confirmo viendo el
+// tamano/fecha real del .class dentro de esa cache (más pequeño y más
+// viejo que el jar recien construido) y que no aparecia ningun log de
+// ApuYawarLightingClient hasta borrar esa entrada a mano.
+//
+// Esta tarea borra esa entrada de cache (por nombre de archivo, no por la
+// carpeta de version de mappings, que puede cambiar) antes de runClient/
+// runServer, para que SIEMPRE se remapee la version mas reciente de
+// apuyawar-lighting -- sin esto, cualquier cambio futuro al motor RGB
+// correria el mismo riesgo de probarse contra una copia vieja en silencio.
+tasks.register('clearStaleLightingRemapCache') {
+    doFirst {
+        def cacheRoot = rootProject.layout.projectDirectory.dir('.gradle/loom-cache/remapped_mods').asFile
+        if (cacheRoot.exists()) {
+            fileTree(cacheRoot) {
+                include '**/apuyawar-lighting-*.jar'
+            }.each { it.delete() }
+        }
+    }
+}
+tasks.matching { it.name == 'runClient' || it.name == 'runServer' }.configureEach {
+    dependsOn 'clearStaleLightingRemapCache'
+}

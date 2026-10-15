@@ -48,12 +48,18 @@ public final class EmitterTracker {
      * A si hay uno colocado (ver {@code LightingCommands#test}) — el de
      * prueba se incluye siempre, sin esperar al próximo rescaneo.
      *
-     * <p>Corrección: antes el emisor de prueba se añadía
-     * incondicionalmente, incluso con {@code rgbEnabled=false} —
-     * {@code /apuyawarlighting toggle} no lo apagaba. Ahora respeta la
-     * misma bandera que ya usa {@link #rescan}.</p> */
+     * <p>Corrección (ronda anterior): antes el emisor de prueba se añadía
+     * incondicionalmente, incluso con {@code rgbEnabled=false}.</p>
+     *
+     * <p>Corrección (esta ronda): la comprobación de {@code rgbEnabled} se
+     * hace PRIMERO y devuelve {@code List.of()} de inmediato — antes, con
+     * {@code rgbEnabled=false} pero sin emisor de prueba, se devolvía el
+     * campo {@code active} tal cual, que puede seguir teniendo la lista del
+     * último rescaneo (hasta {@link #SCAN_INTERVAL_TICKS} ticks de
+     * antigüedad) en vez de una lista vacía inmediata.</p> */
     public static List<ActiveEmitter> active() {
-        if (testEmitter == null || !ApuYawarLightingClient.config().rgbEnabled) return active;
+        if (!ApuYawarLightingClient.config().rgbEnabled) return List.of();
+        if (testEmitter == null) return active;
         List<ActiveEmitter> withTest = new ArrayList<>(active.size() + 1);
         withTest.add(testEmitter);
         withTest.addAll(active);
@@ -82,6 +88,10 @@ public final class EmitterTracker {
         ClientWorld world = client.world;
         if (world == null || client.player == null) {
             active = List.of();
+            // Corrección: el emisor de prueba no se limpiaba al abandonar el
+            // mundo (desconectar o volver al menú principal) -- quedaba
+            // apuntando a un BlockPos de un mundo que ya no existe.
+            testEmitter = null;
             return;
         }
         LightingConfig config = ApuYawarLightingClient.config();

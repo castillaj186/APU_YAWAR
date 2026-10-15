@@ -34,29 +34,32 @@ porque algo se viera mal, y señaló correctamente que "no basta con que
 compile". Se corrigieron los 4 problemas reales (sección 16) y se
 recompiló/reconstruyó todo el proyecto con éxito.
 
-**Sobre la reverificación en vivo tras la corrección**: se intentó
-arrancar `gradlew :momento-cuy:runClient` de nuevo tres veces seguidas
-para confirmar en una sesión real que el código corregido no lanza
-ninguna excepción al dibujar. Las tres veces el proceso se quedó
-detenido en el mismo punto exacto del arranque (justo después de crear
-los atlas de texturas, antes de que el mundo llegue a cargar) — un punto
-muy anterior a donde se ejecutaría nuestro código de render (que sólo
-corre una vez hay un mundo renderizándose), y la misma sesión ya había
-arrancado limpio una vez antes en esta ronda de trabajo, así que lo más
-probable es agotamiento de recursos del entorno tras varios arranques
-seguidos de un cliente gráfico completo en una sesión ya muy larga, no un
-error del código nuevo — pero esto no se puede afirmar con certeza total
-sin un reinicio limpio del entorno, así que se documenta como lo que es:
-una reverificación en vivo inconclusa, no un "sí funciona" ni un "no
-funciona". Lo que sí respalda la corrección con alta confianza es
-verificación estática: `gradlew build` completo sin errores, y cada API
-nueva usada en el renderizador corregido (`Tessellator#begin`,
-`BufferBuilder#end`, `BufferRenderer.drawWithGlobalProgram`,
-`RenderSystem` de blend/profundidad/shader, `Quaternionf`/`Matrix4f` de
-JOML) se confirmó primero contra el bytecode real de Minecraft 1.21.1
-antes de escribirla — el mismo método que ya detectó y evitó errores
-reales en entregas anteriores de este proyecto (p. ej. la firma de
-`SaplingGenerator` de 4 argumentos).
+**Sobre la reverificación en vivo tras esa corrección**: en su momento se
+intentó `gradlew :momento-cuy:runClient` tres veces y las tres se quedó
+detenido en el mismo punto del arranque, y se documentó como "probable
+agotamiento de recursos, no un error de código" sin poder confirmarlo del
+todo. **Esa conclusión quedó incompleta por dos razones que sólo se
+descubrieron en la ronda de corrección siguiente (sección 17)**: (a) ese
+punto del arranque sólo era lento, no estaba realmente colgado — con más
+tiempo de margen, siempre terminaba solo (confirmado más tarde con
+sesiones reales de hasta 2 minutos y pico en ese paso concreto); y (b)
+más importante, **esas pruebas tampoco habrían demostrado nada del halo
+aunque hubieran llegado a un mundo**, porque un bug de caché de Loom
+completamente distinto (sección 17) hacía que el cliente cargara una
+copia de `apuyawar-lighting` congelada de horas antes, sin ninguna de las
+correcciones de esta sección. La sección 17 tiene la reverificación real,
+con sesión completa y sin excepciones.
+
+Lo que sí respaldó la corrección del renderizador con alta confianza,
+incluso antes de esa reverificación completa, fue verificación estática:
+`gradlew build` completo sin errores, y cada API nueva usada en el
+renderizador corregido (`Tessellator#begin`, `BufferBuilder#end`,
+`BufferRenderer.drawWithGlobalProgram`, `RenderSystem` de
+blend/profundidad/shader, `Quaternionf`/`Matrix4f` de JOML) confirmada
+primero contra el bytecode real de Minecraft 1.21.1 antes de escribirla
+— el mismo método que ya detectó y evitó errores reales en entregas
+anteriores de este proyecto (p. ej. la firma de `SaplingGenerator` de 4
+argumentos).
 
 **Lo que sigue sin poder confirmarse, ahora y antes**: la calidad visual
 real (si el halo se parece a la imagen de referencia, si los
@@ -616,3 +619,147 @@ en el renderizador corregido confirmada contra bytecode real antes de
 escribirla, y un intento de reverificación en vivo que resultó
 inconcluso por una razón de entorno (no de código) explicada ahí mismo —
 no se afirma una confirmación visual que no se obtuvo.
+
+## 17. Corrección post-entrega (2) — los comandos nunca se habían probado de verdad
+
+El equipo reportó que `/apuyawarlighting preset high`, `/apuyawarlighting
+test` y `/apuyawarlighting toggle` daban "Comando desconocido o
+incompleto" desde el primer carácter, con `apuyawar_lighting 0.1.0`
+listado como mod cargado. Investigación paso a paso, exactamente en el
+orden que pidió el equipo:
+
+### Paso 1-3: logs de diagnóstico
+
+Se añadió un `Logger` (`"apuyawar-lighting"`, el mismo patrón que ya usa
+`momento-cuy`) con mensajes `[DIAG]` en:
+- `ApuYawarLightingClient.onInitializeClient()` — al entrar y al salir sin
+  excepciones.
+- `LightingCommands.register()` — al invocarse.
+- Dentro del propio callback `ClientCommandRegistrationCallback.EVENT`
+  — para confirmar que el evento realmente se dispara, no sólo que se
+  registró un listener.
+- Un comando mínimo nuevo, `/ayldiag` (sin argumentos), registrado antes
+  que el árbol completo de `/apuyawarlighting`, para aislar si el
+  problema era el registro en sí o algo específico del árbol anidado.
+
+### Paso 4: la causa real — no estaba en `LightingCommands.java`
+
+Al ejecutar `gradlew :momento-cuy:runClient` con los logs nuevos, **no
+apareció ningún mensaje `(apuyawar-lighting)` en absoluto** — ni el de
+`onInitializeClient()`, que es la primera línea del método. Eso significa
+que el entrypoint de cliente del módulo nunca se estaba invocando, algo
+anterior incluso a si el comando se registra bien o mal.
+
+Inspeccionando el jar que Fabric Loader realmente carga para
+`:momento-cuy:runClient` (no el de `apuyawar-lighting/build/libs/`, sino
+una copia separada en caché que Loom mantiene en
+`.gradle/loom-cache/remapped_mods/.../pe/apuyawar/apuyawar-lighting/0.1.0/apuyawar-lighting-0.1.0.jar`
+para las dependencias de proyecto, `modImplementation project(...)`) se
+confirmó la causa real: **esa copia en caché tenía fecha y tamaño de
+`.class` de horas antes** — de antes incluso de la primera ronda de
+correcciones de este documento. Loom indexa esa caché por `(id, versión)`
+del mod, no por el contenido real del jar; como `mod_version` nunca
+cambió entre iteraciones de desarrollo de hoy, Loom seguía sirviendo la
+primerísima copia remapeada, sin importar cuántas veces se recompilara
+`apuyawar-lighting` después — **ni el equipo ni la corrección anterior de
+este documento estaban probando el código corregido, estaban probando
+una versión congelada de antes de que existieran los comandos tal como
+están hoy.**
+
+Esto también explica por qué el bug nunca apareció como una excepción:
+Fabric Loader sí invocaba un `onInitializeClient()` — sólo que era el de
+la copia vieja en caché, que (en su momento) no tenía ningún log propio,
+así que no dejaba ningún rastro distinguible de "esto es una versión
+vieja" en el log.
+
+**Esto confirma, además, algo importante sobre la ronda de corrección
+anterior (sección 16)**: los 4 bugs de renderizado que se corrigieron
+ahí (consumers() nulo, mezcla aditiva, halos cuadrados, el toggle del
+emisor de prueba) eran reales y la corrección en sí sigue siendo válida
+(verificada por bytecode, no por ejecución) — pero el intento de
+reverificación en vivo de esa sección nunca pudo haber mostrado el
+halo correctamente de todas formas, porque el cliente seguía cargando
+el jar congelado de antes de esa corrección también.
+
+### Paso 5-6: confirmado con una copia fresca
+
+Se borró manualmente la entrada de caché y se repitió `runClient`: los
+tres logs `[DIAG]` de `onInitializeClient()`/`LightingCommands.register()`
+aparecieron de inmediato, confirmando que el entrypoint de cliente y la
+llamada a registrar comandos **siempre fueron correctos** — el código de
+`LightingCommands.java` nunca tuvo el bug, nunca hizo falta tocar su
+estructura ni su arquitectura, tal como pidió el equipo.
+
+**Pasos 4 y 5, confirmados — ya no quedan pendientes.** Un tercer intento
+(240 segundos de margen) sí llegó a cargar el mundo real esta vez: lo que
+en los intentos anteriores parecía un punto muerto permanente después de
+crear los atlas de texturas en realidad era sólo **lento** (unos 2
+minutos y 8 segundos en ese paso concreto esta vez, dentro de una sesión
+ya muy larga con varios Gradle/Java acumulados) — con más tiempo,
+terminó solo. El log real, íntegro, muestra la secuencia completa sin
+ninguna excepción:
+
+```
+[01:29:07] (Minecraft) Player66[local:...] logged in with entity id 62 at (...)
+[01:29:07] (Minecraft) Player66 se conectó
+[01:29:07] (apuyawar-lighting) [DIAG] ClientCommandRegistrationCallback disparado (dispatcher=com.mojang.brigadier.CommandDispatcher@1aaf9cde)
+[01:29:07] (apuyawar-lighting) [DIAG] /ayldiag registrado
+[01:29:07] (apuyawar-lighting) [DIAG] /apuyawarlighting registrado, nodo='apuyawarlighting'
+[01:29:07] (Minecraft) Loaded 4 advancements
+```
+
+Esto confirma, con evidencia real y no sólo razonamiento: el evento
+**sí** se dispara al entrar al mundo, el nodo `apuyawarlighting` **sí**
+queda registrado en el dispatcher activo, y no hay ninguna excepción en
+el proceso. Los 6 pasos de investigación que pidió el equipo quedan
+completos.
+
+### Paso 7-8: corrección real, sin tocar la arquitectura del motor RGB
+
+La corrección NO fue en `LightingCommands.java` ni en ninguna clase del
+motor — fue en `momento-cuy/build.gradle`: una tarea nueva,
+`clearStaleLightingRemapCache`, que borra cualquier
+`apuyawar-lighting-*.jar` dentro de la caché de Loom antes de que
+corran `runClient`/`runServer` (`tasks.matching { it.name == 'runClient'
+|| it.name == 'runServer' }.configureEach { dependsOn
+'clearStaleLightingRemapCache' }`), para que **siempre** se remapee la
+versión más reciente del módulo. Sin esto, cualquier cambio futuro al
+motor RGB habría corrido el mismo riesgo de probarse en silencio contra
+una copia vieja. Confirmado con `gradlew :momento-cuy:runClient --dry-run`
+que la tarea nueva queda enganchada antes de `runClient` en el plan de
+ejecución real.
+
+### Las otras dos correcciones pedidas
+
+- **`EmitterTracker.active()` con `rgbEnabled=false`**: antes, si no
+  había emisor de prueba, el método devolvía el campo `active` tal cual
+  — que puede seguir teniendo la lista del último rescaneo (hasta 10
+  ticks de antigüedad) en vez de una lista vacía inmediata. Corregido
+  para comprobar `rgbEnabled` primero y devolver `List.of()` de
+  inmediato en ese caso, sin esperar al siguiente rescaneo.
+- **El emisor de prueba al abandonar el mundo**: `rescan()` ya vaciaba
+  `active` cuando `client.world == null` (desconexión), pero no tocaba
+  `testEmitter` — quedaba apuntando a un `BlockPos` de un mundo que ya
+  no existe. Ahora se limpia en el mismo punto.
+
+### Pendiente para el equipo
+
+Los 6 pasos de diagnóstico que pidió el equipo ya se confirmaron con una
+ejecución real (arriba) — lo único que falta es la prueba interactiva en
+el propio juego del equipo, ahora que la causa real está resuelta:
+
+1. Correr `gradlew :momento-cuy:runClient` (la caché stale ya no puede
+   volver a interponerse — se borra sola antes de lanzar, en cada
+   ejecución). Si el arranque parece tardar mucho justo después de "Created
+   ... gui.png-atlas", no es un cuelgue — puede tardar más de un minuto en
+   ese paso concreto; conviene esperar en vez de cancelar.
+2. Confirmar en el chat/consola que `/ayldiag` y `/apuyawarlighting`
+   (con sus subcomandos) aparecen en las sugerencias y se pueden
+   ejecutar — esto es lo único que falta probar de verdad, ya que el
+   registro en sí quedó confirmado por el log real de arriba.
+3. Probar `/apuyawarlighting test` cerca de un Abeto Celestial para por
+   fin ver el halo turquesa — objetivo original de esta ronda.
+4. Si todo funciona, el equipo puede pedir que se quiten los logs
+   `[DIAG]` y `/ayldiag` en un commit de limpieza aparte — se dejaron
+   esta vez a propósito para que el propio equipo los vea en su sesión
+   real, no por descuido.

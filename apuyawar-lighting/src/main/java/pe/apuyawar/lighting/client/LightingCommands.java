@@ -10,6 +10,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pe.apuyawar.lighting.EmitterProfile;
 import pe.apuyawar.lighting.EmitterType;
 import pe.apuyawar.lighting.config.LightingConfig;
@@ -21,12 +23,31 @@ import pe.apuyawar.lighting.config.LightingQuality;
  * cambios sin reiniciar"). No reutiliza ninguna tecla del Panel K ni añade
  * overlays de depuración permanentes: es sólo un comando de chat/consola,
  * igual que cualquier otro comando de cliente de Fabric.
+ *
+ * <p>Logs temporales de diagnóstico (sección "DIAG" del encargo de
+ * corrección): quedan hasta confirmar que el comando aparece de verdad en
+ * las sugerencias del chat del equipo, luego se quitan en un commit
+ * aparte.</p>
  */
 final class LightingCommands {
+    private static final Logger LOGGER = LoggerFactory.getLogger("apuyawar-lighting");
+
     private LightingCommands() {}
 
     static void register() {
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
+        LOGGER.info("[DIAG] LightingCommands.register() invocado");
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            LOGGER.info("[DIAG] ClientCommandRegistrationCallback disparado (dispatcher={})", dispatcher);
+            // Comando mínimo de diagnóstico, sin argumentos, para aislar si
+            // el problema es el registro en sí o el árbol anidado de
+            // /apuyawarlighting -- se quita junto con el resto de logs DIAG.
+            dispatcher.register(ClientCommandManager.literal("ayldiag").executes(ctx -> {
+                feedback(ctx.getSource(), "ayldiag OK -- el registro de comandos de cliente funciona");
+                return 1;
+            }));
+            LOGGER.info("[DIAG] /ayldiag registrado");
+
+            var node = dispatcher.register(
                 ClientCommandManager.literal("apuyawarlighting")
                         .then(ClientCommandManager.literal("toggle").executes(ctx -> {
                             LightingConfig config = ApuYawarLightingClient.config();
@@ -70,7 +91,9 @@ final class LightingCommands {
                         .then(ClientCommandManager.literal("test")
                                 .executes(LightingCommands::toggleTestEmitter))
                         .then(ClientCommandManager.literal("estado")
-                                .executes(LightingCommands::showStatus))));
+                                .executes(LightingCommands::showStatus)));
+            LOGGER.info("[DIAG] /apuyawarlighting registrado, nodo='{}'", node.getName());
+        });
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<FabricClientCommandSource> setFloatField(
