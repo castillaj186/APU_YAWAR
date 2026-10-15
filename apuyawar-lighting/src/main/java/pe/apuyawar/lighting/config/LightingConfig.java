@@ -54,6 +54,12 @@ public final class LightingConfig {
      * dependencia de {@code apuyawar-lighting}), que es lo que las hojas
      * leen de verdad. */
     public float particleDensityMultiplier = LightingQuality.MEDIUM.particleDensityMultiplier;
+    /** V4 fase 2: fracción (0..1) de las partículas celestiales nuevas
+     * (ver {@code client.CelestialParticleSpawner}) que nacen como
+     * "estrella" en vez de "chispa" -- sección 4.6 del encargo:
+     * "cantidad de estrellas especiales" como control independiente de
+     * la densidad general. */
+    public float celestialStarFraction = 0.07f;
     public float dayIntensityMultiplier = 0.55f;
     public float nightIntensityMultiplier = 1.0f;
     public int maxActiveLights = LightingQuality.MEDIUM.maxActiveLights;

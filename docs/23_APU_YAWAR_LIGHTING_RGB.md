@@ -2223,3 +2223,111 @@ al cierre de las 4 fases para la lista completa).
 Commit de esta fase: ver historial de `feat/apuyawar-rgb-lighting`
 inmediatamente después de esta sección (mensaje "APU YAWAR Lighting V4
 fase 1: follaje emisivo real").
+
+### 23.2. Fase 2 — Partículas celestiales personalizadas
+
+**Reutilización explícita, no partículas pintadas a mano esta ronda**:
+las dos partículas nuevas reutilizan sprites REALES de vanilla, ya
+presentes en el atlas de partículas del juego:
+
+- **Chispa celestial** (`CelestialSparkParticle`): sprite
+  `minecraft:glow` (el mismo núcleo+halo suave que ya usa el calamar
+  brillante) -- ya viene con núcleo brillante y halo tenue integrados
+  en un solo sprite, exactamente lo que pedía la sección 4.2.B.
+- **Estrella celestial** (`CelestialStarParticle`): secuencia animada
+  `minecraft:glitter_0..7` (la misma que usa el End Rod) -- forma de
+  destello/estrella real, pixel art de vanilla, con las 8 fases de la
+  animación reproducidas vía `setSpriteForAge`.
+
+La "mota" original (`MomentoCuyAbetoLeavesBlock`, sin cambios esta
+ronda) sigue intacta y generando partículas por bloque de hoja, tal
+como ya hacía.
+
+**Dos paletas, no el mismo comportamiento para ambos árboles** (sección
+4.7 del encargo: "no reutilices exactamente el mismo comportamiento del
+abeto"): nuevo campo `EmitterProfile#warmPalette` (bool) --
+`hojas_cerezo_florecido` lo activa (`withWarmPalette()`), dando
+`CHISPA_ROSA`/`ESTRELLA_ROSA` (rosa suave + destello dorado de Inti,
+colores `0xFF8FC9`/`0xFFD659`); `hojas_pino_esmeralda` usa las
+variantes turquesa/cian por defecto (`0x00D9C8`/`0x00FFF0`). Cuatro
+`SimpleParticleType` registrados en total (`CelestialParticleTypes`),
+en vez de un único tipo con color dinámico -- más simple y transparente
+que un `ParticleEffect` complejo con codec propio sólo para esto.
+
+**Posición real del árbol, no del jugador** (sección 4.3 del encargo):
+`CelestialParticleSpawner` (nuevo) itera
+`EmitterTracker.active()` -- los emisores de follaje YA validados,
+acotados por distancia y por chunk cargado por el motor existente -- y
+genera cada partícula con un desplazamiento aleatorio alrededor de esa
+posición real (hasta ~0.9 bloques en cada eje, algunas quedan fuera del
+volumen visual de la hoja a propósito, sección 4.3: "flotando
+ligeramente fuera de la copa"), nunca alrededor de la cámara.
+
+**Movimiento propio, no el de ningún calamar ni End Rod** (sección 4.4
+del encargo): ambas clases sobrescriben `tick()` por completo --
+`CelestialSparkParticle` tiene una oscilación senoidal con fase propia
+por partícula (nunca la misma dirección en todas) y una vertical que
+decae hacia cero en vez de caer; `CelestialStarParticle` crece rápido
+al nacer y se apaga en la segunda mitad de su vida corta (16-26 ticks),
+nunca una estrella grande y persistente.
+
+**Fullbright real** (sección 4.5 del encargo: "no quiero usar
+solamente partículas Dust más grandes"): ambas devuelven
+`ParticleTextureSheet.PARTICLE_SHEET_LIT` en `getType()` -- la misma
+hoja de render que usa vanilla para sus propios efectos que ignoran el
+mapa de luz del mundo (glow squid, soul fire, etc.), así que brillan de
+noche sin necesitar ningún cálculo de brillo manual.
+
+**Densidad conectada de verdad, sin mezclarla con los puntos fijos**
+(sección 4.6 del encargo, ya parcialmente resuelta en la V3 para la
+"mota"): `CelestialParticleSpawner` reutiliza el MISMO
+`config.particleDensityMultiplier` que ya gobierna la "mota" --
+densidad 0 apaga también chispas/estrellas, sin tocar
+`fixedPointDensityMultiplier` (los puntos fijos de la copa) en
+absoluto. Nuevo campo independiente `celestialStarFraction` (0..1,
+default 0.07) controla específicamente "cuántas de las partículas
+nuevas son estrella en vez de chispa" -- sección 4.6: "cantidad de
+estrellas especiales" como control separado. Nuevo comando
+`/apuyawarlighting set fraccionestrellas <valor>`.
+
+**Rendimiento** (sección 4.8 del encargo): `CelestialParticleSpawner`
+no recorre el mundo por su cuenta -- reutiliza
+`EmitterTracker.active()`, ya acotado; la probabilidad de generar una
+partícula por emisor activo y tick es baja a propósito
+(`BASE_SPARK_CHANCE = 0.005`, multiplicada por la densidad
+configurada), así que el costo escala con `maxluces`, nunca con el
+tamaño del bosque completo. No se generan partículas si no hay ningún
+emisor activo (chunk descargado o fuera de rango ya excluidos por
+`EmitterTracker`).
+
+**Pruebas reales ejecutadas**:
+- `gradlew :apuyawar-lighting:compileJava`/`:momento-cuy:compileJava`:
+  éxito al primer intento (las firmas de `FabricParticleTypes`,
+  `ParticleFactoryRegistry`, `SpriteBillboardParticle`,
+  `ParticleTextureSheet` se verificaron antes con `javap`/los fuentes
+  reales de `fabric-particles-v1` contra el jar cacheado de este
+  entorno, no se adivinaron).
+- `gradlew :momento-cuy:runClient`: arranque completo, `apuyawar_lighting`
+  aparece en la lista de recursos recargados
+  (`Reloading ResourceManager: vanilla, fabric, apuyawar_lighting, ...`),
+  **sin ninguna advertencia de sprite/partícula faltante** para
+  `chispa_turquesa`/`chispa_rosa`/`estrella_turquesa`/`estrella_rosa`
+  -- confirma que las cuatro definiciones JSON resuelven correctamente
+  contra los sprites reales de vanilla. Los logs `[DIAG]` de
+  inicialización (incluida la autoprueba de material emisivo de la
+  fase 1) terminan sin excepciones.
+- `gradlew build` (4 módulos): éxito, sin regresión.
+
+**No verificado visualmente**: igual que en la fase 1, no se pudo
+confirmar en pantalla el aspecto real de las chispas/estrellas
+alrededor de un árbol (sin control de teclado/ratón en este entorno).
+Lo verificado es que el registro de tipos/fábricas de partículas y la
+resolución de sus sprites funciona de verdad dentro del cliente real,
+sin excepciones ni advertencias. Pendiente del equipo: entrar a un
+mundo, acercarse de noche a un Abeto/Cerezo Celestial, y confirmar
+visualmente densidad, color, movimiento y la proporción chispa/estrella
+con `/apuyawarlighting set particulasmoviles <valor>` y
+`/apuyawarlighting set fraccionestrellas <valor>`.
+
+Commit de esta fase: "APU YAWAR Lighting V4 fase 2: partículas
+celestiales personalizadas".

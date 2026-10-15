@@ -85,6 +85,7 @@ final class LightingCommands {
                                 .then(setFloatField("radiobloom", c -> c.bloomRadiusMultiplier, (c, v) -> c.bloomRadiusMultiplier = v))
                                 .then(setFloatField("puntosfijos", c -> c.fixedPointDensityMultiplier, (c, v) -> c.fixedPointDensityMultiplier = v))
                                 .then(setFloatField("particulasmoviles", c -> c.particleDensityMultiplier, (c, v) -> c.particleDensityMultiplier = v))
+                                .then(setFloatField("fraccionestrellas", c -> c.celestialStarFraction, (c, v) -> c.celestialStarFraction = v))
                                 .then(setFloatField("intensidadmaterial", c -> c.emissiveMaterialIntensity, (c, v) -> c.emissiveMaterialIntensity = v))
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
@@ -205,7 +206,7 @@ final class LightingCommands {
         // añade siempre, sin pasar por el escaneo de bloques.
         EmitterTracker.setTestEmitter(pos, new EmitterProfile(
                 profile.red(), profile.green(), profile.blue(), null, null, null,
-                profile.intensity(), profile.radius(), profile.falloff(), EmitterType.SOLID, 1, 99, true, null));
+                profile.intensity(), profile.radius(), profile.falloff(), EmitterType.SOLID, 1, 99, true, null, false));
         feedback(ctx.getSource(), "Emisor de prueba colocado en " + pos.toShortString());
         return 1;
     }
@@ -222,8 +223,8 @@ final class LightingCommands {
                 c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.groundSpotRadius, c.groundSpotIntensity,
                 c.maxEffectDistance, c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
-                "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f",
-                c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier));
+                "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f fraccionEstrellas=%.2f",
+                c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier, c.celestialStarFraction));
         return 1;
     }
 

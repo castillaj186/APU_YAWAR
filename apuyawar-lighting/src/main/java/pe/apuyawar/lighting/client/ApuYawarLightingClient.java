@@ -23,6 +23,8 @@ public final class ApuYawarLightingClient implements ClientModInitializer {
         EmitterTracker.register();
         WorldLightingRenderer.register();
         LightingCommands.register();
+        CelestialParticleTypes.register();
+        CelestialParticleSpawner.register();
         registerEmissiveMaterialSelfTest();
         LOGGER.info("[DIAG] onInitializeClient() terminado sin excepciones");
     }

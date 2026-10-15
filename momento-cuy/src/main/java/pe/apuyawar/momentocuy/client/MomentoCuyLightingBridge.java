@@ -52,7 +52,8 @@ final class MomentoCuyLightingBridge {
                         .withSecondary(0xFFD659)
                         .withAnimated()
                         .withPriority(2)
-                        .withEmissiveMask(Identifier.of(MomentoCuyBlocks.MOD_ID, "block/hojas_cerezo_florecido/side")));
+                        .withEmissiveMask(Identifier.of(MomentoCuyBlocks.MOD_ID, "block/hojas_cerezo_florecido/side"))
+                        .withWarmPalette());
 
         // Corrección "Error 6": la densidad de partículas MÓVILES
         // (LightingConfig#particleDensityMultiplier, ajustable por
