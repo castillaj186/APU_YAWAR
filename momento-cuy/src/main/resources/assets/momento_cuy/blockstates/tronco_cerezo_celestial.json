@@ -1,7 +1,16 @@
 {
   "variants": {
-    "": {
+    "axis=x": {
+      "model": "momento_cuy:block/tronco_cerezo_celestial_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
       "model": "momento_cuy:block/tronco_cerezo_celestial"
+    },
+    "axis=z": {
+      "model": "momento_cuy:block/tronco_cerezo_celestial_horizontal",
+      "x": 90
     }
   }
 }

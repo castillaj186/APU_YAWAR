@@ -3,9 +3,11 @@ package pe.apuyawar.momentocuy.block;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.CherryLeavesBlock;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.PillarBlock;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.block.VineBlock;
 import net.minecraft.block.WallBlock;
 import net.minecraft.item.BlockItem;
@@ -196,11 +198,16 @@ public final class MomentoCuyBlocks {
         if (SPECIAL.containsKey(def.id())) return SPECIAL.get(def.id()).apply(settings);
         if (def.isPillar()) return new PillarBlock(settings);
         return switch (def.design()) {
-            case "sapling_cherry", "sapling_spruce", "plant_blueflower", "plant_goldflower" -> new MomentoCuyPlantBlock(settings);
+            case "sapling_cherry" -> new SaplingBlock(MomentoCuyTrees.CEREZO_GENERATOR, settings);
+            case "sapling_spruce" -> new SaplingBlock(MomentoCuyTrees.ABETO_GENERATOR, settings);
+            case "plant_blueflower", "plant_goldflower" -> new MomentoCuyPlantBlock(settings);
             case "plant_bush", "plant_flowerbush" -> new MomentoCuyBushBlock(settings);
             case "plant_vine", "plant_hangingmoss" -> new VineBlock(settings);
             case "build_woodrailing" -> new FenceBlock(settings);
             case "build_stonerailling" -> new WallBlock(settings);
+            case "leaf_pinklight", "leaf_pink" -> new CherryLeavesBlock(settings);
+            case "leaf_blossom" -> new MomentoCuyBlossomLeavesBlock(settings);
+            case "leaf_pine", "leaf_darkpine" -> new MomentoCuyAbetoLeavesBlock(settings);
             default -> new Block(settings);
         };
     }
@@ -217,6 +224,17 @@ public final class MomentoCuyBlocks {
         // seto de jardín NO entra aquí a propósito: es una pared sólida de
         // vegetación recortada, no una planta suelta -- conserva colisión.
         if (isNonSolidPlant(def.design())) settings = settings.noCollision();
+        // Brotes (crecimiento natural, SaplingBlock.randomTick) y hojas
+        // (descomposición, LeavesBlock.randomTick) necesitan .ticksRandomly()
+        // -- confirmado por bytecode que, sin esto, el selector de tick
+        // aleatorio del servidor nunca llama a su randomTick. No afecta a
+        // randomDisplayTick (partículas): eso lo llama el cliente para
+        // cualquier bloque, lo confirme o no esta bandera.
+        if (def.design().startsWith("sapling_") || def.design().startsWith("leaf_")) settings = settings.ticksRandomly();
+        // Luz real moderada (nivel 6-8 sugerido) sólo en una variedad de cada
+        // árbol -- no en todas las hojas, para no iluminar el bosque entero.
+        if (def.id().equals("hojas_cerezo_florecido")) settings = settings.luminance(state -> 7);
+        if (def.id().equals("hojas_pino_esmeralda")) settings = settings.luminance(state -> 6);
         return settings;
     }
 

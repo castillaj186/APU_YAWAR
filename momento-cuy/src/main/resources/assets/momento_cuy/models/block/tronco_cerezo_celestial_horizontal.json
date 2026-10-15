@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column_horizontal",
+  "textures": {
+    "end": "momento_cuy:block/tronco_cerezo_celestial/top",
+    "side": "momento_cuy:block/tronco_cerezo_celestial/side"
+  }
+}

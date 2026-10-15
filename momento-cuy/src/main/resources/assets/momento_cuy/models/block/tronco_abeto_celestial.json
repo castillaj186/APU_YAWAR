@@ -1,12 +1,7 @@
 {
-  "parent": "minecraft:block/cube",
+  "parent": "minecraft:block/cube_column",
   "textures": {
-    "particle": "momento_cuy:block/tronco_abeto_celestial/side",
-    "up": "momento_cuy:block/tronco_abeto_celestial/top",
-    "down": "momento_cuy:block/tronco_abeto_celestial/bottom",
-    "north": "momento_cuy:block/tronco_abeto_celestial/side",
-    "south": "momento_cuy:block/tronco_abeto_celestial/side_alt",
-    "west": "momento_cuy:block/tronco_abeto_celestial/side_alt",
-    "east": "momento_cuy:block/tronco_abeto_celestial/side"
+    "end": "momento_cuy:block/tronco_abeto_celestial/top",
+    "side": "momento_cuy:block/tronco_abeto_celestial/side"
   }
 }
