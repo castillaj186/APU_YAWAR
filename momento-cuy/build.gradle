@@ -10,6 +10,14 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // Dependencia de proyecto normal, NO jar-in-jar (Loom's include() exige
+    // que el jar del modulo dependido ya exista antes de poder configurar
+    // este modulo, lo cual es un punto muerto de arranque la primera vez
+    // que se crea un modulo hermano nuevo). Se distribuyen como dos jars
+    // separados: la integracion real (MomentoCuyLightingBridge) igual se
+    // protege en tiempo de ejecucion con FabricLoader.isModLoaded, asi que
+    // un servidor/cliente sin apuyawar-lighting instalado sigue funcionando.
+    modImplementation project(':apuyawar-lighting')
 }
 processResources {
     inputs.property 'version', project.version

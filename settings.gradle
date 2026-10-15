@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 rootProject.name = 'APU_YAWAR'
-include 'apuyawar-systems', 'apuyawar-world', 'momento-cuy'
+include 'apuyawar-systems', 'apuyawar-world', 'momento-cuy', 'apuyawar-lighting'

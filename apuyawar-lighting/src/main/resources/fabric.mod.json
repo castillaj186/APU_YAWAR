@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "apuyawar_lighting",
+  "version": "${version}",
+  "name": "APU YAWAR Lighting",
+  "description": "Motor propio de emisores de luz RGB y resplandor neon para bloques/decoraciones de APU YAWAR",
+  "authors": [
+    "Equipo APU YAWAR"
+  ],
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "pe.apuyawar.lighting.client.ApuYawarLightingClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
