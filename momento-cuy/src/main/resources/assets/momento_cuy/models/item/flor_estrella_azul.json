@@ -1,3 +1,6 @@
 {
-  "parent": "momento_cuy:block/flor_estrella_azul"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "momento_cuy:block/flor_estrella_azul/side"
+  }
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "momento_cuy:block/template_barandilla_side",
+  "textures": {
+    "texture": "momento_cuy:block/barandilla_madera_celestial/side"
+  }
+}

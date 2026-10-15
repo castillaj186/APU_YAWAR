@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/wall_inventory",
+  "textures": {
+    "wall": "momento_cuy:block/barandilla_piedra_ornamental/side"
+  }
+}

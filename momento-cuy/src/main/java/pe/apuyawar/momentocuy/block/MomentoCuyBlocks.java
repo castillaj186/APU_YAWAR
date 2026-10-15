@@ -3,8 +3,11 @@ package pe.apuyawar.momentocuy.block;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.FenceBlock;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.PillarBlock;
+import net.minecraft.block.VineBlock;
+import net.minecraft.block.WallBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -167,14 +170,39 @@ public final class MomentoCuyBlocks {
 
     private static void register(Def def) {
         AbstractBlock.Settings settings = baseSettings(def);
-        Block block = SPECIAL.containsKey(def.id())
-                ? SPECIAL.get(def.id()).apply(settings)
-                : def.isPillar() ? new PillarBlock(settings) : new Block(settings);
+        Block block = newBlock(def, settings);
         Identifier id = Identifier.of(MOD_ID, def.id());
         Registry.register(Registries.BLOCK, id, block);
         Item item = Registry.register(Registries.ITEM, id, new BlockItem(block, new Item.Settings()));
         BY_ID.put(def.id(), block);
         ITEMS_BY_ID.put(def.id(), item);
+    }
+
+    /** Qué clase de {@link Block} usar por fila — ver
+     * {@code docs/21_MOMENTO_CUY_GEOMETRIA_BLOQUES.md} para el porqué de cada
+     * elección geométrica. Brotes/flores: {@link MomentoCuyPlantBlock} (no
+     * sólido, sin mecánica de crecimiento inventada). Arbustos: la variante
+     * con más volumen {@link MomentoCuyBushBlock}. Enredadera/musgo colgante:
+     * el {@link VineBlock} real de vanilla, sin tocar su configuración de
+     * ticks aleatorios (queda apagada por defecto en {@code Settings}, así
+     * que nunca se expande sola — puramente decorativo). Barandilla de
+     * madera: {@link FenceBlock} real (conexiones automáticas). Barandilla
+     * de piedra: {@link WallBlock} real (postes/conexiones bajo/alto). El
+     * seto de jardín se queda como {@link Block} normal a propósito: un seto
+     * recortado es, por definición, una pared sólida de vegetación, no una
+     * planta suelta — ver la documentación para el resto de bloques
+     * revisados y no cambiados. */
+    private static Block newBlock(Def def, AbstractBlock.Settings settings) {
+        if (SPECIAL.containsKey(def.id())) return SPECIAL.get(def.id()).apply(settings);
+        if (def.isPillar()) return new PillarBlock(settings);
+        return switch (def.design()) {
+            case "sapling_cherry", "sapling_spruce", "plant_blueflower", "plant_goldflower" -> new MomentoCuyPlantBlock(settings);
+            case "plant_bush", "plant_flowerbush" -> new MomentoCuyBushBlock(settings);
+            case "plant_vine", "plant_hangingmoss" -> new VineBlock(settings);
+            case "build_woodrailing" -> new FenceBlock(settings);
+            case "build_stonerailling" -> new WallBlock(settings);
+            default -> new Block(settings);
+        };
     }
 
     private static AbstractBlock.Settings baseSettings(Def def) {
@@ -183,7 +211,19 @@ public final class MomentoCuyBlocks {
                 .strength(strengthFor(def.design()))
                 .sounds(soundsFor(def.design()));
         if (def.layer() != Layer.SOLID) settings = settings.nonOpaque();
+        // Brotes, flores, arbustos y enredaderas/musgo: sin colisión, como
+        // cualquier planta vanilla (la caja de MomentoCuyPlantBlock/
+        // MomentoCuyBushBlock solo sirve para el contorno de selección). El
+        // seto de jardín NO entra aquí a propósito: es una pared sólida de
+        // vegetación recortada, no una planta suelta -- conserva colisión.
+        if (isNonSolidPlant(def.design())) settings = settings.noCollision();
         return settings;
+    }
+
+    private static boolean isNonSolidPlant(String design) {
+        return design.startsWith("sapling_") || design.equals("plant_blueflower") || design.equals("plant_goldflower")
+                || design.equals("plant_bush") || design.equals("plant_flowerbush")
+                || design.equals("plant_vine") || design.equals("plant_hangingmoss");
     }
 
     /** Dureza razonable por familia (no inventada por bloque, solo agrupada):

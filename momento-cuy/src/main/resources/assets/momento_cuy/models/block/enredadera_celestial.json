@@ -1,12 +1,6 @@
 {
-  "parent": "minecraft:block/cube",
+  "parent": "momento_cuy:block/template_colgante",
   "textures": {
-    "particle": "momento_cuy:block/enredadera_celestial/side",
-    "up": "momento_cuy:block/enredadera_celestial/top",
-    "down": "momento_cuy:block/enredadera_celestial/bottom",
-    "north": "momento_cuy:block/enredadera_celestial/side",
-    "south": "momento_cuy:block/enredadera_celestial/side_alt",
-    "west": "momento_cuy:block/enredadera_celestial/side_alt",
-    "east": "momento_cuy:block/enredadera_celestial/side"
+    "colgante": "momento_cuy:block/enredadera_celestial/side"
   }
 }

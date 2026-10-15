@@ -1,12 +1,6 @@
 {
-  "parent": "minecraft:block/cube",
+  "parent": "momento_cuy:block/template_colgante",
   "textures": {
-    "particle": "momento_cuy:block/musgo_suspendido/side",
-    "up": "momento_cuy:block/musgo_suspendido/top",
-    "down": "momento_cuy:block/musgo_suspendido/bottom",
-    "north": "momento_cuy:block/musgo_suspendido/side",
-    "south": "momento_cuy:block/musgo_suspendido/side_alt",
-    "west": "momento_cuy:block/musgo_suspendido/side_alt",
-    "east": "momento_cuy:block/musgo_suspendido/side"
+    "colgante": "momento_cuy:block/musgo_suspendido/side"
   }
 }

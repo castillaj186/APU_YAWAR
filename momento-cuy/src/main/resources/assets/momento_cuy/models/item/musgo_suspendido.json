@@ -1,3 +1,6 @@
 {
-  "parent": "momento_cuy:block/musgo_suspendido"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "momento_cuy:block/musgo_suspendido/side"
+  }
 }

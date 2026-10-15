@@ -1,12 +1,6 @@
 {
-  "parent": "minecraft:block/cube",
+  "parent": "momento_cuy:block/template_bush",
   "textures": {
-    "particle": "momento_cuy:block/arbusto_esmeralda/side",
-    "up": "momento_cuy:block/arbusto_esmeralda/top",
-    "down": "momento_cuy:block/arbusto_esmeralda/bottom",
-    "north": "momento_cuy:block/arbusto_esmeralda/side",
-    "south": "momento_cuy:block/arbusto_esmeralda/side_alt",
-    "west": "momento_cuy:block/arbusto_esmeralda/side_alt",
-    "east": "momento_cuy:block/arbusto_esmeralda/side"
+    "cross": "momento_cuy:block/arbusto_esmeralda/side"
   }
 }
