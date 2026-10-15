@@ -1,14 +1,21 @@
 package pe.apuyawar.lighting.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL11;
 import pe.apuyawar.lighting.EmitterProfile;
 import pe.apuyawar.lighting.EmitterSampler;
 import pe.apuyawar.lighting.config.LightingConfig;
@@ -16,24 +23,35 @@ import pe.apuyawar.lighting.config.LightingConfig;
 import java.util.List;
 
 /**
- * Dibuja los puntos de luz (billboards orientados a cámara, mezcla
- * aditiva) y el decal de suelo de {@link EmitterTracker#active()}.
+ * Dibuja los puntos de luz y el decal de suelo de
+ * {@link EmitterTracker#active()}.
  *
- * <p><b>Lo que esto es</b>: geometría 3D real, posicionada en el mundo,
- * con prueba de profundidad contra el terreno ya dibujado (no atraviesa
- * paredes — ver {@link GlowRenderLayer}) y que responde a la cámara como
- * cualquier partícula billboard de vanilla.</p>
+ * <p><b>Corrección sobre la primera versión de este archivo</b>: la
+ * primera implementación enviaba los vértices a través de
+ * {@code context.consumers()} (un {@code VertexConsumerProvider}). Se
+ * confirmó (reportado por el equipo, y verificado contra el Javadoc real
+ * de {@code WorldRenderContext}, que ya se había investigado antes pero
+ * se aplicó mal al elegir la fase) que {@code consumers()} es
+ * {@code null} precisamente en {@code AFTER_TRANSLUCENT} — es no-nulo
+ * sólo entre {@code BEFORE_ENTITIES} y {@code BEFORE_DEBUG_RENDER}. Como
+ * el guard {@code if (consumers == null) return;} cortaba la función
+ * entera, el halo nunca se dibujó en ninguna ejecución anterior — el
+ * `runClient` de la entrega previa confirmó que el juego no crasheaba,
+ * pero nunca demostró que algo se viera, y no se afirmó lo contrario; aun
+ * así, era un bug real que corregir.</p>
  *
- * <p><b>Lo que esto NO es</b>: no es iluminación de vóxel/lightmap real —
- * no cambia el nivel de luz de bloque del terreno vecino (eso seguiría
- * siendo trabajo de {@code AbstractBlock.Settings#luminance}, en escala de
- * grises, ya aplicado en Momento Cuy). Es la aproximación visual que
- * permite la sección 4 del encargo ("iluminación en espacio de pantalla,
- * iluminación local por shader") sin reescribir el motor de luces de
- * Minecraft — ver {@code docs/23_APU_YAWAR_LIGHTING_RGB.md} para la
- * limitación completa.</p>
+ * <p><b>Corrección</b>: en vez de depender de {@code consumers()}, esta
+ * versión dibuja en modo inmediato — {@code Tessellator} +
+ * {@code BufferBuilder} propios, con el shader/mezcla/profundidad puestos
+ * a mano vía {@code RenderSystem} y restaurados al terminar — exactamente
+ * la alternativa de "renderizado inmediato directo" que se pidió. Esto
+ * permite seguir en {@code AFTER_TRANSLUCENT} (para que el halo quede por
+ * encima del agua/vidrio ya dibujados), sin depender de un
+ * {@code VertexConsumerProvider} que ahí no existe.</p>
  */
 final class WorldLightingRenderer {
+    private static final int CIRCLE_SEGMENTS = 10;
+
     private WorldLightingRenderer() {}
 
     static void register() {
@@ -43,9 +61,8 @@ final class WorldLightingRenderer {
     private static void render(WorldRenderContext context) {
         List<EmitterTracker.ActiveEmitter> active = EmitterTracker.active();
         if (active.isEmpty()) return;
-        VertexConsumerProvider consumers = context.consumers();
         MatrixStack matrixStack = context.matrixStack();
-        if (consumers == null || matrixStack == null) return;
+        if (matrixStack == null) return;
 
         LightingConfig config = ApuYawarLightingClient.config();
         Vec3d cameraPos = context.camera().getPos();
@@ -54,7 +71,8 @@ final class WorldLightingRenderer {
         float dayNightFactor = isDay ? config.dayIntensityMultiplier : config.nightIntensityMultiplier;
         long worldTime = context.world().getTime();
 
-        VertexConsumer buffer = consumers.getBuffer(GlowRenderLayer.GLOW);
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+        boolean anyVertex = false;
 
         for (EmitterTracker.ActiveEmitter emitter : active) {
             EmitterProfile profile = emitter.profile();
@@ -84,76 +102,119 @@ final class WorldLightingRenderer {
                 float alpha = clamp01(profile.intensity() * config.lightIntensityMultiplier * dayNightFactor * flicker);
                 if (alpha <= 0.01f) continue;
 
-                float halfSize = (0.06f + scale * 0.07f) * config.lightRadiusMultiplier;
-                drawBillboard(matrixStack, buffer, cameraPos, cameraRotation, worldX, worldY, worldZ, halfSize, r, g, b, alpha);
+                float radius = (0.06f + scale * 0.07f) * config.lightRadiusMultiplier;
+                Matrix4f pose = billboardPose(matrixStack, cameraPos, cameraRotation, worldX, worldY, worldZ);
+                addCircle(buffer, pose, radius, r, g, b, alpha);
+                anyVertex = true;
 
-                // Halo pseudo-bloom barato: 1-2 capas extra más grandes y más
-                // tenues alrededor del mismo punto -- ver docs/23 seccion 7
-                // para la diferencia con el Bloom real de framebuffer
-                // (seccion "Resplandor neon") que corre aparte.
+                // Halo pseudo-bloom barato: un segundo círculo más grande y
+                // más tenue -- ver docs/23 seccion 7 para la diferencia con
+                // el Bloom real de framebuffer (todavía no implementado).
                 if (config.bloomIntensity > 0.01f) {
                     float haloAlpha = clamp01(alpha * 0.35f * config.bloomIntensity);
-                    float haloSize = halfSize * (1.8f + config.bloomRadiusMultiplier);
-                    drawBillboard(matrixStack, buffer, cameraPos, cameraRotation, worldX, worldY, worldZ, haloSize, r, g, b, haloAlpha);
+                    float haloRadius = radius * (1.8f + config.bloomRadiusMultiplier);
+                    addCircle(buffer, pose, haloRadius, r, g, b, haloAlpha);
                 }
             }
 
             if (emitter.groundY() != null) {
-                drawGroundDecal(matrixStack, buffer, cameraPos, emitter, config, dayNightFactor);
+                anyVertex |= addGroundDecal(buffer, matrixStack, cameraPos, emitter, config, dayNightFactor);
             }
         }
+
+        if (!anyVertex) {
+            buffer.endNullable();
+            return;
+        }
+
+        BuiltBuffer built = buffer.end();
+        drawAdditive(built);
     }
 
-    private static void drawBillboard(MatrixStack matrixStack, VertexConsumer buffer, Vec3d cameraPos,
-                                       Quaternionf cameraRotation, double worldX, double worldY, double worldZ,
-                                       float halfSize, float r, float g, float b, float alpha) {
+    private static Matrix4f billboardPose(MatrixStack matrixStack, Vec3d cameraPos, Quaternionf cameraRotation,
+                                           double worldX, double worldY, double worldZ) {
         matrixStack.push();
         matrixStack.translate(worldX - cameraPos.x, worldY - cameraPos.y, worldZ - cameraPos.z);
         matrixStack.multiply(cameraRotation);
-        Matrix4f pose = matrixStack.peek().getPositionMatrix();
-        int a = (int) (alpha * 255.0f);
-        int ri = (int) (r * 255.0f);
-        int gi = (int) (g * 255.0f);
-        int bi = (int) (b * 255.0f);
-        buffer.vertex(pose, -halfSize, -halfSize, 0).color(ri, gi, bi, a);
-        buffer.vertex(pose, halfSize, -halfSize, 0).color(ri, gi, bi, a);
-        buffer.vertex(pose, halfSize, halfSize, 0).color(ri, gi, bi, a);
-        buffer.vertex(pose, -halfSize, halfSize, 0).color(ri, gi, bi, a);
+        Matrix4f pose = new Matrix4f(matrixStack.peek().getPositionMatrix());
         matrixStack.pop();
+        return pose;
     }
 
-    /** Quad horizontal plano a nivel del suelo encontrado, con alfa
-     * reducido por la distancia caída desde la copa — ver docs/23 sección
-     * "Luz sobre el suelo y el agua": esto es un decal aditivo sobre lo ya
-     * dibujado (incluida el agua, si el bloque de abajo es agua), no una
-     * reflexión ni una reinterpretación física de la superficie. */
-    private static void drawGroundDecal(MatrixStack matrixStack, VertexConsumer buffer, Vec3d cameraPos,
-                                         EmitterTracker.ActiveEmitter emitter, LightingConfig config, float dayNightFactor) {
+    /** Círculo suave real (abanico de triángulos, centro opaco y borde a
+     * alfa 0) en vez de un cuadrado de color uniforme — ver sección 3 del
+     * encargo de corrección: nada de rectángulos planos. Sin textura. */
+    private static void addCircle(BufferBuilder buffer, Matrix4f pose, float radius, float r, float g, float b, float centerAlpha) {
+        int ri = clampByte(r);
+        int gi = clampByte(g);
+        int bi = clampByte(b);
+        int a = clampByte(centerAlpha);
+        float[] ringX = new float[CIRCLE_SEGMENTS];
+        float[] ringY = new float[CIRCLE_SEGMENTS];
+        for (int s = 0; s < CIRCLE_SEGMENTS; s++) {
+            double angle = 2.0 * Math.PI * s / CIRCLE_SEGMENTS;
+            ringX[s] = (float) Math.cos(angle) * radius;
+            ringY[s] = (float) Math.sin(angle) * radius;
+        }
+        for (int s = 0; s < CIRCLE_SEGMENTS; s++) {
+            int next = (s + 1) % CIRCLE_SEGMENTS;
+            buffer.vertex(pose, 0, 0, 0).color(ri, gi, bi, a);
+            buffer.vertex(pose, ringX[s], ringY[s], 0).color(ri, gi, bi, 0);
+            buffer.vertex(pose, ringX[next], ringY[next], 0).color(ri, gi, bi, 0);
+        }
+    }
+
+    /** Decal de suelo: igual que {@link #addCircle}, plano en el suelo
+     * (sin orientar a cámara), con alfa reducido por la distancia caída —
+     * ver docs/23 sección "Luz sobre el suelo y el agua". */
+    private static boolean addGroundDecal(BufferBuilder buffer, MatrixStack matrixStack, Vec3d cameraPos,
+                                           EmitterTracker.ActiveEmitter emitter, LightingConfig config, float dayNightFactor) {
         EmitterProfile profile = emitter.profile();
-        BlockPos pos = emitter.pos();
+        var pos = emitter.pos();
         double groundY = emitter.groundY() + 1.01;
         double fallDistance = groundY - pos.getY();
         float falloff = clamp01(1.0f - (float) (fallDistance / (profile.radius() * 3.0)));
-        if (falloff <= 0.02f) return;
+        if (falloff <= 0.02f) return false;
 
         float alpha = clamp01(profile.intensity() * 0.4f * config.lightIntensityMultiplier * dayNightFactor * falloff);
-        if (alpha <= 0.01f) return;
-        float size = profile.radius() * 0.5f * config.lightRadiusMultiplier;
+        if (alpha <= 0.01f) return false;
+        float radius = profile.radius() * 0.5f * config.lightRadiusMultiplier;
 
         matrixStack.push();
         matrixStack.translate(pos.getX() + 0.5 - cameraPos.x, groundY - cameraPos.y, pos.getZ() + 0.5 - cameraPos.z);
-        Matrix4f pose = matrixStack.peek().getPositionMatrix();
-        int a = (int) (alpha * 255.0f);
-        int ri = (int) (profile.red() * 255.0f);
-        int gi = (int) (profile.green() * 255.0f);
-        int bi = (int) (profile.blue() * 255.0f);
-        // Octágono aproximado con 4 vértices (rombo) en vez de un cuadrado
-        // girado 45°: suficiente para un decal difuso, sin textura nueva.
-        buffer.vertex(pose, -size, 0, 0).color(ri, gi, bi, a);
-        buffer.vertex(pose, 0, 0, -size).color(ri, gi, bi, a);
-        buffer.vertex(pose, size, 0, 0).color(ri, gi, bi, a);
-        buffer.vertex(pose, 0, 0, size).color(ri, gi, bi, a);
+        Matrix4f pose = new Matrix4f(matrixStack.peek().getPositionMatrix());
         matrixStack.pop();
+        // Rota el abanico 90° sobre X para que quede plano en el suelo (XZ)
+        // en vez de vertical (XY, orientación por defecto de addCircle).
+        pose.rotateX((float) Math.PI / 2f);
+        addCircle(buffer, pose, radius, profile.red(), profile.green(), profile.blue(), alpha);
+        return true;
+    }
+
+    private static void drawAdditive(BuiltBuffer built) {
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        RenderSystem.enableBlend();
+        // SRC_ALPHA, ONE (no ONE, ONE): con mezcla puramente aditiva el
+        // canal alfa no influye en absoluto en el resultado (el shader
+        // position_color de vanilla no premultiplica por alfa), así que la
+        // intensidad/parpadeo/perfiles configurados no tenían ningún efecto
+        // visual real -- ver sección 2 de la corrección. Con SRC_ALPHA el
+        // alfa sí escala la contribución de color antes de sumarla.
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+
+        BufferRenderer.drawWithGlobalProgram(built);
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableBlend();
+    }
+
+    private static int clampByte(float v) {
+        return (int) (clamp01(v) * 255.0f);
     }
 
     private static float clamp01(float v) {

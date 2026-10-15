@@ -46,9 +46,14 @@ public final class EmitterTracker {
 
     /** Lista activa del último rescaneo, más el emisor de prueba de la Fase
      * A si hay uno colocado (ver {@code LightingCommands#test}) — el de
-     * prueba se incluye siempre, sin esperar al próximo rescaneo. */
+     * prueba se incluye siempre, sin esperar al próximo rescaneo.
+     *
+     * <p>Corrección: antes el emisor de prueba se añadía
+     * incondicionalmente, incluso con {@code rgbEnabled=false} —
+     * {@code /apuyawarlighting toggle} no lo apagaba. Ahora respeta la
+     * misma bandera que ya usa {@link #rescan}.</p> */
     public static List<ActiveEmitter> active() {
-        if (testEmitter == null) return active;
+        if (testEmitter == null || !ApuYawarLightingClient.config().rgbEnabled) return active;
         List<ActiveEmitter> withTest = new ArrayList<>(active.size() + 1);
         withTest.add(testEmitter);
         withTest.addAll(active);

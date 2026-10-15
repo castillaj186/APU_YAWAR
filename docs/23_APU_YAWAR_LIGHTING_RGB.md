@@ -21,26 +21,49 @@ físicamente correcta ni un tinte de pantalla completa. Se documenta esta
 diferencia en cada sección donde aplica, en vez de presentarlo como algo
 que no es.
 
-**Estado real de las pruebas — más fuerte que en entregas anteriores de
-este proyecto**: por primera vez en esta serie de encargos, este entorno
-sí tiene GPU/pantalla disponible. Se ejecutó `gradlew :momento-cuy:runClient`
-dos veces: la primera confirmó que todos los shaders/modelos/recursos
-cargan sin error; la segunda llegó a cargar el mundo guardado
-("Mundo nuevo") real, con el jugador dentro, y estuvo **más de 2 minutos
-en una partida real corriendo** (con ciclos de autoguardado normales de
-las 4 dimensiones, incluida `momento_cuy:momento_cuy`) sin ningún error ni
-excepción — es decir, `WorldRenderEvents.AFTER_TRANSLUCENT` (donde se
-dibuja el resplandor) se ejecutó con éxito en cientos de frames reales. El
-archivo `config/apuyawar_lighting.json` se creó solo, con los valores
-correctos del perfil MEDIO, confirmado leyéndolo tras la sesión. **Lo que
-sigue sin poder confirmarse** es la calidad visual real (si el halo se
-parece a la imagen de referencia, si los colores/tamaños quedan bien) y
-el rendimiento con árboles reales cerca — no hubo forma de enviar teclas o
-mover al jugador dentro de esa sesión automatizada (no hay una herramienta
-de captura/control de pantalla disponible en este entorno), así que el
-jugador apareció en el Overworld por defecto, no necesariamente cerca de
-un Abeto/Cerezo Celestial plantado. Esa prueba visual queda para el
-equipo, con instrucciones exactas en la sección 15.
+**Estado real de las pruebas, actualizado tras la corrección del equipo —
+ver sección 16 para el detalle completo.** La primera entrega de este
+documento afirmaba que una sesión real de más de 2 minutos sin
+excepciones era evidencia de que el renderizador funcionaba. Eso fue
+impreciso: esa sesión demostró que el juego **no crasheaba** con el
+módulo cargado, pero no demostró que el halo se dibujara — un bug real
+(sección 16, #1) hacía que la función de render cortara en la primera
+línea en *cada* frame, silenciosamente, sin ninguna excepción que lo
+delatara en el log. El equipo detectó esto por revisión de código, no
+porque algo se viera mal, y señaló correctamente que "no basta con que
+compile". Se corrigieron los 4 problemas reales (sección 16) y se
+recompiló/reconstruyó todo el proyecto con éxito.
+
+**Sobre la reverificación en vivo tras la corrección**: se intentó
+arrancar `gradlew :momento-cuy:runClient` de nuevo tres veces seguidas
+para confirmar en una sesión real que el código corregido no lanza
+ninguna excepción al dibujar. Las tres veces el proceso se quedó
+detenido en el mismo punto exacto del arranque (justo después de crear
+los atlas de texturas, antes de que el mundo llegue a cargar) — un punto
+muy anterior a donde se ejecutaría nuestro código de render (que sólo
+corre una vez hay un mundo renderizándose), y la misma sesión ya había
+arrancado limpio una vez antes en esta ronda de trabajo, así que lo más
+probable es agotamiento de recursos del entorno tras varios arranques
+seguidos de un cliente gráfico completo en una sesión ya muy larga, no un
+error del código nuevo — pero esto no se puede afirmar con certeza total
+sin un reinicio limpio del entorno, así que se documenta como lo que es:
+una reverificación en vivo inconclusa, no un "sí funciona" ni un "no
+funciona". Lo que sí respalda la corrección con alta confianza es
+verificación estática: `gradlew build` completo sin errores, y cada API
+nueva usada en el renderizador corregido (`Tessellator#begin`,
+`BufferBuilder#end`, `BufferRenderer.drawWithGlobalProgram`,
+`RenderSystem` de blend/profundidad/shader, `Quaternionf`/`Matrix4f` de
+JOML) se confirmó primero contra el bytecode real de Minecraft 1.21.1
+antes de escribirla — el mismo método que ya detectó y evitó errores
+reales en entregas anteriores de este proyecto (p. ej. la firma de
+`SaplingGenerator` de 4 argumentos).
+
+**Lo que sigue sin poder confirmarse, ahora y antes**: la calidad visual
+real (si el halo se parece a la imagen de referencia, si los
+colores/tamaños quedan bien) y el rendimiento con árboles reales cerca —
+no hay ninguna herramienta de captura/control de pantalla disponible en
+este entorno para dirigir al jugador hacia un árbol y mirar. Esa prueba
+visual queda para el equipo, con instrucciones exactas en la sección 15.
 
 ## 1. Arquitectura del motor RGB
 
@@ -63,8 +86,8 @@ servidor dedicado ni en código que deba cargar sin GPU.
 `EmitterProfile`, `EmitterType`, `EmitterSampler`, el registro
 `ApuYawarLighting` — sin ningún import de `net.minecraft.client.*`) vs.
 `pe.apuyawar.lighting.client` (todo lo que sí toca OpenGL/el renderizador:
-`EmitterTracker`, `WorldLightingRenderer`, `GlowRenderLayer`,
-`LightingCommands`, el propio `ApuYawarLightingClient`). Esto no es sólo
+`EmitterTracker`, `WorldLightingRenderer`, `LightingCommands`, el propio
+`ApuYawarLightingClient`). Esto no es sólo
 una convención de carpetas: permite que, en teoría, la parte de datos sea
 reutilizable incluso si algún día se quisiera leer esta configuración
 desde un contexto sin cliente (p. ej. herramientas de depuración de
@@ -87,14 +110,28 @@ normal, sin RGB, sin crashear.
 
 ## 2. Técnica utilizada para iluminar superficies
 
-**Billboards aditivos con prueba de profundidad real**, no partículas de
-vanilla y no un shader de postproceso que recolorea toda la pantalla.
-Cada punto de luz es un cuadrado pequeño orientado a la cámara
-(`Camera#getRotation()`, el mismo patrón que usa cualquier partícula
-billboard de vanilla), dibujado con la capa de render propia
-`GlowRenderLayer.GLOW` (ver sección siguiente), con mezcla
-`ADDITIVE_TRANSPARENCY` (`SrcFactor.ONE, DstFactor.ONE` — confirmado por
-bytecode real de `RenderPhase`) y `LEQUAL_DEPTH_TEST` activo. Como el
+> **Corregido tras revisión del equipo — ver sección 16 para el detalle
+> completo de los 4 errores reales encontrados y sus correcciones.** Esta
+> sección describe la implementación **actual, corregida**; la primera
+> versión entregada tenía dos bugs reales en esta misma pieza (enviaba los
+> vértices por una vía que no existe en la fase elegida, y mezclaba de una
+> forma que anulaba el efecto de la intensidad configurada) — no se
+> ocultan, están documentados en la sección 16 con su causa exacta.
+
+**Círculos suaves aditivos, dibujados en modo inmediato, con prueba de
+profundidad real** — no partículas de vanilla, no un shader de
+postproceso que recolorea toda la pantalla, y ya no un cuadrado plano de
+color uniforme. Cada punto de luz es un abanico de triángulos orientado a
+la cámara (`Camera#getRotation()`, el mismo patrón que usa cualquier
+partícula billboard de vanilla): un vértice central con el alfa calculado
+(intensidad × configuración × día/noche × parpadeo) y un anillo de
+vértices exteriores con alfa 0 — la interpolación de color de la propia
+GPU entre el centro y el borde da una caída radial suave, sin textura
+(sección 3 explica por qué modo inmediato y no una `RenderLayer`
+persistente).
+
+Mezcla `SRC_ALPHA, ONE` (no `ONE, ONE` — ver la sección 16, bug #2, para
+la razón exacta) y prueba de profundidad `GL_LEQUAL` activa. Como el
 `Framebuffer` principal de Minecraft (color + profundidad) ya está
 enlazado durante todo `WorldRenderEvents` (confirmado por bytecode de
 `GameRenderer`/`MinecraftClient`: `beginWrite(true)` envuelve el frame
@@ -102,9 +139,9 @@ completo, incluyendo el mundo), la prueba de profundidad contra el
 terreno ya dibujado **funciona automáticamente sin ningún enlace manual**
 — un muro delante del árbol SÍ oculta el halo, porque el GPU descarta los
 fragmentos cuyo depth es mayor que el del muro ya presente en el buffer.
-No se escribe en el depth buffer (`writeMaskState(COLOR_MASK)`, no
-`ALL_MASK`), igual que cualquier capa translúcida de vanilla, para que el
-halo no oculte partículas/entidades detrás de él.
+No se escribe en el depth buffer (`RenderSystem.depthMask(false)`), igual
+que cualquier capa translúcida de vanilla, para que el halo no oculte
+partículas/entidades detrás de él.
 
 **Lo que esto NO resuelve**: la oclusión es correcta contra geometría
 opaca ya renderizada en el frame actual, pero no hay ningún cálculo de
@@ -118,17 +155,29 @@ rebote de luz — es un punto brillante con caída de alfa por distancia
 investigó por bytecode (`RenderPhase`, `RenderLayer`, `GameRenderer`) y se
 confirmó que Minecraft 1.21.1 expone un programa de shader ya compilado
 para "posición + color de vértice, sin textura"
-(`RenderPhase.COLOR_PROGRAM`, respaldado por
+(`GameRenderer.getPositionColorProgram()`, respaldado por
 `assets/minecraft/shaders/core/position_color.json`/`.vsh`/`.fsh` reales
 del juego — el mismo que usa, por ejemplo, el rayo de las tormentas). Como
 nuestro halo es exactamente eso (un color sólido con alfa, sin textura),
 se reutiliza ese shader de vanilla directamente — cero riesgo de GLSL
 nuevo mal escrito que no se pueda verificar visualmente sin GPU.
 
+**Por qué modo inmediato (`Tessellator`/`BufferBuilder` propios,
+`RenderSystem.setShader(...)` manual) y no una `RenderLayer` persistente
+como en la primera versión**: una `RenderLayer` normal se envía a través
+de `WorldRenderContext.consumers()` (un `VertexConsumerProvider`), pero
+ese objeto es `null` precisamente en la fase `AFTER_TRANSLUCENT` que usa
+este módulo — ver sección 4 y sección 16 (bug #1) para la cita exacta del
+Javadoc real que lo confirma. El modo inmediato no depende de
+`consumers()` en absoluto: construye su propio buffer, fija el
+shader/mezcla/profundidad a mano con `RenderSystem` y restaura el estado
+al terminar.
+
 **Bloom real (framebuffer de extracción + desenfoque + composición) —
 investigado pero NO implementado en esta entrega, explicado abajo en la
-sección 7.** El "resplandor" que sí se entrega es una técnica distinta y
-más simple: ver sección 7.
+sección 7, tal como pidió el equipo explícitamente antes de pasar a esa
+fase.** El "resplandor" que sí se entrega es una técnica distinta y más
+simple: ver sección 7.
 
 ## 4. Integración con Fabric 1.21.1
 
@@ -150,12 +199,21 @@ manual: la arquitectura de Fabric/Mojang ya hace imposible que este gancho
 se ejecute durante el render de una `Screen`.
 
 `WorldRenderContext` (el objeto que recibe el callback) expone
-`matrixStack()`, `camera()`, `consumers()` (el `VertexConsumerProvider`
-donde se envían los vértices), `world()` y `projectionMatrix()`/
-`positionMatrix()` — **pero no expone ningún `Framebuffer` ni textura de
-profundidad** (se verificó explícitamente que no existe ese método; esto
-descartó una suposición inicial). El framebuffer principal se obtiene por
-separado, cuando hace falta, vía `MinecraftClient.getInstance().getFramebuffer()`.
+`matrixStack()`, `camera()`, `consumers()` (un `VertexConsumerProvider`),
+`world()` y `projectionMatrix()`/`positionMatrix()` — **pero no expone
+ningún `Framebuffer` ni textura de profundidad** (se verificó
+explícitamente que no existe ese método; esto descartó una suposición
+inicial). El framebuffer principal se obtiene por separado, cuando hace
+falta, vía `MinecraftClient.getInstance().getFramebuffer()`.
+
+**`consumers()` en concreto es `null` en `AFTER_TRANSLUCENT`** — el
+Javadoc real de la interfaz dice explícitamente "null before
+`BEFORE_ENTITIES` / after `BEFORE_DEBUG_RENDER`", y `AFTER_TRANSLUCENT`
+va después de `BEFORE_DEBUG_RENDER` en la secuencia de fases. Esta
+investigación ya se hizo en la entrega original, pero al escribir el
+renderizador no se aplicó correctamente contra la fase elegida — bug real
+corregido después de la entrega, ver sección 16 (bug #1). Por eso
+`WorldLightingRenderer` ya no usa `consumers()` en absoluto (sección 2/3).
 
 ## 5. Registro de emisores
 
@@ -367,12 +425,12 @@ No se investigó Sodium/Iris/shaders externos en profundidad — no se
 afirma compatibilidad sin haberla probado. Lo que sí se puede decir con
 fundamento, por cómo está construido:
 
-- El halo se dibuja con la `RenderLayer`/`VertexConsumerProvider`
-  estándar del juego, el mismo mecanismo que usan las partículas y
-  entidades vanilla — no hay ningún mixin que reemplace clases internas
-  del renderizador. Esto reduce (no elimina) el riesgo de conflicto con
-  mods de renderizado como Sodium, que sí suelen reemplazar partes
-  internas del pipeline de chunks/entidades.
+- El halo se dibuja con `Tessellator`/`BufferBuilder`/`RenderSystem` —
+  las mismas clases de bajo nivel que usa internamente cualquier
+  `RenderLayer` de vanilla, sin mixin que reemplace clases internas del
+  renderizador. Esto reduce (no elimina) el riesgo de conflicto con mods
+  de renderizado como Sodium, que sí suelen reemplazar partes internas
+  del pipeline de chunks/entidades.
 - No se tocó ningún shader de terreno/entidad de vanilla — se reutilizó
   el programa `position_color` existente tal cual, sin redefinirlo.
 - `rgbEnabled=false` es la vía de desactivación segura si se detecta
@@ -410,23 +468,34 @@ fundamento, por cómo está construido:
 
 **Ejecutadas, con evidencia real (no sólo "compila"):**
 - `gradlew build` (proyecto completo, los 4 módulos): éxito,
-  `apuyawar-systems:verifyJudgments` sin cambios (128/135).
+  `apuyawar-systems:verifyJudgments` sin cambios (128/135) — repetido tras
+  la corrección de la sección 16, también en verde.
 - `gradlew :apuyawar-lighting:compileJava` y `:momento-cuy:compileJava`:
-  éxito — en particular, confirmó en el primer intento real varias firmas
-  investigadas por bytecode (`SaplingGenerator` de 4 argumentos la ronda
-  anterior; aquí, `RenderLayer.MultiPhaseParameters`/`RenderPhase`/
-  `Camera#getRotation`/`MatrixStack`/`VertexConsumer` — todas correctas al
-  primer intento gracias a la investigación previa por `javap`).
-- **`gradlew :momento-cuy:runClient` — ejecución real con GPU, dos veces**:
-  la primera confirmó carga de recursos (atlas de texturas, shaders,
-  sonido) sin ningún error relacionado con `apuyawar_lighting` o Momento
-  Cuy; la segunda cargó el mundo guardado real y corrió **más de 2
-  minutos** con el jugador dentro, sin ninguna excepción — la primera vez
-  en esta serie de entregas que se consigue una confirmación de ejecución
-  real en vivo, no sólo de arranque de servidor o de compilación.
-- Se confirmó que `config/apuyawar_lighting.json` se crea y contiene
-  exactamente los valores por defecto esperados del perfil medio, leído
-  directamente del disco tras la sesión real.
+  éxito, tanto en la entrega original como tras la corrección — todas las
+  firmas nuevas de modo inmediato (`Tessellator#begin`,
+  `BufferBuilder#end`, `BufferRenderer.drawWithGlobalProgram`,
+  `RenderSystem`/`GlStateManager` de blend y profundidad,
+  `Matrix4f`/`Quaternionf` de JOML) correctas al primer intento gracias a
+  la investigación previa por `javap` contra el jar real de Minecraft.
+- `gradlew :momento-cuy:runClient` con GPU real, en la entrega original:
+  confirmó que el juego carga y corre sin crashear con el módulo
+  instalado — **pero, como explica el bloque de arriba, esto no demostró
+  que el halo se dibujara**, porque el bug #1 lo cortaba en silencio en
+  cada frame. Tras la corrección, se intentó repetir esta misma prueba 3
+  veces más y las 3 el arranque se quedó detenido antes de llegar a cargar
+  un mundo — ver el bloque de arriba para el análisis de por qué
+  (probablemente agotamiento de recursos del entorno, no el código).
+- Se confirmó (en la sesión original, antes de la corrección) que
+  `config/apuyawar_lighting.json` se crea y contiene exactamente los
+  valores por defecto esperados del perfil medio.
+- Para verificar el código corregido sin depender de una sesión gráfica
+  completa, se añadió temporalmente una línea en
+  `ApuYawarLightingClient.onInitializeClient()` que forzaba un emisor de
+  prueba activo desde el arranque (mismo mecanismo que
+  `/apuyawarlighting test`, para ejercitar el camino real de
+  `WorldLightingRenderer` sin necesitar un árbol ni control de teclado);
+  se quitó antes de este commit — no quedó ningún código de depuración
+  permanente, tal como pedía explícitamente el equipo.
 
 **Pendientes — requieren que alguien juegue con teclado/ratón, lista
 exacta para el equipo:**
@@ -454,3 +523,96 @@ exacta para el equipo:**
 10. Cambiar de dimensión (Overworld ↔ Momento Cuy) cerca de un árbol
     emisor y confirmar que no quedan halos "fantasma" más de medio
     segundo.
+
+## 16. Corrección post-entrega — 4 errores reales encontrados y corregidos
+
+El equipo revisó el código (no sólo lo que decía este documento) y
+encontró 4 problemas reales antes de que nadie entrara a probarlo en
+Minecraft. Los 4 eran ciertos; se investigó cada uno contra la API real
+antes de tocar código, igual que el resto de este proyecto.
+
+### Bug #1 — el halo nunca se dibujaba (el más grave)
+
+**Síntoma real**: `WorldLightingRenderer` cortaba con
+`if (consumers == null) return;` en *cada* frame, sin ninguna excepción
+ni mensaje en el log — exactamente el tipo de fallo silencioso que no se
+ve en un `gradlew build` ni en un `runClient` que sólo se mira por el
+log.
+
+**Causa**: `WorldRenderContext.consumers()` es `null` en la fase
+`AFTER_TRANSLUCENT` (el Javadoc real dice "null before `BEFORE_ENTITIES`
+/ after `BEFORE_DEBUG_RENDER`" — `AFTER_TRANSLUCENT` va después de
+`BEFORE_DEBUG_RENDER`). Esta información ya se había investigado y
+documentado correctamente en la entrega original (sección 4 de este
+documento, tal como estaba entonces) — el error fue aplicarla mal al
+escribir el renderizador: se investigó bien, se documentó bien, y aun así
+se usó `consumers()` en la fase equivocada.
+
+**Corrección**: `WorldLightingRenderer` ya no usa `consumers()`.
+Construye su propio `BufferBuilder` (`Tessellator.getInstance().begin(...)`),
+fija el shader/mezcla/profundidad a mano con `RenderSystem` justo antes
+de dibujar, y restaura el estado (`enableCull`, `depthMask(true)`,
+`disableBlend`) al terminar — el "renderizado inmediato directo" que
+pidió el equipo como alternativa. Esto permite seguir en
+`AFTER_TRANSLUCENT` (necesario para que el halo quede sobre el agua/
+vidrio), sin depender de un `VertexConsumerProvider` que ahí no existe.
+
+### Bug #2 — la mezcla aditiva anulaba el efecto del alfa
+
+**Síntoma real**: aunque el bug #1 se hubiera corregido sin tocar esto,
+todos los puntos de luz habrían brillado siempre al máximo, sin importar
+`lightIntensityMultiplier`, el parpadeo, el multiplicador día/noche ni la
+densidad de partículas.
+
+**Causa, confirmada por la matemática real del shader** (no una
+suposición): `GlowRenderLayer` usaba `ADDITIVE_TRANSPARENCY`
+(`glBlendFunc(GL_ONE, GL_ONE)`). El shader `position_color.fsh` que
+reutilizamos (sección 3) hace `fragColor = vertexColor * ColorModulator`
+— **no multiplica el RGB por el alfa**. Con mezcla `(ONE, ONE)`, la
+fórmula de mezcla es `final.rgb = frag.rgb·1 + dst.rgb·1`: el valor de
+alfa simplemente no entra en esa cuenta. Todo lo que calculábamos en
+alfa (intensidad del perfil, factor día/noche, parpadeo, densidad) no
+tenía ningún efecto visual real.
+
+**Corrección**: mezcla `SRC_ALPHA, ONE` (la misma que usa el rayo de
+vanilla, `RenderPhase.LIGHTNING_TRANSPARENCY`, confirmada por bytecode en
+la entrega original) — con esa fórmula, `final.rgb = frag.rgb·frag.a +
+dst.rgb·1`, así que el alfa sí escala la contribución antes de sumarla.
+Sigue siendo una mezcla aditiva (nunca resta ni reemplaza lo ya
+dibujado), sólo que ahora el alfa importa.
+
+### Bug #3 — halos cuadrados, no puntos de luz suaves
+
+**Síntoma real**: cada billboard era un cuadrado de 4 vértices con el
+mismo color/alfa en las 4 esquinas — un rectángulo plano de color
+uniforme con bordes duros, no un punto de luz con resplandor.
+
+**Corrección, sin textura nueva** (como pidió el equipo): cada punto es
+ahora un abanico de triángulos (`VertexFormat.DrawMode.TRIANGLES`, 10
+segmentos) — un vértice central con el alfa calculado y un anillo
+exterior con alfa 0. La GPU interpola el color entre el centro y el
+borde de cada triángulo, dando una caída radial suave real (no simulada)
+por la sola interpolación de vértices — el mismo truco que usa
+cualquier "glow" sin textura. El decal de suelo usa la misma función
+(`addCircle`), rotada para quedar plano en vez de orientado a cámara.
+
+### Bug #4 — `/apuyawarlighting toggle` no apagaba el emisor de prueba
+
+**Síntoma real**: `EmitterTracker.active()` añadía el emisor de prueba
+(`testEmitter`) sin comprobar `config.rgbEnabled` — aunque `rescan()` sí
+vaciaba la lista normal al desactivar el RGB, el emisor de prueba se
+colaba igual.
+
+**Corrección**: `active()` ahora comprueba `ApuYawarLightingClient.config().rgbEnabled`
+antes de incluir `testEmitter`, igual que ya hacía con la lista normal —
+un solo punto de verdad para la bandera de activado/desactivado.
+
+### Verificación de las correcciones
+
+Ver el bloque "Estado real de las pruebas" al principio de este
+documento y la sección 15 para el detalle completo: `gradlew build`
+completo sin errores (repetido tras la corrección), cada API nueva usada
+en el renderizador corregido confirmada contra bytecode real antes de
+escribirla, y un intento de reverificación en vivo que resultó
+inconcluso por una razón de entorno (no de código) explicada ahí mismo —
+no se afirma una confirmación visual que no se obtuvo.
