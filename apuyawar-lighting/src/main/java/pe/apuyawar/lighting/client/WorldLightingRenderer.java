@@ -23,43 +23,32 @@ import pe.apuyawar.lighting.config.LightingConfig;
 import java.util.List;
 
 /**
- * Dibuja los puntos de luz y el decal de suelo de
- * {@link EmitterTracker#active()}.
+ * Dibuja los puntos de luz de {@link EmitterTracker#active()} y los focos
+ * de suelo de {@link EmitterTracker#groundSpots()} (dos listas separadas
+ * desde la corrección V2 — ver docs/23).
  *
  * <p><b>Corrección sobre la primera versión de este archivo</b>: la
- * primera implementación enviaba los vértices a través de
- * {@code context.consumers()} (un {@code VertexConsumerProvider}). Se
- * confirmó (reportado por el equipo, y verificado contra el Javadoc real
- * de {@code WorldRenderContext}, que ya se había investigado antes pero
- * se aplicó mal al elegir la fase) que {@code consumers()} es
- * {@code null} precisamente en {@code AFTER_TRANSLUCENT} — es no-nulo
- * sólo entre {@code BEFORE_ENTITIES} y {@code BEFORE_DEBUG_RENDER}. Como
- * el guard {@code if (consumers == null) return;} cortaba la función
- * entera, el halo nunca se dibujó en ninguna ejecución anterior.</p>
+ * primera implementación dependía de {@code context.consumers()}, que es
+ * {@code null} en {@code AFTER_TRANSLUCENT}. Esta versión dibuja en modo
+ * inmediato — {@code Tessellator} + {@code BufferBuilder} propios, con el
+ * shader/mezcla/profundidad puestos a mano vía {@code RenderSystem}.</p>
  *
- * <p><b>Corrección</b>: en vez de depender de {@code consumers()}, esta
- * versión dibuja en modo inmediato — {@code Tessellator} +
- * {@code BufferBuilder} propios, con el shader/mezcla/profundidad puestos
- * a mano vía {@code RenderSystem} y restaurados al terminar.</p>
+ * <p><b>Anclaje espacial</b>: todas las posiciones se calculan desde
+ * {@code emitter.pos()}/{@code spot.anchorPos()} + un desplazamiento
+ * local determinista — la cámara sólo se resta al final para convertir a
+ * coordenadas relativas, nunca decide el centro de nada.</p>
  *
- * <p><b>Corrección de anclaje espacial (ver docs/23, esta ronda)</b>:
- * todas las posiciones que entran aquí (centro de cada punto, centro del
- * decal de suelo) se calculan exclusivamente a partir de
- * {@code emitter.pos()} + un desplazamiento local determinista — nunca a
- * partir de la posición del jugador/cámara, que sólo se usa para restar
- * (convertir a coordenadas relativas a cámara, como exige
- * {@code WorldRenderContext}) y para decidir, en {@code EmitterTracker},
- * qué posiciones del mundo están lo bastante cerca para evaluarse. La
- * sensación reportada de "la luz sigue al jugador" no era un bug de
- * coordenadas (se revisó la matriz con cuidado: no hay doble traslación —
- * {@code matrixStack} se push/pop simétricamente en cada punto, partiendo
- * de la base que ya trae {@code WorldRenderContext} para esta fase) sino
- * dos bugs reales distintos, ambos corregidos: el signo invertido de la
- * atenuación del decal (sección 5 del encargo, ver {@link #addGroundDecal})
- * y la selección de qué hojas reciben decal basada en cercanía al jugador
- * en vez de en la posición fija del bloque (sección 6, corregido en
- * {@link EmitterTracker#isGroundDecalCandidate} vía
- * {@code EmitterTracker}, no en este archivo).</p>
+ * <p><b>Rediseño V2 del foco de suelo</b>: antes cada hoja candidata
+ * dibujaba su propio decal con radio heredado de {@code profile.radius()}
+ * (el radio de luz de la hoja, 6 bloques → ~3 de radio) — con varias hojas
+ * bajo la misma copa, los círculos se superponían por mezcla aditiva y
+ * formaban una mancha tan ancha como la proyección de la copa, tal como
+ * reportó el equipo con capturas reales. Ahora {@code addGroundSpot}
+ * dibuja un único foco por {@link EmitterTracker.GroundSpot} (como mucho
+ * uno por celda de 8×8 bloques, ver {@code EmitterTracker}), con radio
+ * propio ({@code LightingConfig#groundSpotRadius}, 1.6 bloques por
+ * defecto) completamente desacoplado del radio de luz de cualquier
+ * hoja.</p>
  */
 final class WorldLightingRenderer {
     private static final int CIRCLE_SEGMENTS = 14;
@@ -72,7 +61,8 @@ final class WorldLightingRenderer {
 
     private static void render(WorldRenderContext context) {
         List<EmitterTracker.ActiveEmitter> active = EmitterTracker.active();
-        if (active.isEmpty()) return;
+        List<EmitterTracker.GroundSpot> spots = EmitterTracker.groundSpots();
+        if (active.isEmpty() && spots.isEmpty()) return;
         MatrixStack matrixStack = context.matrixStack();
         if (matrixStack == null) return;
 
@@ -88,11 +78,11 @@ final class WorldLightingRenderer {
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         boolean anyVertex = false;
 
-        for (EmitterTracker.ActiveEmitter emitter : active) {
-            EmitterProfile profile = emitter.profile();
-            boolean simplified = emitter.distanceSq() > simplifyBeyondSq;
+        if (!config.debugHideFixedPoints) {
+            for (EmitterTracker.ActiveEmitter emitter : active) {
+                EmitterProfile profile = emitter.profile();
+                boolean simplified = emitter.distanceSq() > simplifyBeyondSq;
 
-            if (!config.debugHideFixedPoints) {
                 int points = emitter.isFoliage() ? Math.max(1, profile.pointsPerBlock()) : 1;
                 for (int i = 0; i < points; i++) {
                     if (!EmitterSampler.isActiveAtDensity(emitter.pos(), i, config.fixedPointDensityMultiplier)) continue;
@@ -122,16 +112,25 @@ final class WorldLightingRenderer {
                             * config.lightIntensityMultiplier * dayNightFactor * flicker * emitter.fade());
                     if (alpha <= 0.01f) continue;
 
-                    float radius = 0.05f * category.coreRadiusMultiplier * config.lightRadiusMultiplier;
+                    // Corrección V2: con radio base 0.05 (diámetro 0.1
+                    // bloques, ~10 cm), un punto "pequeño" (coreRadiusMultiplier
+                    // 0.55) medía ~0.055 de radio -- casi invisible a
+                    // distancia normal, aun con el alfa correcto. Esto es
+                    // muy probablemente la causa numérica de "la copa
+                    // permanece casi totalmente oscura" (el equipo no
+                    // reportó alfa=0, reportó puntos que no se notan). Se
+                    // sube la base a 0.11 (~2.2×) -- un punto de partida
+                    // razonado, no confirmado visualmente todavía.
+                    float radius = 0.11f * category.coreRadiusMultiplier * config.lightRadiusMultiplier;
                     Matrix4f pose = billboardPose(matrixStack, cameraPos, cameraRotation, worldX, worldY, worldZ);
                     addCircle(buffer, pose, radius, r, g, b, alpha);
                     anyVertex = true;
 
                     // Halo de dos capas (núcleo ya dibujado arriba, halo
-                    // intermedio + resplandor exterior tenue) -- sección 10
-                    // del encargo: tres niveles, sin bordes duros. No es
-                    // Bloom real de framebuffer (ver docs/23 sección 7),
-                    // sigue siendo geometría aditiva apilada.
+                    // intermedio + resplandor exterior tenue) -- tres
+                    // niveles, sin bordes duros. No es Bloom real de
+                    // framebuffer (ver docs/23), sigue siendo geometría
+                    // aditiva apilada.
                     if (!simplified && config.bloomIntensity > 0.01f) {
                         float haloAlpha = clamp01(alpha * 0.4f * config.bloomIntensity);
                         float haloRadius = radius * category.haloRadiusMultiplier * (1.6f + config.bloomRadiusMultiplier);
@@ -145,10 +144,10 @@ final class WorldLightingRenderer {
                     }
                 }
             }
+        }
 
-            if (config.groundDecalsEnabled && emitter.groundY() != null && !simplified) {
-                anyVertex |= addGroundDecal(buffer, matrixStack, cameraPos, emitter, config, dayNightFactor);
-            }
+        for (EmitterTracker.GroundSpot spot : spots) {
+            anyVertex |= addGroundSpot(buffer, matrixStack, cameraPos, spot, config, dayNightFactor);
         }
 
         if (!anyVertex) {
@@ -192,42 +191,33 @@ final class WorldLightingRenderer {
         }
     }
 
-    /** Decal de suelo: plano en el suelo (sin orientar a cámara), con alfa
+    /** Foco de suelo: plano en el suelo (sin orientar a cámara), con alfa
      * reducido por la distancia vertical real de caída.
      *
-     * <p><b>Corrección del signo (sección 5 del encargo)</b>: la versión
-     * anterior calculaba {@code fallDistance = groundY - pos.getY()}. Como
-     * una hoja está casi siempre POR ENCIMA del suelo, {@code groundY}
-     * (más bajo) menos {@code pos.getY()} (más alto) da un número
-     * NEGATIVO — al restar ese negativo en
-     * {@code 1 - fallDistance/alcance}, el resultado AUMENTA en vez de
-     * disminuir, y queda recortado (clamp) en 1.0: la intensidad máxima,
-     * sin importar lo lejos que esté realmente la hoja del suelo. Una hoja
-     * a 2 bloques de altura y una a 20 habrían dado exactamente el mismo
-     * decal al máximo. Se confirmó con valores concretos (hoja en Y=72,
-     * suelo en Y=64 → fallDistance antiguo = 64-72 = -8 → atenuación
-     * antigua = clamp(1 - (-8/18)) = clamp(1.44) = 1.0, el bug exacto que
-     * describía el encargo).</p>
-     *
-     * <p>Corrección: {@code verticalDistance = max(0, pos.getY() - groundY)}
-     * (altura real de caída, nunca negativa), y la atenuación usa el
-     * exponente {@code profile.falloff()} ya definido en
-     * {@code EmitterProfile} en vez de una resta lineal fija.</p> */
-    private static boolean addGroundDecal(BufferBuilder buffer, MatrixStack matrixStack, Vec3d cameraPos,
-                                           EmitterTracker.ActiveEmitter emitter, LightingConfig config, float dayNightFactor) {
-        EmitterProfile profile = emitter.profile();
-        var pos = emitter.pos();
-        double groundSurfaceY = emitter.groundY() + 1.01;
+     * <p>Mantiene la corrección del signo de la ronda anterior
+     * ({@code verticalDistance = max(0, anchorY - groundY)}, nunca
+     * negativo, con el exponente {@code falloff} real del perfil) — lo
+     * nuevo de esta ronda es que el RADIO y la INTENSIDAD BASE ya no
+     * salen de {@code profile.radius()}/{@code profile.intensity()}, sino
+     * de {@code LightingConfig#groundSpotRadius}/{@code groundSpotIntensity},
+     * independientes del radio de luz de la hoja (sección 5.1 del
+     * encargo V2) — y sólo hay un foco por {@link EmitterTracker.GroundSpot}
+     * (como mucho uno por celda), no uno por hoja.</p> */
+    private static boolean addGroundSpot(BufferBuilder buffer, MatrixStack matrixStack, Vec3d cameraPos,
+                                          EmitterTracker.GroundSpot spot, LightingConfig config, float dayNightFactor) {
+        EmitterProfile profile = spot.profile();
+        var pos = spot.anchorPos();
+        double groundSurfaceY = spot.groundY() + 1.01;
         double verticalDistance = Math.max(0.0, pos.getY() - groundSurfaceY);
-        double maxDistance = profile.radius() * 3.0;
+        double maxDistance = Math.max(2.0, config.groundSpotRadius * 6.0);
         float linear = clamp01(1.0f - (float) (verticalDistance / maxDistance));
         float falloff = (float) Math.pow(linear, Math.max(0.1f, profile.falloff()));
         if (falloff <= 0.02f) return false;
 
-        float alpha = clamp01(profile.intensity() * 0.4f * config.lightIntensityMultiplier * config.groundDecalIntensityMultiplier
-                * dayNightFactor * falloff * emitter.fade());
+        float alpha = clamp01(config.groundSpotIntensity * config.groundDecalIntensityMultiplier
+                * dayNightFactor * falloff * spot.fade());
         if (alpha <= 0.01f) return false;
-        float radius = profile.radius() * 0.5f * config.lightRadiusMultiplier;
+        float radius = Math.max(0.1f, config.groundSpotRadius);
 
         matrixStack.push();
         matrixStack.translate(pos.getX() + 0.5 - cameraPos.x, groundSurfaceY - cameraPos.y, pos.getZ() + 0.5 - cameraPos.z);

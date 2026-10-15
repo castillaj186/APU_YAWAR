@@ -61,16 +61,32 @@ public final class LightingConfig {
      * {@code WorldLightingRenderer}/{@code EmitterSampler}. */
     public float fixedPointDensityMultiplier = LightingQuality.MEDIUM.particleDensityMultiplier;
 
-    /** Si los emisores dibujan una mancha de luz en el suelo debajo de
-     * ellos. Se puede desactivar por completo (sección 6 del encargo:
-     * "si el decal de suelo actual no puede producir un resultado visual
-     * coherente, desactívalo... manteniendo los puntos de la copa") sin
-     * perder los puntos luminosos de la copa. */
+    /** Si los árboles dibujan un foco de luz en el suelo debajo de ellos.
+     * Se puede desactivar por completo (sección 6 del encargo original;
+     * sección 3 del encargo V2 insiste en lo mismo) sin perder los puntos
+     * luminosos de la copa. */
     public boolean groundDecalsEnabled = true;
 
-    /** Multiplicador adicional sólo para la intensidad del decal de
+    /** Multiplicador adicional sólo para la intensidad del foco de
      * suelo, independiente de {@link #lightIntensityMultiplier}. */
     public float groundDecalIntensityMultiplier = 1.0f;
+
+    /** Radio real (en bloques) del foco de suelo — corrección V2
+     * (sección 5.1 del encargo): antes salía de
+     * {@code profile.radius() * 0.5}, heredando el radio de luz de las
+     * hojas (6 bloques → ~3 de radio) y produciendo una mancha casi tan
+     * ancha como la copa. Ahora es un valor propio, independiente del
+     * radio de luz de cualquier hoja — el punto de partida que sugirió el
+     * encargo (1-2 bloques), ajustable sin tocar nada del follaje. */
+    public float groundSpotRadius = 1.6f;
+
+    /** Intensidad base del foco de suelo (antes de aplicar
+     * {@link #groundDecalIntensityMultiplier}, el día/noche y la
+     * atenuación por altura) — separada de la intensidad de los puntos de
+     * la copa a propósito, para que el suelo sea claramente secundario
+     * respecto del resplandor de las hojas (sección 3, objetivo central
+     * del encargo V2). */
+    public float groundSpotIntensity = 0.55f;
 
     /** Ticks para que un emisor que entra/sale del rango de efecto suba o
      * baje su intensidad de 0 a 1 (o viceversa) — evita el salto brusco de
@@ -98,6 +114,14 @@ public final class LightingConfig {
     // juego normal. ---
     public boolean debugHideFixedPoints = false;
 
+    /** Corrección V2 (sección 12 del encargo): antes este método dejaba
+     * fuera {@code fixedPointDensityMultiplier} (el campo que el
+     * renderizador usa de verdad desde la ronda anterior) y
+     * {@code maxEffectDistance}/{@code simplifyDetailBeyondDistance}
+     * (relevantes para el costo del escaneo) — cambiar a HIGH no los
+     * tocaba, dejando valores de un perfil distinto activos aunque
+     * {@code quality} dijera HIGH. Ahora los 8 campos que representan
+     * calidad/rendimiento se aplican juntos. */
     public void applyPreset(LightingQuality preset) {
         this.quality = preset;
         if (preset == LightingQuality.CUSTOM) return;
@@ -106,7 +130,10 @@ public final class LightingConfig {
         this.bloomIntensity = preset.bloomIntensity;
         this.bloomRadiusMultiplier = preset.bloomRadiusMultiplier;
         this.particleDensityMultiplier = preset.particleDensityMultiplier;
+        this.fixedPointDensityMultiplier = preset.fixedPointDensityMultiplier();
         this.maxActiveLights = preset.maxActiveLights;
+        this.maxEffectDistance = preset.maxEffectDistance;
+        this.simplifyDetailBeyondDistance = preset.simplifyDetailBeyondDistance;
     }
 
     /** Marca el perfil activo como personalizado — se llama tras cualquier

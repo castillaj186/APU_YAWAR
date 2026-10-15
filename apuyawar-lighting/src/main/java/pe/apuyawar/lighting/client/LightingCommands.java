@@ -79,6 +79,8 @@ final class LightingCommands {
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
                                 .then(setFloatField("intensidaddecal", c -> c.groundDecalIntensityMultiplier, (c, v) -> c.groundDecalIntensityMultiplier = v))
+                                .then(setFloatField("radiofoco", c -> c.groundSpotRadius, (c, v) -> c.groundSpotRadius = v))
+                                .then(setFloatField("intensidadfoco", c -> c.groundSpotIntensity, (c, v) -> c.groundSpotIntensity = v))
                                 .then(ClientCommandManager.literal("distanciamax")
                                         .then(ClientCommandManager.argument("valor", FloatArgumentType.floatArg(4.0f, 128.0f))
                                                 .executes(ctx -> {
@@ -130,6 +132,7 @@ final class LightingCommands {
                         .then(ClientCommandManager.literal("debug")
                                 .then(ClientCommandManager.literal("emisores").executes(LightingCommands::debugEmitters))
                                 .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
+                                .then(ClientCommandManager.literal("focos").executes(LightingCommands::debugGroundSpots))
                                 .then(ClientCommandManager.literal("puntos").executes(ctx -> {
                                     LightingConfig config = ApuYawarLightingClient.config();
                                     config.debugHideFixedPoints = !config.debugHideFixedPoints;
@@ -192,9 +195,9 @@ final class LightingCommands {
                 c.bloomRadiusMultiplier, c.fixedPointDensityMultiplier, c.dayIntensityMultiplier, c.nightIntensityMultiplier,
                 c.maxActiveLights, EmitterTracker.active().size()));
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
-                "decals=%s intensidadDecal=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
-                c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.maxEffectDistance,
-                c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
+                "decals=%s intensidadDecal=%.2f radioFoco=%.2f intensidadFoco=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
+                c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.groundSpotRadius, c.groundSpotIntensity,
+                c.maxEffectDistance, c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
         return 1;
     }
 
@@ -202,8 +205,8 @@ final class LightingCommands {
      * demanda, no un registro continuo en el log. */
     private static int debugEmitters(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
         var active = EmitterTracker.active();
-        long withGround = active.stream().filter(e -> e.groundY() != null).count();
-        feedback(ctx.getSource(), "Emisores activos: " + active.size() + " (con decal de suelo: " + withGround + ")");
+        var spots = EmitterTracker.groundSpots();
+        feedback(ctx.getSource(), "Puntos de copa activos: " + active.size() + " -- focos de suelo: " + spots.size());
         return 1;
     }
 
@@ -213,7 +216,7 @@ final class LightingCommands {
     private static int debugPositions(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
         var active = EmitterTracker.active();
         if (active.isEmpty()) {
-            feedback(ctx.getSource(), "Sin emisores activos ahora mismo.");
+            feedback(ctx.getSource(), "Sin puntos de copa activos ahora mismo.");
             return 1;
         }
         int shown = 0;
@@ -223,9 +226,26 @@ final class LightingCommands {
                 break;
             }
             feedback(ctx.getSource(), emitter.pos().toShortString()
-                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", emitter.fade())
-                    + (emitter.groundY() != null ? " suelo=Y" + emitter.groundY() : " sin decal"));
+                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", emitter.fade()));
             shown++;
+        }
+        return 1;
+    }
+
+    /** V2: "mostrar focos" -- a diferencia de los puntos de copa (uno por
+     * hoja), los focos de suelo son como mucho uno por celda de 8×8
+     * bloques (ver {@code EmitterTracker}), así que normalmente son muy
+     * pocos incluso con un bosque entero a la vista. */
+    private static int debugGroundSpots(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var spots = EmitterTracker.groundSpots();
+        if (spots.isEmpty()) {
+            feedback(ctx.getSource(), "Sin focos de suelo activos ahora mismo.");
+            return 1;
+        }
+        for (var spot : spots) {
+            feedback(ctx.getSource(), "ancla=" + spot.anchorPos().toShortString()
+                    + " sueloY=" + spot.groundY()
+                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", spot.fade()));
         }
         return 1;
     }

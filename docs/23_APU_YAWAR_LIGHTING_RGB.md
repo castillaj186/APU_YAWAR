@@ -1218,3 +1218,310 @@ efecto visual final todavía no se ha visto en pantalla.
 10. Confirmar que el Cerezo Celestial sigue con sus pétalos, destellos
     dorados y su propio decal/halo, sin haberse roto por los cambios
     compartidos del renderizador.
+
+## 20. APU YAWAR Lighting V2 — Follaje emisivo, Bloom celestial y foco ambiental estable
+
+El equipo probó la versión anterior en Minecraft real y envió una captura:
+copa considerablemente oscura, y **una mancha cian grande y de bordes
+evidentes debajo del árbol**, comparable en tamaño a la proyección de la
+copa. Esta sección documenta la causa real de ambos problemas y lo que se
+corrigió — siguiendo el orden obligatorio que pidió el equipo: primero el
+foco de suelo (mandatorio), después la copa, y por último se documenta
+honestamente qué de los efectos avanzados (follaje emisivo real, Bloom)
+no se completó esta ronda.
+
+### 20.1. Diagnóstico de los problemas iniciales
+
+Con la captura real y el código de la ronda anterior delante:
+
+- **Mancha de suelo grande**: `addGroundDecal` calculaba el radio del
+  decal como `profile.radius() * 0.5 * lightRadiusMultiplier`. Para el
+  abeto, `profile.radius() = 6.0` → radio del decal ≈ 3 bloques **por
+  cada hoja candidata**. La ronda anterior ya había hecho que la
+  *elegibilidad* de cada hoja fuera estable (1 de cada 5, determinista),
+  pero seguía siendo **un decal independiente por cada una de esas
+  hojas** — bajo una copa con decenas de hojas, varios decals de 3
+  bloques de radio, superpuestos con mezcla aditiva, se fusionan
+  visualmente en una sola mancha grande. Esto coincide exactamente con lo
+  que muestra la captura.
+- **Copa oscura**: revisando la fórmula del radio de los puntos de la
+  copa (`WorldLightingRenderer`), la base era `0.05` bloques — un punto
+  "pequeño" (multiplicador 0.55) medía ~0.055 de radio, **unos 5-6 cm**:
+  prácticamente invisible a distancia normal de juego, incluso con el
+  alfa calculado correctamente. Es un problema de *tamaño*, no de
+  *intensidad* — subir sólo la intensidad (que el equipo pidió
+  explícitamente no hacer) no lo habría arreglado.
+
+### 20.2. Causa real de que la iluminación pareciera completarse al caminar
+
+Aunque la ronda anterior ya hizo determinista la *elegibilidad* de cada
+hoja para decal (no dependía de la cercanía al jugador), **el conjunto de
+posiciones que el sistema conocía en absoluto seguía viniendo de un
+rescaneo centrado en el jugador, con un tope general de luces
+(`maxActiveLights`)**. Con decenas de hojas candidatas bajo un mismo
+árbol, cada una generando su propio decal, al caminar podían entrar o
+salir hojas individuales del conjunto evaluado — y como cada una aporta
+su PROPIO círculo a la mezcla aditiva, la mancha combinada podía crecer o
+cambiar de forma según cuántas hojas individuales estuvieran "dentro"
+en ese momento, incluso sin que ninguna posición concreta cambiara. La
+causa de fondo no era (sólo) selección inestable — era tener **múltiples
+focos independientes por árbol en vez de uno solo**, lo que amplifica
+cualquier variación en el conjunto de hojas evaluadas.
+
+### 20.3. Corrección del tamaño y la estabilidad del foco de suelo (Fase 2, obligatoria)
+
+**Nueva arquitectura** (`EmitterTracker`): los focos de suelo pasan de
+"uno por hoja candidata" a **uno como máximo por celda de una rejilla
+fija de 8×8 bloques** (`GROUND_CELL_SIZE`), en coordenadas del mundo,
+nunca centrada en el jugador. Un `GroundSpot` nuevo (`record`, separado
+de `ActiveEmitter`) representa cada foco, con su propia clave de celda,
+posición ancla, altura de suelo y perfil. Un abeto típico cabe en 1-2
+celdas → 1-2 focos pequeños, no decenas superpuestos.
+
+El representante de cada celda se elige de forma **determinista** (la
+hoja más alta de la celda; empate por `BlockPos#asLong()`), nunca "la
+primera que aparezca al iterar" — así el resultado no depende del orden
+de escaneo. **Limitación documentada**: si el conjunto exacto de hojas
+evaluadas en una celda cambia levemente entre rescaneos (por el límite
+`maxActiveLights` o el borde del radio de escaneo), el representante
+elegido podría cambiar a otra hoja de la *misma* celda, desplazando el
+foco unos pocos bloques dentro de esa celda de 8×8 — nunca saltando a
+una celda distinta ni apareciendo/desapareciendo salvo que la celda
+entera entre o salga del rango. Es la aproximación espacial determinista
+que el encargo autorizó explícitamente como alternativa a un
+agrupamiento exacto por árbol (costoso de mantener por frame).
+
+**Tamaño y intensidad desacoplados** (`WorldLightingRenderer`,
+`LightingConfig`): el radio y la intensidad base del foco ya **no** salen
+de `profile.radius()`/`profile.intensity()` de ninguna hoja — son campos
+propios:
+
+```java
+public float groundSpotRadius = 1.6f;      // antes: profile.radius()*0.5 ≈ 3.0
+public float groundSpotIntensity = 0.55f;  // antes: profile.intensity() (0.85 del abeto)
+```
+
+`groundSpotRadius = 1.6` es el punto de partida que sugirió el encargo
+(1-2 bloques), muy por debajo del ~3 anterior. La atenuación por altura
+conserva la corrección de signo de la ronda pasada
+(`verticalDistance = max(0, anchorY - groundY)`, con el exponente
+`falloff` real del perfil) — sigue sin producir manchas en superficies
+muy por debajo de la copa.
+
+### 20.4. Distancia de visibilidad vs. radio de influencia (Fase 3)
+
+Confirmado el hallazgo que ya se había anotado la ronda anterior: la
+fórmula `min(profile.radius()*2, maxEffectDistance)` hacía que
+`maxEffectDistance` fuera inerte para el abeto (`radius=6` → siempre
+`12`, sin importar la configuración). Corregido: el corte de detección
+ahora usa únicamente `maxEffectDistance`, sin mezclar el radio de luz de
+ninguna hoja. Como consecuencia, el radio de escaneo horizontal de
+`EmitterTracker` ahora deriva de `maxEffectDistance` en vez de ser una
+constante fija de 24 — y para que esto no dispare el costo
+cuadráticamente, el escaneo vertical se desacopló del horizontal (antes
+crecía junto con el radio, O(radio³); ahora tiene una altura fija de ±20
+bloques, independiente de cuán lejos se busque horizontalmente).
+
+### 20.5. Cambios en `EmitterTracker.java`
+
+- `GroundSpot` (record nuevo): foco de suelo por celda, no por hoja.
+- `buildGroundSpots(...)`: agrupa los emisores de follaje activos por
+  celda de 8×8 bloques y elige un representante determinista por celda.
+- `cellKey(BlockPos)`: clave estable de celda (no de posición individual).
+- Dos mapas de fundido independientes (`fade` para puntos de copa,
+  `groundFade` para focos de suelo, con la misma mecánica compartida en
+  `updateFadeMap`) — cada uno con su propia identidad de clave (posición
+  de bloque vs. celda), así que un foco de suelo no "parpadea" sólo
+  porque cambió qué hoja concreta lo representa dentro de la misma celda.
+- El corte de distancia ya no usa `profile.radius()` (20.4).
+- El escaneo vertical ya no escala con el radio horizontal (20.4).
+- Se quitaron `GROUND_DECAL_EVERY`/`GROUND_DECAL_COMPUTE_LIMIT`/
+  `isGroundDecalCandidate` de la ronda anterior (ya no aplican: la
+  selección ahora es por celda, no por "1 de cada 5 hojas").
+
+### 20.6. Cambios en `WorldLightingRenderer.java`
+
+- `addGroundSpot(...)` reemplaza a `addGroundDecal(...)`: recibe un
+  `GroundSpot` (no un `ActiveEmitter`), usa `groundSpotRadius`/
+  `groundSpotIntensity` en vez de `profile.radius()`/`profile.intensity()`.
+- Bucle nuevo sobre `EmitterTracker.groundSpots()`, separado del bucle de
+  puntos de copa sobre `EmitterTracker.active()`.
+- Radio base de los puntos de copa subido de 0.05 a 0.11 bloques (20.1)
+  — razonado por el tamaño en centímetros, **no confirmado visualmente
+  todavía**.
+
+### 20.7. Follaje emisivo real — estado honesto
+
+**No se implementó esta ronda.** El encargo fue explícito en que una
+máscara emisiva real, aplicada sobre la geometría/textura del propio
+bloque de hojas, es *distinta* de un billboard flotante delante de ella
+— y pidió explícitamente no presentar círculos más grandes como si fueran
+eso. Los círculos de esta entrega (más grandes que antes, ver 20.6) **no
+son material emisivo real**: siguen siendo geometría aditiva flotando
+delante del bloque, no una propiedad del bloque en sí.
+
+Las opciones técnicas reales investigadas para una futura ronda, en
+orden de riesgo creciente:
+
+1. **Posicionamiento de puntos derivado de los píxeles reales de la
+   textura**: leer la imagen real de `hojas_pino_esmeralda`/`side.png`
+   (y las demás caras) en el cliente, encontrar los píxeles más claros, y
+   usar esas coordenadas (convertidas a espacio 3D del bloque) para
+   colocar los puntos de luz en vez del sesgo-por-cara determinista
+   actual. Acopla visualmente el brillo a la textura real sin tocar el
+   pipeline de render — el riesgo es bajo (lectura de archivo + mapeo de
+   coordenadas), pero sigue sin ser una propiedad del material, sólo un
+   mejor punto de partida para los billboards.
+2. **Segunda pasada de render sobre la geometría real del bloque**, con
+   una capa de textura emisiva aditiva — el patrón real que ya usa
+   vanilla para materiales que brillan en la oscuridad
+   (`rendertype_entity_translucent_emissive`, visible en los logs de
+   `runClient` de esta sesión como una advertencia inocua de un sampler
+   no usado) es para ENTIDADES, no bloques; adaptarlo a bloques exigiría
+   registrar una capa de render adicional vía
+   `BlockRenderLayerMap`/un modelo con una segunda textura, investigado
+   pero no implementado.
+3. **Shader de material real** vía `CoreShaderRegistrationCallback` (la
+   misma API que ya se investigó para el Bloom, sección 7 de este
+   documento) — el camino más fiel a "máscara emisiva en la textura",
+   pero exige GLSL nuevo que no se puede verificar visualmente en este
+   entorno (mismo límite ya documentado para el Bloom).
+
+No se implementó ninguna de las tres esta ronda — se documenta la
+investigación para la siguiente, en vez de simularlo con círculos más
+grandes.
+
+### 20.8. Puntos LED — qué sí se mejoró
+
+Lo real de esta ronda para la copa: el tamaño del núcleo subió (20.1/20.6)
+y se conservan las 3 categorías deterministas (pequeño/mediano/principal,
+~70/25/5%) y el halo de 3 niveles de la ronda anterior, ahora sobre una
+base más grande. No se tocó la distribución por caras (ya sesgada hacia
+superficies visibles desde la ronda anterior).
+
+### 20.9. Partículas — sin cambios adicionales esta ronda
+
+La frecuencia/escala/deriva de `MomentoCuyAbetoLeavesBlock` ya se ajustó
+en la ronda anterior (docs/23 §19.8) y no se volvió a tocar — el encargo
+pidió revisar el sistema existente antes de ampliarlo, y no se encontró
+una causa nueva que justificara otro cambio sin antes ver el resultado
+real en pantalla del ajuste ya hecho.
+
+### 20.10. Estado real del Bloom
+
+Sin cambios respecto a la ronda anterior: **no implementado**. El plan
+técnico (`PostEffectProcessor` propio, extracción de brillo + desenfoque
+con el programa `box_blur` reutilizable de vanilla + composición aditiva)
+sigue siendo el mismo investigado y documentado en la sección 7 de este
+documento — el encargo pidió explícitamente no avanzar aquí hasta que la
+base (foco de suelo + copa) esté sólida, y además que no se simule con
+halos más grandes presentándolo como Bloom real. Los halos de 3 niveles
+de esta entrega siguen siendo geometría aditiva apilada, nunca
+framebuffer.
+
+### 20.11. Nuevos controles y comandos
+
+`config/apuyawar_lighting.json`: `groundSpotRadius`, `groundSpotIntensity`
+(nuevos, 20.3). Comandos nuevos: `/apuyawarlighting set radiofoco <valor>`,
+`/apuyawarlighting set intensidadfoco <valor>`,
+`/apuyawarlighting debug focos` (lista cada `GroundSpot` activo con su
+posición ancla, altura de suelo y fundido — separado de
+`debug posiciones`, que sigue mostrando los puntos de copa).
+
+**Corrección de los presets** (sección 12 del encargo: "verifica que los
+presets realmente actualicen todos los parámetros"): confirmado un hueco
+real — `applyPreset()` nunca tocaba `fixedPointDensityMultiplier` (el
+campo que el renderizador usa de verdad desde la ronda anterior) ni
+`maxEffectDistance`/`simplifyDetailBeyondDistance`. Cambiar a HIGH dejaba
+esos tres campos en lo que fuera que tuvieran antes. `LightingQuality`
+ahora incluye los 8 campos relevantes de calidad/rendimiento, y
+`applyPreset()` los aplica todos juntos.
+
+### 20.12. Compatibilidad
+
+Sin cambios de arquitectura respecto a la ronda anterior: sigue siendo
+jar-in-jar (`include project(':apuyawar-lighting')`), sin la tarea
+destructiva de limpieza de caché, `environment: "client"` para
+`apuyawar-lighting`, integración opcional vía `FabricLoader.isModLoaded`
+en `MomentoCuyLightingBridge`. No se investigó Iris/Sodium esta ronda
+(no hay forma de probarlos en este entorno) — se mantiene sin afirmar
+compatibilidad no verificada, igual que en la ronda anterior.
+
+### 20.13. Rendimiento
+
+No medido con FPS reales (sin control de teclado/ratón en este entorno,
+igual que en todas las rondas anteriores). Cambios arquitectónicos
+relevantes para el costo: el escaneo vertical ya no crece con el radio
+horizontal (20.4, una mejora de costo, no un empeoramiento); el número de
+focos de suelo cayó de "uno por cada 1-de-5 hojas" a "uno por celda
+ocupada de 8×8" (menos geometría de decal, no más); el radio de puntos
+subió pero el número de triángulos por punto no cambió (sigue siendo un
+abanico de 14 segmentos). No se introdujo ninguna asignación nueva por
+frame fuera de lo ya existente (los mapas de fundido son persistentes,
+actualizados por tick, no recreados).
+
+### 20.14. Pruebas ejecutadas
+
+**Con evidencia real de ejecución**:
+- `gradlew build` (4 módulos): éxito.
+- `gradlew :apuyawar-lighting:compileJava`: éxito, sin advertencias.
+- Dos ejecuciones reales de `gradlew :momento-cuy:runClient` (una antes y
+  otra después del ajuste de tamaño de 20.1/20.6): mundo cargado por
+  completo, comandos registrados, ningún error ni excepción en todo el
+  proceso, incluidos varios ciclos de autoguardado.
+
+**No verificado visualmente**: si el foco de suelo ahora se ve realmente
+pequeño y estable en pantalla, si los puntos de la copa ahora se notan,
+si el conjunto se parece más a la referencia — nada de esto se ha visto
+renderizado todavía en este entorno.
+
+### 20.15. Pruebas pendientes para el equipo
+
+Exactamente las pruebas A-G de foco de suelo y las de follaje/partículas
+que pidió el encargo, en este orden:
+
+1. `/apuyawarlighting test` — confirmar que el punto sigue anclado al
+   caminar/rotar cámara (ya se hacía en la ronda anterior, repetir).
+2. Plantar/crecer un abeto, pararse cerca de noche. Comparar el tamaño
+   del foco de suelo contra la sombra/proyección de la copa — debería ser
+   claramente más pequeño que antes (radio ~1.6 bloques, antes ~3).
+3. Caminar alrededor y debajo del árbol varias veces, incluyendo
+   movimiento lateral puro y rotar sólo la cámara sin mover al jugador.
+   El foco (o los 1-2 focos si el árbol cruza una frontera de celda) no
+   debería reaparecer "por partes" — debería estar o no estar, completo.
+4. `/apuyawarlighting debug focos` antes y después de caminar, para
+   comparar las coordenadas ancla exactas.
+5. `/apuyawarlighting decals` para aislar el foco de la copa.
+6. Observar si los puntos de la copa ahora se notan más (tamaño subido) —
+   si siguen pareciendo pequeños, el siguiente ajuste sería
+   `lightRadiusMultiplier` o el propio comentario del 20.6 sobre volver a
+   calibrar la base.
+7. Probar en terreno irregular (hierba/piedra/pendientes) cerca del
+   árbol — confirmar que el foco sigue la altura real del terreno sin
+   flotar ni atravesar bloques.
+8. Repetir con 5 y 20 árboles si es viable, anotando FPS con RGB on/off.
+9. Confirmar Cerezo Celestial intacto (pétalos, destellos dorados, su
+   propio foco de suelo con el nuevo sistema por celdas).
+10. Confirmar que no reaparecieron los problemas de caché de Loom (jar-in-jar
+    sigue siendo la única vía) y que el Panel K sigue nítido.
+
+### 20.16. Diferencias restantes con la imagen de referencia
+
+- **Follaje emisivo real** (20.7): no implementado — la copa brilla por
+  billboards delante de las hojas, no por una propiedad del material.
+- **Bloom real de framebuffer** (20.10): no implementado — el resplandor
+  sigue siendo geometría aditiva apilada, no una extracción+desenfoque
+  real.
+- **Densidad/cobertura de puntos**: la referencia muestra decenas de
+  puntos repartidos de forma muy densa por toda la copa; nuestra
+  distribución depende de `pointsPerBlock` (3 para esmeralda) × la
+  densidad configurada — puede seguir pareciendo más dispersa que la
+  referencia incluso con el tamaño corregido.
+- **Partículas separadas del árbol**: la referencia muestra motas
+  flotando claramente fuera del volumen de la copa; el sistema actual
+  (`MomentoCuyAbetoLeavesBlock`) genera partículas dentro/cerca de cada
+  bloque de hoja, no con un alcance de dispersión mayor.
+- **Forma del árbol**: ya documentado en la conversación — la silueta de
+  la referencia no coincide con la geometría real del abeto
+  (`straight_trunk_placer`/`spruce_foliage_placer`); esto es geometría,
+  no iluminación, y el encargo pidió conservar los modelos originales.
