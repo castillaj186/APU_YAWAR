@@ -19,5 +19,16 @@
   "carvers": {},
   "features": [
     [], [], [], [], [], [], [], [], [], [], []
-  ]
+  ],
+  "spawners": {
+    "creature": [],
+    "monster": [],
+    "ambient": [],
+    "water_creature": [],
+    "water_ambient": [],
+    "underground_water_creature": [],
+    "axolotls": [],
+    "misc": []
+  },
+  "spawn_costs": {}
 }
