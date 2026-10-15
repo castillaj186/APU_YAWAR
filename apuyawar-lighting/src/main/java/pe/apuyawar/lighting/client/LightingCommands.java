@@ -75,9 +75,40 @@ final class LightingCommands {
                                 .then(setFloatField("radio", c -> c.lightRadiusMultiplier, (c, v) -> c.lightRadiusMultiplier = v))
                                 .then(setFloatField("bloom", c -> c.bloomIntensity, (c, v) -> c.bloomIntensity = v))
                                 .then(setFloatField("radiobloom", c -> c.bloomRadiusMultiplier, (c, v) -> c.bloomRadiusMultiplier = v))
-                                .then(setFloatField("particulas", c -> c.particleDensityMultiplier, (c, v) -> c.particleDensityMultiplier = v))
+                                .then(setFloatField("puntosfijos", c -> c.fixedPointDensityMultiplier, (c, v) -> c.fixedPointDensityMultiplier = v))
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
+                                .then(setFloatField("intensidaddecal", c -> c.groundDecalIntensityMultiplier, (c, v) -> c.groundDecalIntensityMultiplier = v))
+                                .then(ClientCommandManager.literal("distanciamax")
+                                        .then(ClientCommandManager.argument("valor", FloatArgumentType.floatArg(4.0f, 128.0f))
+                                                .executes(ctx -> {
+                                                    LightingConfig config = ApuYawarLightingClient.config();
+                                                    config.maxEffectDistance = FloatArgumentType.getFloat(ctx, "valor");
+                                                    config.markCustom();
+                                                    config.save();
+                                                    feedback(ctx.getSource(), "distanciamax = " + config.maxEffectDistance);
+                                                    return 1;
+                                                })))
+                                .then(ClientCommandManager.literal("distanciasimplificar")
+                                        .then(ClientCommandManager.argument("valor", FloatArgumentType.floatArg(2.0f, 128.0f))
+                                                .executes(ctx -> {
+                                                    LightingConfig config = ApuYawarLightingClient.config();
+                                                    config.simplifyDetailBeyondDistance = FloatArgumentType.getFloat(ctx, "valor");
+                                                    config.markCustom();
+                                                    config.save();
+                                                    feedback(ctx.getSource(), "distanciasimplificar = " + config.simplifyDetailBeyondDistance);
+                                                    return 1;
+                                                })))
+                                .then(ClientCommandManager.literal("transicion")
+                                        .then(ClientCommandManager.argument("ticks", IntegerArgumentType.integer(1, 200))
+                                                .executes(ctx -> {
+                                                    LightingConfig config = ApuYawarLightingClient.config();
+                                                    config.fadeTransitionTicks = IntegerArgumentType.getInteger(ctx, "ticks");
+                                                    config.markCustom();
+                                                    config.save();
+                                                    feedback(ctx.getSource(), "transicion = " + config.fadeTransitionTicks + " ticks");
+                                                    return 1;
+                                                })))
                                 .then(ClientCommandManager.literal("maxluces")
                                         .then(ClientCommandManager.argument("valor", IntegerArgumentType.integer(1, 512))
                                                 .executes(ctx -> {
@@ -88,6 +119,23 @@ final class LightingCommands {
                                                     feedback(ctx.getSource(), "maxluces = " + config.maxActiveLights);
                                                     return 1;
                                                 }))))
+                        .then(ClientCommandManager.literal("decals")
+                                .executes(ctx -> {
+                                    LightingConfig config = ApuYawarLightingClient.config();
+                                    config.groundDecalsEnabled = !config.groundDecalsEnabled;
+                                    config.save();
+                                    feedback(ctx.getSource(), "Decals de suelo " + (config.groundDecalsEnabled ? "activados" : "desactivados"));
+                                    return 1;
+                                }))
+                        .then(ClientCommandManager.literal("debug")
+                                .then(ClientCommandManager.literal("emisores").executes(LightingCommands::debugEmitters))
+                                .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
+                                .then(ClientCommandManager.literal("puntos").executes(ctx -> {
+                                    LightingConfig config = ApuYawarLightingClient.config();
+                                    config.debugHideFixedPoints = !config.debugHideFixedPoints;
+                                    feedback(ctx.getSource(), "Puntos/halos de copa " + (config.debugHideFixedPoints ? "OCULTOS (debug)" : "visibles"));
+                                    return 1;
+                                })))
                         .then(ClientCommandManager.literal("test")
                                 .executes(LightingCommands::toggleTestEmitter))
                         .then(ClientCommandManager.literal("estado")
@@ -139,10 +187,46 @@ final class LightingCommands {
     private static int showStatus(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
         LightingConfig c = ApuYawarLightingClient.config();
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
-                "RGB=%s perfil=%s intensidad=%.2f radio=%.2f bloom=%.2f radioBloom=%.2f particulas=%.2f dia=%.2f noche=%.2f maxLuces=%d activos=%d",
+                "RGB=%s perfil=%s intensidad=%.2f radio=%.2f bloom=%.2f radioBloom=%.2f puntosFijos=%.2f dia=%.2f noche=%.2f maxLuces=%d activos=%d",
                 c.rgbEnabled, c.quality, c.lightIntensityMultiplier, c.lightRadiusMultiplier, c.bloomIntensity,
-                c.bloomRadiusMultiplier, c.particleDensityMultiplier, c.dayIntensityMultiplier, c.nightIntensityMultiplier,
+                c.bloomRadiusMultiplier, c.fixedPointDensityMultiplier, c.dayIntensityMultiplier, c.nightIntensityMultiplier,
                 c.maxActiveLights, EmitterTracker.active().size()));
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "decals=%s intensidadDecal=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
+                c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.maxEffectDistance,
+                c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
+        return 1;
+    }
+
+    /** Sección 17 del encargo: "mostrar emisores" -- un informe bajo
+     * demanda, no un registro continuo en el log. */
+    private static int debugEmitters(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var active = EmitterTracker.active();
+        long withGround = active.stream().filter(e -> e.groundY() != null).count();
+        feedback(ctx.getSource(), "Emisores activos: " + active.size() + " (con decal de suelo: " + withGround + ")");
+        return 1;
+    }
+
+    /** Sección 17 del encargo: "mostrar posiciones" -- imprime la
+     * coordenada mundial de cada emisor activo, bajo demanda, una sola
+     * vez por invocación (no continuamente). */
+    private static int debugPositions(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var active = EmitterTracker.active();
+        if (active.isEmpty()) {
+            feedback(ctx.getSource(), "Sin emisores activos ahora mismo.");
+            return 1;
+        }
+        int shown = 0;
+        for (var emitter : active) {
+            if (shown >= 10) {
+                feedback(ctx.getSource(), "... (" + (active.size() - shown) + " más, no mostrados)");
+                break;
+            }
+            feedback(ctx.getSource(), emitter.pos().toShortString()
+                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", emitter.fade())
+                    + (emitter.groundY() != null ? " suelo=Y" + emitter.groundY() : " sin decal"));
+            shown++;
+        }
         return 1;
     }
 

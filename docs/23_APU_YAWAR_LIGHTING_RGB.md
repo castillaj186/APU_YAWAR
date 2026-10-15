@@ -894,3 +894,327 @@ excepción en todo el proceso.
    recompilar, volver a correr `runClient`) y confirmar que el contenido
    siempre es el actual — ya no debería hacer falta ningún paso manual
    de limpieza de caché.
+
+## 19. Corrección de anclaje espacial, decals y efectos celestiales del Abeto
+
+### 19.1. Síntoma observado
+
+El equipo reportó, jugando de verdad: el árbol se ve oscuro a distancia,
+al acercarse aparecen los efectos, y **al caminar cerca o debajo del
+árbol aparecen manchas luminosas sobre el suelo por donde se desplaza el
+jugador** — dando la sensación de que la luz sigue al jugador en vez de
+quedar anclada al árbol.
+
+### 19.2. Diagnóstico espacial (Fase 1 del encargo) — no era un bug de matrices
+
+Se revisó con cuidado `billboardPose(...)` (orientación a cámara) y
+`addGroundDecal(...)` (decal de suelo) buscando específicamente una doble
+traslación o una confusión entre la posición del jugador y la del
+emisor. **Conclusión: la posición de cada punto y de cada decal se
+calcula exclusivamente a partir de `emitter.pos()` (un `BlockPos` real,
+fijo en el mundo) más un desplazamiento local determinista
+(`EmitterSampler`) — la posición del jugador/cámara sólo se resta al
+final, para convertir a coordenadas relativas a cámara (la convención que
+exige `WorldRenderContext` para esta fase), nunca para decidir el centro
+del efecto.** `matrixStack.push()`/`pop()` están balanceados en cada
+punto y en cada decal, así que no hay traslación residual que se acumule
+entre llamadas. **No se encontró ningún bug de coordenadas o de
+matrices.**
+
+Lo que sí se encontraron fueron dos bugs reales, completamente distintos
+entre sí, que juntos producían exactamente el síntoma reportado — ver
+19.3 y 19.4.
+
+### 19.3. Causa real #1 — el signo invertido de la atenuación del decal (sección 5 del encargo)
+
+**Confirmado con números concretos**, tal como pidió el equipo. Un abeto
+típico: hoja en `Y=72`, suelo en `Y=64`.
+
+**Cálculo anterior**:
+```
+fallDistance = groundY - pos.getY() = 64 - 72 = -8
+atenuación   = clamp01(1 - fallDistance / (radio*3))
+             = clamp01(1 - (-8/18))
+             = clamp01(1 + 0.444)
+             = clamp01(1.444)
+             = 1.0   ← intensidad MÁXIMA, sin importar la altura real
+```
+Como una hoja está casi siempre por encima del suelo, `fallDistance` daba
+negativo casi siempre — y restar un negativo *aumenta* el resultado en
+vez de atenuarlo, quedando recortado en el máximo. Una hoja a 2 bloques
+de altura y una a 20 habrían producido el mismo decal a máxima
+intensidad; el decal prácticamente nunca se desactivaba por distancia
+(sólo cuando `fallDistance` era positivo, es decir, cuando la "hoja"
+estaba *por debajo* del suelo, algo que casi nunca ocurre).
+
+**Cálculo corregido** (`WorldLightingRenderer.addGroundDecal`):
+```java
+double verticalDistance = Math.max(0.0, pos.getY() - groundSurfaceY);  // nunca negativo
+float linear  = clamp01(1.0f - (float) (verticalDistance / (profile.radius() * 3.0)));
+float falloff = (float) Math.pow(linear, Math.max(0.1f, profile.falloff()));  // exponente real del perfil
+```
+Con los mismos números: `verticalDistance = 72 - 64 = 8`, `linear =
+clamp01(1 - 8/18) = 0.556`, y con `falloff=2.0` (el valor por defecto de
+`EmitterProfile.foliage`) → `0.556² ≈ 0.31` — una atenuación real que
+disminuye con la altura, en vez de un valor fijo en el máximo. Más alto
+que `radio*3` (18 bloques en este ejemplo) → `linear` llega a 0 → no se
+dibuja ningún decal, tal como pedía el encargo ("si está demasiado lejos,
+no debe dibujarse ninguna mancha artificial").
+
+### 19.4. Causa real #2 — la selección de decals cambiaba con la posición del jugador (sección 6 del encargo)
+
+Esta es, con más probabilidad, la causa **principal** de la sensación de
+"la luz sigue al jugador" — más que el signo del cálculo (que hacía que
+el decal fuera siempre intenso, pero no que *cambiara de lugar*).
+
+**Mecanismo anterior**: `EmitterTracker.rescan()` ordenaba TODOS los
+emisores candidatos por prioridad y luego por distancia a la cámara, y
+sólo calculaba el suelo (`findGroundY`, un rayo hacia abajo) para "los
+primeros 8" de esa lista ordenada. Como el orden por distancia cambia
+cada vez que el jugador se mueve — una hoja que antes era la 9ª más
+cercana puede pasar a ser la 6ª —, **el conjunto de 8 hojas con decal
+cambiaba en cada rescaneo** (cada 10 ticks, medio segundo) según por
+dónde caminara el jugador. El resultado visual: manchas de luz que
+aparecen y desaparecen en distintos lugares del suelo mientras el
+jugador se mueve — exactamente lo que se reportó.
+
+**Corrección** (`EmitterTracker.isGroundDecalCandidate`): la elegibilidad
+para decal de suelo ahora es una propiedad **fija de la posición del
+bloque**, no de su cercanía al jugador:
+
+```java
+private static boolean isGroundDecalCandidate(BlockPos pos) {
+    return Math.floorMod(pos.asLong(), GROUND_DECAL_EVERY) == 0;  // GROUND_DECAL_EVERY = 5
+}
+```
+
+1 de cada 5 bloques de hoja emisores es, de forma determinista y
+permanente, "candidato a decal" — esto no cambia nunca por el movimiento
+del jugador, sólo por si ese bloque concreto sigue existiendo y dentro
+del radio de escaneo. Entre los candidatos reales (ya fijos), si hay más
+de los que conviene calcular en un rescaneo (tope de seguridad
+`GROUND_DECAL_COMPUTE_LIMIT = 24`, sólo por costo de los rayos hacia
+abajo, bastante más generoso que el límite de 8 anterior), se priorizan
+por cercanía — pero esto sólo decide *cuáles de los candidatos fijos se
+recalculan primero*, nunca *cuáles son candidatos*. El conjunto de
+posiciones que pueden tener decal es estable; caminar alrededor del árbol
+ya no cambia qué hojas lo producen.
+
+### 19.5. Transiciones suaves de entrada/salida (Fase 3, sección 7 del encargo)
+
+Se añadió un sistema de fundido persistente en `EmitterTracker`
+(`fade`, un `Map<Long, Float>` por posición de bloque, actualizado **cada
+tick**, no sólo en cada rescaneo de 10 ticks): cuando una posición pasa a
+estar en el rango activo, su intensidad sube gradualmente de 0 a 1 a lo
+largo de `config.fadeTransitionTicks` (12 por defecto, 0.6 s); cuando
+sale de rango, baja de 1 a 0 de la misma forma, en vez de desaparecer de
+golpe. `EmitterTracker.active()` ya devuelve cada emisor con su valor de
+fundido actual (`ActiveEmitter#fade()`), que `WorldLightingRenderer`
+multiplica directamente en el cálculo de alfa del punto y del decal — la
+posición nunca cambia durante la transición, sólo la intensidad.
+
+### 19.6. Mejora de la distribución de puntos (Fase 4, sección 9 del encargo)
+
+`EmitterSampler.samplePoint` elegía antes un punto centrado de forma
+independiente en los 3 ejes (0.2-0.8 en cada uno), lo que deja la mayoría
+de los puntos cerca del centro geométrico del bloque — "profundamente
+dentro de bloques opacos, donde nunca se verán", tal como advertía el
+encargo. Ahora cada punto elige primero, de forma determinista, una de
+las 6 caras del bloque y se sesga hacia ella en su eje principal
+(0.08-0.26 desde el borde), quedando disperso en los otros dos ejes — más
+cerca de superficies visibles, sin concentrar todos los puntos en la
+misma cara.
+
+Se añadió `EmitterSampler.sampleCategory` con tres categorías
+deterministas (no uniformes — sesgadas para que las "principales" sean
+realmente raras, como pedía el encargo): **pequeños** (~70%, núcleo
+pequeño, halo discreto), **medianos** (~25%, núcleo más grande), y
+**principales** (~5%, núcleo notablemente mayor y con un tercer nivel de
+resplandor exterior que los otros dos no tienen). `WorldLightingRenderer`
+ya aplica los multiplicadores de cada categoría al radio/intensidad del
+núcleo y del halo.
+
+### 19.7. Tres niveles de halo (sección 10 del encargo)
+
+Antes: núcleo + un único halo. Ahora: núcleo (interpolación de alfa real
+centro→borde, sin bordes duros — eso ya estaba bien desde la corrección
+anterior) + halo intermedio (más grande, más tenue) + un tercer nivel de
+"resplandor exterior", mucho más tenue y grande, **sólo en los puntos de
+categoría "principal"** (para no saturar la copa con tres capas en cada
+uno de los decenas de puntos). Se subieron los segmentos del abanico de
+10 a 14 para un borde algo más suave, sin disparar el costo por vértice
+de forma significativa (sigue siendo geometría de pocos triángulos por
+punto, nada comparable a un modelo real).
+
+### 19.8. Partículas celestiales (Fase 5, sección 11 del encargo)
+
+No se duplicó el sistema existente. Se revisó
+`MomentoCuyAbetoLeavesBlock.randomDisplayTick` contra cómo Minecraft
+realmente llama a ese método (investigado en una ronda anterior de este
+proyecto): el motor ya sólo selecciona una muestra pequeña y aleatoria de
+bloques por tick, no todas las hojas — la probabilidad adicional de 1/8
+(noche) o 1/20 (día) de la versión anterior, compuesta sobre ese muestreo
+ya disperso, dejaba muy pocas partículas visibles en la práctica sobre un
+árbol de decenas de bloques de hoja. Se subió la frecuencia (1/4 noche,
+1/12 día), la escala visual de la partícula (0.8→1.0 y 0.7→0.9), y se
+añadió deriva lateral en X/Z además de la vertical que ya existía — "
+movimiento lateral ligero" pedido en el encargo. Sigue siendo el mismo
+`DustParticleEffect` vía `randomDisplayTick`, sin un segundo sistema
+paralelo.
+
+**No se conectó la densidad de estas partículas a la configuración de
+APU YAWAR Lighting** (`particleDensityMultiplier`/nueva
+`fixedPointDensityMultiplier`) — `MomentoCuyAbetoLeavesBlock` es un
+bloque común que Momento Cuy debe poder cargar sin `apuyawar-lighting`
+instalado (al igual que `MomentoCuyLightingBridge`, protegido con
+`FabricLoader.isModLoaded`); importar directamente la clase de
+configuración de `apuyawar-lighting` desde un bloque común rompería esa
+garantía, porque los bloques se registran incondicionalmente en el
+inicializador común, no sólo en el de cliente. Queda documentado como
+pendiente (sección 19.14) en vez de introducir ese acoplamiento bajo
+presión de tiempo.
+
+### 19.9. Separación de densidades (sección 11 del encargo)
+
+`particleDensityMultiplier` controlaba antes el muestreo de los puntos
+FIJOS de la copa en `WorldLightingRenderer`/`EmitterSampler`. Se añadió
+`fixedPointDensityMultiplier` (nuevo campo) para ese propósito, y
+`particleDensityMultiplier` queda reservado (documentado como tal en el
+propio código) para cuando se resuelva el acoplamiento de 19.8 con las
+partículas móviles — no se eliminó ni se renombró, para no romper
+`config/apuyawar_lighting.json` ya guardados.
+
+### 19.10. Nuevos parámetros de configuración (Fase 6, sección 16 del encargo)
+
+Todos en `config/apuyawar_lighting.json`, con valores por defecto
+razonables para no romper nada al actualizar un archivo existente (Gson
+conserva el valor Java del campo cuando la clave no está presente en el
+JSON guardado):
+
+- `fixedPointDensityMultiplier` — densidad de puntos fijos (separado de
+  partículas móviles, ver 19.8-19.9).
+- `groundDecalsEnabled` — activa/desactiva el decal de suelo por
+  completo, conservando los puntos de la copa (la salida de emergencia
+  que pedía la sección 6 si el decal "no puede producir un resultado
+  visual coherente").
+- `groundDecalIntensityMultiplier` — intensidad del decal, independiente
+  de la intensidad general de los puntos.
+- `fadeTransitionTicks` — duración de la transición de entrada/salida
+  (19.5).
+- `maxEffectDistance` — distancia máxima real a la que un emisor puede
+  llegar a verse, distinta del radio interno de escaneo (que sigue siendo
+  sólo una optimización de rendimiento).
+- `simplifyDetailBeyondDistance` — más allá de esta distancia, cada punto
+  sólo dibuja su núcleo (sin halo ni decal) — un nivel de detalle
+  simplificado a media distancia, sección 12 del encargo.
+- `debugHideFixedPoints` — modo de depuración (19.11): oculta
+  puntos/halos de la copa sin tocar los decals, para aislar problemas.
+
+Comandos nuevos bajo `/apuyawarlighting set`: `puntosfijos`,
+`intensidaddecal`, `distanciamax`, `distanciasimplificar`, `transicion`
+(en ticks). Comando nuevo `/apuyawarlighting decals` (alterna
+`groundDecalsEnabled`, sin argumentos, igual que `toggle`). Se
+conservaron todos los comandos/nombres existentes sin cambios
+(`estado`, `toggle`, `preset`, `test`, y los `set` ya existentes).
+
+### 19.11. Modo de depuración (sección 17 del encargo)
+
+`/apuyawarlighting debug <emisores|posiciones|puntos>`, desactivado por
+defecto y sin overlay permanente:
+
+- `debug emisores` — un mensaje puntual con el total de emisores activos
+  y cuántos tienen decal de suelo ahora mismo.
+- `debug posiciones` — imprime, una sola vez por invocación (nunca de
+  forma continua en el log, tal como pedía el encargo), la posición
+  mundial, el fundido actual y el estado de decal de hasta 10 emisores
+  activos.
+- `debug puntos` — alterna `debugHideFixedPoints`: oculta por completo
+  los puntos/halos de la copa sin tocar los decals de suelo, para poder
+  compararlos por separado.
+
+No se implementó un alternador de partículas en este comando (ver 19.8 —
+las partículas móviles viven en `momento-cuy`, fuera del alcance directo
+de esta configuración por la razón ya explicada).
+
+### 19.12. Limitaciones de los halos geométricos vs. iluminación RGB real
+
+Sigue sin existir Bloom real de framebuffer ni iluminación de vóxel/
+lightmap coloreada — ver sección 7 y sección 14 de este documento
+(sin cambios en esta ronda, el encargo pidió explícitamente no avanzar
+ahí todavía). Lo nuevo de esta ronda (fundido, categorías, tres niveles
+de halo, decals estables) sigue siendo geometría aditiva apilada con
+prueba de profundidad real — mejor anclada y más agradable visualmente,
+pero no un sistema de iluminación físicamente coherente.
+
+### 19.13. Pruebas realizadas
+
+**Con evidencia real de ejecución** (no sólo razonamiento o compilación):
+- `gradlew build` (los 4 módulos): éxito.
+- `gradlew :apuyawar-lighting:compileJava`: éxito, sin advertencias.
+- `gradlew :momento-cuy:runClient`: ejecución real, confirmando que el
+  entrypoint sigue invocándose correctamente tras todos estos cambios
+  (logs `[DIAG]` presentes) y sin ninguna excepción durante la carga.
+
+**Verificación matemática con valores concretos** (no sólo código): el
+cálculo de atenuación del decal se confirmó con las coordenadas reales de
+un abeto típico (Y=72 hoja, Y=64 suelo) mostrando el valor exacto erróneo
+anterior (1.0, siempre máximo) y el valor corregido (≈0.31, atenuado
+según altura real) — ver 19.3.
+
+**Pendiente de prueba visual directa** (no hay herramienta de captura o
+control de teclado/ratón en este entorno): las pruebas A-J completas que
+pidió el encargo (emisor fijo, abeto real, caminar alrededor, cámara,
+distancia, día/noche, partículas, decal, varios árboles, FPS) — la lista
+exacta queda en la sección 19.15 para que el equipo las ejecute. Lo que
+sí se puede afirmar con alta confianza, por el análisis de código con
+valores concretos: el decal ya no se queda fijo en máxima intensidad sin
+importar la altura, y el conjunto de hojas que produce decal ya no cambia
+al caminar — son las dos causas identificadas del síntoma reportado, y
+ambas quedaron corregidas de forma verificable en el código, aunque su
+efecto visual final todavía no se ha visto en pantalla.
+
+### 19.14. Problemas pendientes
+
+1. **Partículas móviles sin densidad configurable** — ver 19.8, pendiente
+   de una solución de desacoplamiento (p. ej. un campo intermedio en
+   `momento-cuy`, actualizado por `MomentoCuyLightingBridge`, que las
+   hojas lean sin importar directamente clases de `apuyawar-lighting`) en
+   una futura ronda.
+2. **Bloom real de framebuffer** — sigue sin implementarse, tal como pidió
+   el encargo explícitamente para esta ronda.
+3. **Sin medición de FPS real** — la prueba J del encargo (comparar FPS
+   con RGB activado/desactivado, con varios árboles) no se pudo ejecutar
+   sin control de teclado/ratón en este entorno.
+4. **Sin confirmación visual del parecido con la imagen de referencia** —
+   los cambios de esta ronda son razonados y verificados matemáticamente/
+   por ejecución sin errores, pero nadie los ha visto renderizados
+   todavía.
+5. **`GROUND_DECAL_EVERY = 5` y `GROUND_DECAL_COMPUTE_LIMIT = 24` son
+   valores de partida razonables, no calibrados visualmente** — si el
+   equipo ve muy pocos o demasiados decals por árbol, son los dos números
+   a ajustar primero.
+
+### 19.15. Pasos para probar la actualización
+
+1. `gradlew :momento-cuy:runClient`.
+2. `/apuyawarlighting test` — confirmar que el punto de prueba no se
+   mueve al caminar alrededor, en primera y tercera persona.
+3. Plantar/crecer un Abeto Celestial, pararse quieto cerca y observar los
+   puntos de la copa: deberían verse de tres tamaños, con el halo más
+   notorio sólo en los pocos puntos "principales".
+4. Caminar alrededor y debajo del árbol varias veces — las manchas de
+   suelo (si `groundDecalsEnabled=true`) deberían quedarse en los mismos
+   sitios, no reubicarse por el movimiento.
+5. `/apuyawarlighting debug posiciones` antes y después de caminar, para
+   comparar coordenadas exactas si algo se ve raro.
+6. `/apuyawarlighting debug puntos` para aislar si un problema visual
+   viene de los puntos/halos o del decal.
+7. `/apuyawarlighting decals` para desactivar el decal por completo y
+   juzgar sólo la copa.
+8. Alejarse del árbol progresivamente y observar si sigue siendo
+   reconocible a distancia media (gracias a `simplifyDetailBeyondDistance`)
+   antes de desaparecer del todo en `maxEffectDistance`.
+9. `/time set night` y `/time set day` para comparar.
+10. Confirmar que el Cerezo Celestial sigue con sus pétalos, destellos
+    dorados y su propio decal/halo, sin haberse roto por los cambios
+    compartidos del renderizador.
