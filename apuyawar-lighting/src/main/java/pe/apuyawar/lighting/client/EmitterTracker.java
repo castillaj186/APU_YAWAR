@@ -69,9 +69,17 @@ public final class EmitterTracker {
      * enorme en cada actualización"). */
     private static final int MAX_NEW_CHUNK_SCANS_PER_RESCAN = 6;
     /** Cada cuántos rescaneos se considera "vieja" la caché de un chunk y
-     * se vuelve a indexar desde cero (para notar árboles nuevos/crecidos
-     * en un chunk ya cacheado) — 200 rescaneos × 0.5 s ≈ 100 s. */
-    private static final int CHUNK_CACHE_TTL_RESCANS = 200;
+     * se vuelve a indexar desde cero (para notar árboles nuevos/crecidos,
+     * o talados, en un chunk ya cacheado) — V4 fase 4 (sección 6.4 del
+     * encargo: "un árbol que crece con polvo de hueso debería ser
+     * reconocido sin esperar innecesariamente a que expire toda la
+     * caché"): bajado de 200 a 80 rescaneos (≈100 s → ≈40 s) -- sigue
+     * siendo barato (sólo re-escanea el chunk donde el jugador sigue
+     * parado/cerca, no todo el mundo cacheado a la vez, ver
+     * {@link #MAX_NEW_CHUNK_SCANS_PER_RESCAN}), pero reacciona bastante
+     * más rápido a un árbol recién crecido o talado sin necesitar un
+     * listener de cambios de bloque (Mixin) nuevo esta ronda. */
+    private static final int CHUNK_CACHE_TTL_RESCANS = 80;
     /** Lado (en bloques) de cada celda de la rejilla de focos de suelo —
      * fija en coordenadas del mundo, nunca centrada en el jugador. */
     private static final int GROUND_CELL_SIZE = 8;
@@ -81,6 +89,13 @@ public final class EmitterTracker {
     private static long rescanCounter = 0;
     private static List<ActiveEmitter> active = List.of();
     private static List<GroundSpot> groundSpots = List.of();
+    /** V4, fase 4: cuántos emisores reales había y cuántos recibió cada
+     * celda/árbol en el último reparto de presupuesto -- sólo para el
+     * comando de diagnóstico {@code debug arboles}, ver
+     * {@link #selectWithPerTreeBudget}. {@code int[2]}: {encontrados,
+     * cupo asignado}. Vacío si sólo había un árbol (no se aplicó
+     * reparto por árbol, ver el atajo en {@link #selectWithPerTreeBudget}). */
+    private static Map<Long, int[]> lastTreeBudgets = Map.of();
     private static ActiveEmitter testEmitter = null;
     private static final Map<Long, Float> fade = new HashMap<>();
     private static final Map<Long, Float> groundFade = new HashMap<>();
@@ -219,7 +234,7 @@ public final class EmitterTracker {
         found.sort(Comparator.<ActiveEmitter>comparingInt(e -> -e.profile.priority())
                 .thenComparingDouble(e -> e.distanceSq));
         int cap = Math.max(1, config.maxActiveLights);
-        List<ActiveEmitter> capped = found.size() > cap ? selectStratifiedByHeight(found, cap) : new ArrayList<>(found);
+        List<ActiveEmitter> capped = found.size() > cap ? selectWithPerTreeBudget(found, cap) : new ArrayList<>(found);
         active = capped;
 
         groundSpots = config.groundDecalsEnabled ? buildGroundSpots(world, registered, capped) : List.of();
@@ -313,19 +328,38 @@ public final class EmitterTracker {
         return result;
     }
 
-    /** Reparte {@code cap} en tres cupos (uno por banda de altura),
-     * empezando por un tercio cada una y, si alguna banda tiene menos
-     * candidatos de los que le tocan, cediendo lo que no puede usar a las
-     * demás bandas que todavía tengan margen -- así un árbol con poca
-     * copa en un tercio (p. ej. la punta, siempre más estrecha) no
-     * desperdicia cupo: lo recibe la banda con más hojas reales. */
+    /** Reparte {@code cap} en tres cupos (uno por banda de altura) --
+     * delega en {@link #distributeQuotaAcrossGroups}, la versión
+     * genérica para N grupos que también usa
+     * {@link #selectWithPerTreeBudget} (V4 fase 4) para repartir entre
+     * árboles en vez de bandas. */
     private static int[] distributeQuota(int cap, int lowerCount, int middleCount, int upperCount) {
-        int[] counts = {lowerCount, middleCount, upperCount};
-        int[] quota = {cap / 3, cap / 3, cap - 2 * (cap / 3)};
-        for (int pass = 0; pass < 3; pass++) {
+        return distributeQuotaAcrossGroups(cap, new int[] {lowerCount, middleCount, upperCount});
+    }
+
+    /** Reparte {@code cap} en {@code counts.length} cupos, empezando por
+     * una parte igual para cada grupo y, si alguno tiene menos
+     * candidatos de los que le tocan, cediendo lo que no puede usar a
+     * los demás grupos que todavía tengan margen -- así un grupo con
+     * pocos candidatos (p. ej. la punta de un árbol, o un árbol
+     * pequeño junto a uno grande) no desperdicia cupo: lo recibe el
+     * grupo con más candidatos reales. Genérico sobre N grupos --
+     * usado tanto para las 3 bandas de altura de un árbol
+     * ({@link #selectStratifiedByHeight}) como para repartir el cupo
+     * global entre varios árboles ({@link #selectWithPerTreeBudget},
+     * sección 6.2 del encargo V4: "si existen varios árboles juntos,
+     * uno solo no debería consumir todo el presupuesto"). */
+    private static int[] distributeQuotaAcrossGroups(int cap, int[] counts) {
+        int n = counts.length;
+        int[] quota = new int[n];
+        if (n == 0) return quota;
+        int base = cap / n;
+        int remainder = cap - base * n;
+        for (int i = 0; i < n; i++) quota[i] = base + (i < remainder ? 1 : 0);
+        for (int pass = 0; pass < n; pass++) {
             int leftover = 0;
-            boolean[] saturated = new boolean[3];
-            for (int i = 0; i < 3; i++) {
+            boolean[] saturated = new boolean[n];
+            for (int i = 0; i < n; i++) {
                 if (quota[i] > counts[i]) {
                     leftover += quota[i] - counts[i];
                     quota[i] = counts[i];
@@ -334,7 +368,7 @@ public final class EmitterTracker {
             }
             if (leftover == 0) break;
             List<Integer> open = new ArrayList<>();
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < n; i++) {
                 if (!saturated[i] && quota[i] < counts[i]) open.add(i);
             }
             if (open.isEmpty()) break;
@@ -346,6 +380,55 @@ public final class EmitterTracker {
             }
         }
         return quota;
+    }
+
+    /** V4, fase 4 (sección 6.2 del encargo: "presupuesto de emisores
+     * por árbol... uno solo no debería consumir todo el presupuesto").
+     * Agrupa los emisores detectados por la MISMA rejilla de celdas de
+     * 8×8 bloques que ya agrupa los focos de suelo
+     * ({@link #cellKey(BlockPos)}) -- una aproximación espacial barata
+     * a "un árbol", consistente con el resto del motor, sin necesitar
+     * un algoritmo de components conexos nuevo. Reparte el cupo GLOBAL
+     * entre las celdas ocupadas (vía {@link #distributeQuotaAcrossGroups})
+     * y, DENTRO de cada celda, aplica el reparto por bandas de altura
+     * ya existente ({@link #selectStratifiedByHeight}) -- así ni un
+     * árbol con copa muy densa deja a los árboles vecinos sin ninguna
+     * luz, ni dentro de un mismo árbol se repite el sesgo hacia las
+     * hojas más cercanas (Error 3 de la V3). Con un solo árbol/celda en
+     * rango, el comportamiento es idéntico al de antes de esta fase. */
+    private static List<ActiveEmitter> selectWithPerTreeBudget(List<ActiveEmitter> found, int cap) {
+        Map<Long, List<ActiveEmitter>> byCell = new java.util.LinkedHashMap<>();
+        for (ActiveEmitter e : found) {
+            byCell.computeIfAbsent(cellKey(e.pos()), k -> new ArrayList<>()).add(e);
+        }
+        if (byCell.size() <= 1) {
+            lastTreeBudgets = Map.of();
+            return selectStratifiedByHeight(found, cap);
+        }
+
+        List<Long> cellKeys = new ArrayList<>(byCell.keySet());
+        int[] counts = new int[cellKeys.size()];
+        for (int i = 0; i < cellKeys.size(); i++) counts[i] = byCell.get(cellKeys.get(i)).size();
+        int[] quota = distributeQuotaAcrossGroups(cap, counts);
+
+        Map<Long, int[]> budgets = new HashMap<>();
+        List<ActiveEmitter> result = new ArrayList<>(cap);
+        for (int i = 0; i < cellKeys.size(); i++) {
+            int cellQuota = quota[i];
+            budgets.put(cellKeys.get(i), new int[] {counts[i], cellQuota});
+            if (cellQuota <= 0) continue;
+            List<ActiveEmitter> cellEmitters = byCell.get(cellKeys.get(i));
+            result.addAll(cellEmitters.size() <= cellQuota
+                    ? cellEmitters
+                    : selectStratifiedByHeight(cellEmitters, cellQuota));
+        }
+        lastTreeBudgets = budgets;
+        return result;
+    }
+
+    /** V4, fase 4: ver documentación de {@link #lastTreeBudgets}. */
+    public static Map<Long, int[]> treeBudgets() {
+        return lastTreeBudgets;
     }
 
     /** Indexa un chunk completo (16×16 columnas) una sola vez: todas las

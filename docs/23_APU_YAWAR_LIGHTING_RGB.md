@@ -2535,3 +2535,139 @@ se recomienda al equipo:
 
 Commit de esta fase: "APU YAWAR Lighting V4 fase 3: Bloom real de
 framebuffer, desactivado por defecto".
+
+### 23.4. Fase 4 — Optimización, estabilidad y rendimiento
+
+#### 23.4.1. El problema real de los 96 emisores (sección 6.1 del encargo)
+
+El encargo fue explícito: "no quiero solucionar ese problema
+simplemente aumentando el máximo a 500 o 1000." Revisando
+`EmitterTracker` tal como quedó tras la V3: el recorte a `maxluces`
+(`selectStratifiedByHeight`) ya reparte el cupo por BANDAS DE ALTURA
+dentro de un árbol (para que la punta no se quede sin representación,
+Error 3 de la V3) -- pero opera sobre la lista GLOBAL de emisores
+encontrados, sin distinguir a qué árbol pertenece cada uno. Con varios
+árboles juntos, un abeto de copa muy densa (300 hojas detectadas, por
+ejemplo) podía consumir el cupo entero antes de que el reparto por
+bandas tuviera ninguna oportunidad de considerar a los árboles vecinos
+-- la causa real, con alta probabilidad, de que "maxLuces=96
+activos=96" significara en la práctica "un árbol se queda con las 96".
+
+#### 23.4.2. Presupuesto real por árbol (sección 6.2 del encargo)
+
+`selectWithPerTreeBudget` (nuevo en `EmitterTracker`): agrupa los
+emisores detectados por la MISMA rejilla de celdas de 8×8 bloques que
+ya agrupa los focos de suelo (`cellKey`, sin inventar un sistema nuevo
+de identidad de árbol ni un flood-fill de bloques conectados, ambos
+mucho más caros) -- una aproximación espacial barata a "un árbol",
+consistente con el resto del motor. Reparte el cupo GLOBAL entre las
+celdas ocupadas (`distributeQuotaAcrossGroups`, la generalización a N
+grupos de la función `distributeQuota` que ya repartía las 3 bandas de
+altura -- mismo algoritmo, ahora reutilizable) y, DENTRO de cada celda,
+aplica el reparto por bandas de altura ya existente -- así ni un árbol
+con copa muy densa deja a los árboles vecinos sin ninguna luz, ni
+dentro de un mismo árbol se repite el sesgo hacia las hojas más
+cercanas. Con un solo árbol/celda en rango (el caso de todas las
+pruebas de la V3), el comportamiento es IDÉNTICO al de antes de esta
+fase -- atajo explícito en el código, para no arriesgar ninguna
+regresión sobre lo ya verificado.
+
+**Validado con un programa Java independiente** (no sólo argumentado),
+contra 7 escenarios realistas, incluyendo el reportado por el equipo:
+
+```
+1 dense tree only          cap=96 counts=[300]                -> quota=[96]              total=96 OK
+3 trees, one dense         cap=48 counts=[300, 20, 10]         -> quota=[19, 19, 10]       total=48 OK
+2 equal trees              cap=48 counts=[60, 60]              -> quota=[24, 24]           total=48 OK
+5 trees varied, LOW cap    cap=24 counts=[80, 50, 5, 2, 1]     -> quota=[8, 8, 5, 2, 1]     total=24 OK
+10 small trees, cap>total  cap=96 counts=[5×10]                -> quota=[5×10]             total=50 OK
+cap smaller than groups    cap=2  counts=[10, 10, 10, 10, 10]  -> quota=[1, 1, 0, 0, 0]     total=2  OK
+one empty group            cap=48 counts=[40, 0, 20]           -> quota=[24, 0, 20]         total=44 OK
+```
+
+En el escenario "3 trees, one dense" (el más parecido al reporte real
+del equipo): el árbol de 300 hojas detectadas recibe sólo 19 cupos, no
+los 48 enteros -- los otros dos árboles reciben 19 y 10, nunca cero.
+Ninguna celda recibe más cupo del que tiene candidatos reales (sin
+desperdicio), y el total nunca supera el cupo global.
+
+**Nuevo comando de diagnóstico** `/apuyawarlighting debug arboles`:
+reporta, celda por celda, cuántos emisores reales había y cuántos
+recibió esa celda en el último reparto -- vacío si sólo hay un árbol en
+rango (no se aplicó reparto por árbol).
+
+#### 23.4.3. Caché por chunk más receptiva a cambios (sección 6.4 del encargo)
+
+`CHUNK_CACHE_TTL_RESCANS` bajado de 200 a 80 rescaneos (~100 s → ~40 s)
+-- sin añadir ningún listener de cambios de bloque nuevo (eso exigiría
+Mixins sobre el mundo cliente, un cambio de mayor riesgo que esta ronda
+no se arriesgó a introducir), un árbol que crece con polvo de hueso o
+que se tala se nota considerablemente más rápido que antes, sin
+cambiar el costo por rescaneo (sigue limitado a
+`MAX_NEW_CHUNK_SCANS_PER_RESCAN = 6` chunks nuevos/caducados por
+rescaneo). Documentado como una mejora real pero parcial -- la
+detección instantánea de talar/plantar un árbol en un chunk YA
+cacheado sigue pendiente de una ronda futura con Mixins, si el equipo
+lo pide explícitamente.
+
+#### 23.4.4. Lo que YA estaba resuelto de rondas anteriores (sección 6.3/6.5/6.6 del encargo)
+
+Revisando el código existente antes de tocar nada, varias peticiones de
+la fase 4 ya estaban cubiertas por correcciones de la V2/V3, sin
+necesitar cambios nuevos esta ronda:
+
+- **Estabilidad al caminar** (sección 6.3): representante "pegajoso"
+  de foco de suelo (V3, §21.4) y caché por chunk con revalidación barata
+  por posición (no recorrido completo) -- ya evita que los focos
+  cambien de sitio o que la iluminación se complete "por partes".
+- **Distancia de renderizado vs. radio de influencia** (sección 6.5):
+  ya separados desde la V2 (§20.4) -- `maxEffectDistance` nunca se
+  mezcla con `profile.radius()`.
+- **LOD básico** (sección 6.6): `simplifyDetailBeyondDistance` ya
+  simplifica los halos (no el núcleo) a media distancia desde la V1/V2.
+
+No se repitió ni se deshizo ninguna de estas correcciones -- se
+documentan aquí para que el informe de la fase 4 sea honesto sobre qué
+es nuevo y qué ya eran mejoras de rondas anteriores.
+
+#### 23.4.5. Lo que NO se implementó esta ronda, honestamente
+
+- **LOD multinivel con menos partículas/puntos a distancia intermedia**
+  más allá de lo ya existente (sección 6.6): no se amplió esta ronda.
+- **Optimización específica de framebuffers del Bloom real** más allá
+  de recrearlos sólo al cambiar de resolución (sección 6.7): ya
+  razonable (ver §23.3), no se tocó más esta ronda.
+- **Medición real de FPS con 1/5/10/20 árboles** (sección 6.9): no
+  medible en este entorno (sin control de teclado/ratón ni overlay de
+  depuración visual) -- el único análisis posible es de complejidad
+  (ver 23.4.2, nunca más caro que antes) y el propio comando
+  `debug arboles`/`debug hojas` para que el equipo lo mida con F3 real
+  dentro del juego.
+- **Invalidación instantánea de caché ante tala/plantado** (sección
+  6.4, más allá de la reducción de TTL de 23.4.3): exigiría Mixins
+  sobre eventos de bloque del mundo cliente, fuera del alcance de esta
+  ronda.
+
+#### 23.4.6. Pruebas reales ejecutadas
+
+- Validación independiente del algoritmo de reparto (`QuotaTest.java`,
+  7 escenarios, ver 23.4.2): todos correctos, sin exceder cupo ni
+  desperdiciar cupo en una celda sin candidatos suficientes.
+- `gradlew :apuyawar-lighting:compileJava`: éxito al primer intento.
+- `gradlew :momento-cuy:runClient`: arranque completo, sin excepciones
+  nuevas (las mismas autopruebas de las fases 1-3 siguen pasando sin
+  cambios, confirmando que el reparto por árbol no rompió el camino de
+  un solo árbol).
+- `gradlew build` (4 módulos): éxito, sin regresión.
+
+#### 23.4.7. Pendiente para el equipo
+
+Probar con varios Abetos/Cerezos Celestiales plantados juntos (sección
+6.9 del encargo: 1, 5, 10, 20 árboles), usando
+`/apuyawarlighting debug arboles` para confirmar que el cupo se reparte
+entre todos en vez de concentrarse en el más cercano o más denso, y
+anotando FPS reales con F3 (con y sin RGB activado) -- no medible desde
+este entorno.
+
+Commit de esta fase: "APU YAWAR Lighting V4 fase 4: presupuesto real
+por árbol y caché más receptiva".

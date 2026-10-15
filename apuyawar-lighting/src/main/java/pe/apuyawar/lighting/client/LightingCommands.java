@@ -162,6 +162,7 @@ final class LightingCommands {
                                 .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
                                 .then(ClientCommandManager.literal("focos").executes(LightingCommands::debugGroundSpots))
                                 .then(ClientCommandManager.literal("materialemisivo").executes(LightingCommands::debugEmissiveMaterial))
+                                .then(ClientCommandManager.literal("arboles").executes(LightingCommands::debugTreeBudgets))
                                 .then(ClientCommandManager.literal("hojas")
                                         .executes(ctx -> debugRealLeafCounts(ctx, 24))
                                         .then(ClientCommandManager.argument("radio", IntegerArgumentType.integer(4, 80))
@@ -266,6 +267,29 @@ final class LightingCommands {
 
     private static int clampByte01(float v) {
         return Math.max(0, Math.min(255, (int) (v * 255f)));
+    }
+
+    /** V4, fase 4 (sección 6.2 del encargo: "presupuesto de emisores
+     * por árbol"): reporta cuántos emisores reales había y cuántos
+     * recibió cada árbol/celda en el último reparto -- para confirmar
+     * que varios árboles juntos ya no dejan a uno solo con todo el
+     * cupo. Vacío si sólo hay un árbol en rango (no se aplicó reparto
+     * por árbol, ver {@code EmitterTracker#selectWithPerTreeBudget}). */
+    private static int debugTreeBudgets(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var budgets = EmitterTracker.treeBudgets();
+        if (budgets.isEmpty()) {
+            feedback(ctx.getSource(), "Un solo árbol/celda en rango (o ninguno) -- no se aplicó reparto por árbol.");
+            return 1;
+        }
+        for (var entry : budgets.entrySet()) {
+            long key = entry.getKey();
+            int cx = (int) (key >> 32);
+            int cz = (int) key;
+            int[] foundAndQuota = entry.getValue();
+            feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                    "celda(%d,%d): %d emisores reales -> %d con cupo", cx, cz, foundAndQuota[0], foundAndQuota[1]));
+        }
+        return 1;
     }
 
     /** Sección 17 del encargo: "mostrar emisores" -- un informe bajo
