@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.BuiltBuffer;
@@ -12,6 +13,8 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -20,7 +23,10 @@ import pe.apuyawar.lighting.EmitterProfile;
 import pe.apuyawar.lighting.EmitterSampler;
 import pe.apuyawar.lighting.config.LightingConfig;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dibuja los puntos de luz de {@link EmitterTracker#active()} y los focos
@@ -157,11 +163,124 @@ final class WorldLightingRenderer {
 
         if (!anyVertex) {
             buffer.endNullable();
-            return;
+        } else {
+            BuiltBuffer built = buffer.end();
+            drawAdditive(built);
         }
 
-        BuiltBuffer built = buffer.end();
-        drawAdditive(built);
+        if (config.emissiveMaterialEnabled) {
+            renderEmissiveSurfaces(active, cameraPos, config, dayNightFactor, worldTime);
+        }
+    }
+
+    /** APU YAWAR Lighting V4, fase 1: segunda pasada, con su propio
+     * formato de vértice (con UV, no sólo posición+color) y su propia
+     * textura -- por eso no puede compartir el {@code BufferBuilder} de
+     * {@link #render} de arriba. Dibuja un cubo real (no un billboard)
+     * en la posición de cada emisor de follaje que tenga
+     * {@link EmitterProfile#hasEmissiveMask()}, usando la máscara que
+     * {@link EmissiveMaskGenerator} deriva de la textura REAL de ese
+     * bloque -- ver {@code EmissiveMaskGenerator} para la justificación
+     * completa. Agrupado por textura de máscara resultante para no
+     * cambiar de textura en cada emisor. */
+    private static void renderEmissiveSurfaces(List<EmitterTracker.ActiveEmitter> active, Vec3d cameraPos,
+                                                 LightingConfig config, float dayNightFactor, long worldTime) {
+        var resourceManager = MinecraftClient.getInstance().getResourceManager();
+        Map<Identifier, List<EmitterTracker.ActiveEmitter>> byMask = new HashMap<>();
+        for (EmitterTracker.ActiveEmitter emitter : active) {
+            EmitterProfile profile = emitter.profile();
+            if (!emitter.isFoliage() || !profile.hasEmissiveMask()) continue;
+            int rgb = ((clampByte(profile.red())) << 16) | ((clampByte(profile.green())) << 8) | clampByte(profile.blue());
+            EmissiveMaskGenerator.getOrCreate(resourceManager, profile.emissiveMaskSource(), rgb)
+                    .ifPresent(maskId -> byMask.computeIfAbsent(maskId, k -> new ArrayList<>()).add(emitter));
+        }
+        if (byMask.isEmpty()) return;
+
+        for (var entry : byMask.entrySet()) {
+            BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+            boolean any = false;
+            for (EmitterTracker.ActiveEmitter emitter : entry.getValue()) {
+                EmitterProfile profile = emitter.profile();
+                float flicker = 1.0f;
+                if (profile.animated()) {
+                    double phase = emitter.pos().asLong() * 0.37;
+                    flicker = 0.75f + 0.25f * (float) Math.sin(worldTime * 0.04 + phase);
+                }
+                float alpha = clamp01(config.emissiveMaterialIntensity * dayNightFactor * flicker * emitter.fade());
+                if (alpha <= 0.02f) continue;
+                addEmissiveCube(buffer, emitter.pos(), cameraPos, alpha);
+                any = true;
+            }
+            if (!any) {
+                buffer.endNullable();
+                continue;
+            }
+            BuiltBuffer built = buffer.end();
+            drawEmissiveAdditive(built, entry.getKey());
+        }
+    }
+
+    /** Cubo unitario real, alineado al bloque, con UV 0..1 por cara --
+     * nunca orientado a cámara. El color por vértice es blanco con el
+     * alfa global ya calculado: el color visible real viene de la
+     * máscara (textura), no del vértice -- así el mismo cubo sirve para
+     * cualquier perfil sin repetir la mezcla de color aquí. */
+    private static void addEmissiveCube(BufferBuilder buffer, BlockPos pos, Vec3d cameraPos, float alpha) {
+        double ox = pos.getX() - cameraPos.x;
+        double oy = pos.getY() - cameraPos.y;
+        double oz = pos.getZ() - cameraPos.z;
+        int a = clampByte(alpha);
+
+        // down (y=0)
+        quad(buffer, ox, oy, oz, a,
+                0, 0, 0,  1, 0, 0,  1, 0, 1,  0, 0, 1);
+        // up (y=1)
+        quad(buffer, ox, oy, oz, a,
+                0, 1, 0,  0, 1, 1,  1, 1, 1,  1, 1, 0);
+        // north (z=0)
+        quad(buffer, ox, oy, oz, a,
+                0, 0, 0,  0, 1, 0,  1, 1, 0,  1, 0, 0);
+        // south (z=1)
+        quad(buffer, ox, oy, oz, a,
+                1, 0, 1,  1, 1, 1,  0, 1, 1,  0, 0, 1);
+        // west (x=0)
+        quad(buffer, ox, oy, oz, a,
+                0, 0, 1,  0, 1, 1,  0, 1, 0,  0, 0, 0);
+        // east (x=1)
+        quad(buffer, ox, oy, oz, a,
+                1, 0, 0,  1, 1, 0,  1, 1, 1,  1, 0, 1);
+    }
+
+    /** Añade una cara (4 vértices, UV 0..1 en el orden dado) desplazada
+     * por {@code (ox, oy, oz)} -- coordenadas ya relativas a la cámara,
+     * nunca multiplicadas por ninguna matriz de rotación: es geometría
+     * real del mundo, no un billboard. */
+    private static void quad(BufferBuilder buffer, double ox, double oy, double oz, int alpha,
+                              double x0, double y0, double z0,
+                              double x1, double y1, double z1,
+                              double x2, double y2, double z2,
+                              double x3, double y3, double z3) {
+        buffer.vertex((float) (ox + x0), (float) (oy + y0), (float) (oz + z0)).texture(0f, 0f).color(255, 255, 255, alpha);
+        buffer.vertex((float) (ox + x1), (float) (oy + y1), (float) (oz + z1)).texture(1f, 0f).color(255, 255, 255, alpha);
+        buffer.vertex((float) (ox + x2), (float) (oy + y2), (float) (oz + z2)).texture(1f, 1f).color(255, 255, 255, alpha);
+        buffer.vertex((float) (ox + x3), (float) (oy + y3), (float) (oz + z3)).texture(0f, 1f).color(255, 255, 255, alpha);
+    }
+
+    private static void drawEmissiveAdditive(BuiltBuffer built, Identifier textureId) {
+        RenderSystem.setShaderTexture(0, textureId);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+
+        BufferRenderer.drawWithGlobalProgram(built);
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.disableBlend();
     }
 
     private static Matrix4f billboardPose(MatrixStack matrixStack, Vec3d cameraPos, Quaternionf cameraRotation,

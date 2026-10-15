@@ -30,6 +30,12 @@ public final class LightingConfig {
     public float lightRadiusMultiplier = LightingQuality.MEDIUM.lightRadiusMultiplier;
     public float bloomIntensity = LightingQuality.MEDIUM.bloomIntensity;
     public float bloomRadiusMultiplier = LightingQuality.MEDIUM.bloomRadiusMultiplier;
+    /** V4, fase 1: activa/desactiva el follaje emisivo real (ver
+     * {@code client.EmissiveMaskGenerator}/{@code WorldLightingRenderer
+     * #renderEmissiveSurfaces}) por separado de los puntos/halos de
+     * siempre -- criterio de aceptación de la fase: apagar los puntos
+     * (comando {@code debug puntos}) NO debe apagar esto, y viceversa. */
+    public boolean emissiveMaterialEnabled = true;
     public float emissiveMaterialIntensity = 1.0f;
     /** Densidad de las PARTÍCULAS MÓVILES (las de
      * {@code MomentoCuyAbetoLeavesBlock}/{@code MomentoCuyBlossomLeavesBlock}),

@@ -2082,3 +2082,144 @@ comandos nuevos. Falta que el equipo, dentro del juego:
 Una vez confirmado, el diagnóstico de §22.1 (`logClassOrigin`,
 `BUILD_FINGERPRINT`) se retira en un commit aparte, igual que los logs
 `[DIAG]` originales de `ApuYawarLightingClient`/`LightingCommands`.
+
+## 23. APU YAWAR Lighting V4 — motor de iluminación celestial avanzada
+
+El encargo pidió cuatro fases reales, en orden, cada una verificada
+antes de avanzar a la siguiente: (1) follaje con material/superficie
+emisiva real, (2) partículas celestiales personalizadas, (3) Bloom
+selectivo real de framebuffer, (4) optimización/estabilidad. Esta
+sección documenta el avance fase por fase, con un commit por fase
+("Entrega A/B/C/D" en el encargo). Explícitamente: no se simula ninguna
+fase con círculos aditivos más grandes, y cualquier limitación real se
+documenta en vez de disimularse.
+
+### 23.1. Fase 1 — Follaje emisivo real
+
+**Decisión de arquitectura (sección 3.4 del encargo: "evalúa las
+alternativas... no utilices una API solamente porque existe, verifica
+su disponibilidad real en 1.21.1")**: de las alternativas pedidas, se
+descartó releer los quads reales del `BakedModel` (formato de vértice
+no verificado con certeza suficiente en esta ronda, mayor riesgo sin
+poder confirmar visualmente el resultado) a favor de una técnica de
+menor riesgo pero igualmente real: **un cubo con las UV 0..1 de verdad
+en cada cara, en la posición exacta del bloque** (no un billboard
+orientado a cámara) — justificado porque los modelos de
+`hojas_pino_esmeralda`/`hojas_cerezo_florecido` usan
+`"parent": "minecraft:block/cube"` (cubo completo, confirmado leyendo
+sus JSON reales), así que un cubo axis-aligned coincide exactamente con
+su geometría real sin necesitar parsear quads dinámicamente.
+
+**La máscara emisiva se deriva de la textura REAL, no se dibuja a
+mano** (sección 3.3 del encargo, "puedes generar una máscara emisiva
+complementaria a partir de las imágenes existentes"): la clase nueva
+`EmissiveMaskGenerator` (`apuyawar-lighting`, paquete `client`):
+
+1. Lee con `NativeImage.read(...)` la textura real `.../side.png` del
+   bloque (la misma que ya usa su modelo).
+2. Calcula la luminancia perceptual (ITU-R BT.601) de cada píxel
+   opaco.
+3. Elige un **umbral adaptativo por textura** (no un número de brillo
+   fijo): empieza en el 74% del brillo máximo de ESA textura concreta,
+   y si la fracción resultante de píxeles "emisivos" queda fuera de
+   4%-30% de los píxeles opacos, busca el umbral más alto que mantenga
+   al menos el 4% -- nunca "toda la textura emisiva", nunca "ningún
+   píxel" (límites explícitos del encargo, sección 3.3/3.7).
+4. Construye una textura nueva, del mismo tamaño, transparente donde el
+   píxel no califica, y con el color configurado del perfil (alfa
+   combinando el alfa original -- para no rellenar huecos de recorte
+   -- con lo brillante que era ese píxel relativo al máximo) donde sí
+   califica.
+5. Registra el resultado como textura dinámica
+   (`TextureManager.registerTexture`) y lo cachea por (textura base,
+   color) -- no vuelve a tocar el disco en rescaneos posteriores.
+
+**Validación real sobre las texturas reales del proyecto** (no sólo
+hipotética): se escribió un programa Java independiente
+(`BufferedImage`, misma fórmula de luminancia/umbral) y se ejecutó
+contra las 4 texturas reales (`hojas_pino_esmeralda/side.png`,
+`side_alt.png`, `top.png`, `hojas_cerezo_florecido/side.png`).
+Resultado real: entre 7.4% y 11.7% de los píxeles opacos de cada
+textura califican como emisivos -- ni degenerado (0%) ni "toda la hoja"
+(cerca de la textura entera), confirmando que el umbral adaptativo se
+comporta razonablemente sobre arte real, no sólo en teoría.
+
+**Error real encontrado y corregido antes de terminar esta fase**: el
+primer intento de empaquetar el color en el formato ABGR de
+`NativeImage` llamó a `ColorHelper.Abgr.getAbgr(alfa, rojo, verde,
+azul)`, asumiendo el mismo orden que un entero ARGB normal. Se verificó
+el bytecode real de `ColorHelper$Abgr.getAbgr` con `javap -c` contra el
+jar de Minecraft cacheado en este entorno: el orden real de parámetros
+es `(alfa, AZUL, verde, ROJO)` -- el primer intento intercambiaba rojo y
+azul (habría pintado el turquesa del abeto con los canales rojo/azul
+cambiados). Corregido antes de compilar la versión final.
+
+**Dibujo real** (`WorldLightingRenderer#renderEmissiveSurfaces`, nueva):
+segunda pasada de render, agrupada por textura de máscara resultante
+(para no cambiar de textura por cada emisor), con su propio formato de
+vértice (`POSITION_TEXTURE_COLOR`, no el `POSITION_COLOR` de los
+puntos/halos de siempre) y su propio shader
+(`GameRenderer.getPositionTexColorProgram()`). Mezcla aditiva
+(`SRC_ALPHA, ONE`), test de profundidad `LEQUAL` igual que el resto del
+motor -- se dibuja DESPUÉS de que la hoja real ya escribió su propia
+profundidad, así que queda correctamente detrás de cualquier bloque que
+tape la hoja, y los huecos de recorte de la textura (alfa 0 en la
+máscara) no "rellenan" nada aunque la geometría del cubo los cubra.
+
+**Reutilización de EmitterProfile**: nuevo campo
+`emissiveMaskSource` (`Identifier`, nullable) y wither
+`withEmissiveMask(Identifier)` -- `hojas_pino_esmeralda` y
+`hojas_cerezo_florecido` lo usan (apuntando a su propia cara "side"
+real); `hojas_pino_sombrio` se deja sin máscara a propósito (contraste:
+sección 2 del encargo pide contraste claro entre hojas oscuras y zonas
+emisivas, no que toda hoja brille).
+
+**Configuración** (`LightingConfig`): `emissiveMaterialEnabled`
+(nuevo, bool, default true) + `emissiveMaterialIntensity` (ya existía,
+reservado sin usar desde una ronda anterior, ahora conectado de
+verdad). Comandos nuevos: `/apuyawarlighting materialemisivo`
+(activar/desactivar), `/apuyawarlighting set intensidadmaterial
+<valor>`, `/apuyawarlighting debug materialemisivo` (fuerza la
+generación de la máscara de cada perfil registrado y reporta
+éxito/fallo, sin necesitar encontrar un árbol real).
+
+**Criterio de aceptación de la fase (verificado)**: apagar los puntos
+fijos (`/apuyawarlighting debug puntos`) y el follaje emisivo son dos
+sistemas de dibujo completamente independientes
+(`config.debugHideFixedPoints` vs `config.emissiveMaterialEnabled`,
+dos bucles distintos en `render()`) -- apagar uno nunca apaga el otro,
+tal como pidió el encargo.
+
+**Pruebas reales ejecutadas (no sólo compilación)**:
+- `gradlew :apuyawar-lighting:compileJava` / `:momento-cuy:compileJava`:
+  éxito.
+- **Autoprueba en vivo dentro del cliente real**: se añadió un gancho
+  temporal (`ApuYawarLightingClient`, se quita junto con el resto de
+  diagnósticos `[DIAG]`) que, 40 ticks después de arrancar, fuerza la
+  generación de la máscara de cada perfil registrado y lo registra en
+  el log. Ejecutado con `gradlew :momento-cuy:runClient` real: **las
+  dos máscaras (esmeralda y cerezo) se generaron correctamente**,
+  confirmado por el log:
+  ```
+  [DIAG] Máscara emisiva generada para momento_cuy:textures/block/hojas_pino_esmeralda/side.png (color #d9c8) -> ...
+  [DIAG] Autoprueba material emisivo: momento_cuy:hojas_pino_esmeralda -> OK (...)
+  [DIAG] Máscara emisiva generada para momento_cuy:textures/block/hojas_cerezo_florecido/side.png (color #ff70bb) -> ...
+  [DIAG] Autoprueba material emisivo: momento_cuy:hojas_cerezo_florecido -> OK (...)
+  [DIAG] Autoprueba material emisivo terminada: 2 perfiles con máscara, 2 generados.
+  ```
+  Sin ninguna excepción en el resto del log de esa sesión.
+- `gradlew build` (4 módulos): éxito, sin regresión en
+  `apuyawar-systems` (Panel K) ni en el resto de módulos.
+
+**No verificado visualmente -- honesto, no se afirma lo contrario**: la
+autoprueba confirma que el PIPELINE de datos (leer textura → calcular
+máscara → registrar textura dinámica) funciona de verdad dentro del
+cliente real. Lo que NO se pudo confirmar en este entorno (sin control
+de teclado/ratón) es el DIBUJO del cubo emisivo sobre un árbol real --
+eso exige entrar a un mundo, acercarse a un Abeto/Cerezo Celestial real,
+y mirarlo de noche. Queda como prueba pendiente del equipo (ver §23.5
+al cierre de las 4 fases para la lista completa).
+
+Commit de esta fase: ver historial de `feat/apuyawar-rgb-lighting`
+inmediatamente después de esta sección (mensaje "APU YAWAR Lighting V4
+fase 1: follaje emisivo real").

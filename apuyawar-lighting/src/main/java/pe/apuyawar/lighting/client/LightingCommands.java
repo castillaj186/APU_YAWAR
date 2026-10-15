@@ -85,6 +85,7 @@ final class LightingCommands {
                                 .then(setFloatField("radiobloom", c -> c.bloomRadiusMultiplier, (c, v) -> c.bloomRadiusMultiplier = v))
                                 .then(setFloatField("puntosfijos", c -> c.fixedPointDensityMultiplier, (c, v) -> c.fixedPointDensityMultiplier = v))
                                 .then(setFloatField("particulasmoviles", c -> c.particleDensityMultiplier, (c, v) -> c.particleDensityMultiplier = v))
+                                .then(setFloatField("intensidadmaterial", c -> c.emissiveMaterialIntensity, (c, v) -> c.emissiveMaterialIntensity = v))
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
                                 .then(setFloatField("intensidaddecal", c -> c.groundDecalIntensityMultiplier, (c, v) -> c.groundDecalIntensityMultiplier = v))
@@ -138,10 +139,19 @@ final class LightingCommands {
                                     feedback(ctx.getSource(), "Decals de suelo " + (config.groundDecalsEnabled ? "activados" : "desactivados"));
                                     return 1;
                                 }))
+                        .then(ClientCommandManager.literal("materialemisivo")
+                                .executes(ctx -> {
+                                    LightingConfig config = ApuYawarLightingClient.config();
+                                    config.emissiveMaterialEnabled = !config.emissiveMaterialEnabled;
+                                    config.save();
+                                    feedback(ctx.getSource(), "Follaje emisivo real " + (config.emissiveMaterialEnabled ? "activado" : "desactivado"));
+                                    return 1;
+                                }))
                         .then(ClientCommandManager.literal("debug")
                                 .then(ClientCommandManager.literal("emisores").executes(LightingCommands::debugEmitters))
                                 .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
                                 .then(ClientCommandManager.literal("focos").executes(LightingCommands::debugGroundSpots))
+                                .then(ClientCommandManager.literal("materialemisivo").executes(LightingCommands::debugEmissiveMaterial))
                                 .then(ClientCommandManager.literal("hojas")
                                         .executes(ctx -> debugRealLeafCounts(ctx, 24))
                                         .then(ClientCommandManager.argument("radio", IntegerArgumentType.integer(4, 80))
@@ -195,7 +205,7 @@ final class LightingCommands {
         // añade siempre, sin pasar por el escaneo de bloques.
         EmitterTracker.setTestEmitter(pos, new EmitterProfile(
                 profile.red(), profile.green(), profile.blue(), null, null, null,
-                profile.intensity(), profile.radius(), profile.falloff(), EmitterType.SOLID, 1, 99, true));
+                profile.intensity(), profile.radius(), profile.falloff(), EmitterType.SOLID, 1, 99, true, null));
         feedback(ctx.getSource(), "Emisor de prueba colocado en " + pos.toShortString());
         return 1;
     }
@@ -211,7 +221,40 @@ final class LightingCommands {
                 "decals=%s intensidadDecal=%.2f radioFoco=%.2f intensidadFoco=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
                 c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.groundSpotRadius, c.groundSpotIntensity,
                 c.maxEffectDistance, c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f",
+                c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier));
         return 1;
+    }
+
+    /** V4, fase 1: fuerza la generación de la máscara emisiva de cada
+     * perfil registrado que tenga {@code emissiveMaskSource}, sin
+     * necesitar encontrar un árbol real en el mundo -- reporta si cada
+     * máscara se generó, y cuántos píxeles de la textura base
+     * calificaron como emisivos (vía el propio log [DIAG] de
+     * {@code EmissiveMaskGenerator}, que ya imprime el identificador
+     * resultante). */
+    private static int debugEmissiveMaterial(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var client = net.minecraft.client.MinecraftClient.getInstance();
+        var registered = pe.apuyawar.lighting.ApuYawarLighting.registeredEmitters();
+        int checked = 0;
+        int ok = 0;
+        for (var entry : registered.entrySet()) {
+            EmitterProfile profile = entry.getValue();
+            if (!profile.hasEmissiveMask()) continue;
+            checked++;
+            int rgb = (clampByte01(profile.red()) << 16) | (clampByte01(profile.green()) << 8) | clampByte01(profile.blue());
+            var result = EmissiveMaskGenerator.getOrCreate(client.getResourceManager(), profile.emissiveMaskSource(), rgb);
+            boolean success = result.isPresent();
+            if (success) ok++;
+            feedback(ctx.getSource(), entry.getKey() + " -> " + (success ? "OK (" + result.get() + ")" : "FALLÓ (ver log del servidor/cliente)"));
+        }
+        feedback(ctx.getSource(), checked + " perfiles con máscara emisiva registrados, " + ok + " generados correctamente.");
+        return 1;
+    }
+
+    private static int clampByte01(float v) {
+        return Math.max(0, Math.min(255, (int) (v * 255f)));
     }
 
     /** Sección 17 del encargo: "mostrar emisores" -- un informe bajo
