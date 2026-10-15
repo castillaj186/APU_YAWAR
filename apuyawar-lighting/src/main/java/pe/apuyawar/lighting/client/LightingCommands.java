@@ -148,6 +148,15 @@ final class LightingCommands {
                                     feedback(ctx.getSource(), "Follaje emisivo real " + (config.emissiveMaterialEnabled ? "activado" : "desactivado"));
                                     return 1;
                                 }))
+                        .then(ClientCommandManager.literal("bloomreal")
+                                .executes(ctx -> {
+                                    LightingConfig config = ApuYawarLightingClient.config();
+                                    config.realBloomEnabled = !config.realBloomEnabled;
+                                    config.save();
+                                    feedback(ctx.getSource(), "Bloom REAL de framebuffer " + (config.realBloomEnabled ? "activado" : "desactivado")
+                                            + " -- sección V4 fase 3, no verificado visualmente todavía en este entorno; pruébalo con cuidado.");
+                                    return 1;
+                                }))
                         .then(ClientCommandManager.literal("debug")
                                 .then(ClientCommandManager.literal("emisores").executes(LightingCommands::debugEmitters))
                                 .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
@@ -223,8 +232,9 @@ final class LightingCommands {
                 c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.groundSpotRadius, c.groundSpotIntensity,
                 c.maxEffectDistance, c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
-                "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f fraccionEstrellas=%.2f",
-                c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier, c.celestialStarFraction));
+                "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f fraccionEstrellas=%.2f bloomReal=%s",
+                c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier, c.celestialStarFraction,
+                c.realBloomEnabled));
         return 1;
     }
 

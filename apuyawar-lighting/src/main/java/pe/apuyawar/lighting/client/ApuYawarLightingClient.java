@@ -25,6 +25,7 @@ public final class ApuYawarLightingClient implements ClientModInitializer {
         LightingCommands.register();
         CelestialParticleTypes.register();
         CelestialParticleSpawner.register();
+        BloomRenderer.register();
         registerEmissiveMaterialSelfTest();
         LOGGER.info("[DIAG] onInitializeClient() terminado sin excepciones");
     }
@@ -63,6 +64,7 @@ public final class ApuYawarLightingClient implements ClientModInitializer {
                 }
             }
             LOGGER.info("[DIAG] Autoprueba material emisivo terminada: {} perfiles con máscara, {} generados.", checked, ok);
+            BloomRenderer.selfTest();
         });
     }
 

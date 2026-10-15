@@ -2331,3 +2331,207 @@ con `/apuyawarlighting set particulasmoviles <valor>` y
 
 Commit de esta fase: "APU YAWAR Lighting V4 fase 2: partículas
 celestiales personalizadas".
+
+### 23.3. Fase 3 — Bloom selectivo real mediante shaders
+
+Esta es, con diferencia, la fase de mayor riesgo real: una restricción
+absoluta del encargo ("EL BLOOM NO DEBE DESENFOCAR EL PANEL K") coincide
+exactamente con un incidente real ya documentado en este proyecto
+(§18 de este documento). Por eso esta fase se investigó con más cuidado
+que ninguna otra -- cada API se verificó con `javap`/bytecode real
+contra el jar cacheado de este entorno antes de escribir una sola línea
+que la usara, y se construyó una autoprueba real (como en las fases 1 y
+2) para no depender sólo de que el código compilara.
+
+#### 23.3.1. Arquitectura real, no círculos más grandes
+
+Reutiliza el pipeline de desenfoque multipasada que YA usa vanilla para
+difuminar el fondo del menú (`assets/minecraft/shaders/post/blur.json`,
+`box_blur.vsh`/`.fsh`) -- ni el GLSL ni la secuencia de 6 pasadas (3
+niveles de radio, horizontal+vertical cada uno) son nuevos. Lo único
+nuevo es **a qué framebuffer se le aplica**:
+
+1. `WorldLightingRenderer#render` (AFTER_TRANSLUCENT), justo después de
+   dibujar los puntos/halos aditivos al framebuffer real del juego
+   (sin cambios -- sigue siendo exactamente lo que ya se veía),
+   `BloomRenderer#captureFrame` redibuja la MISMA geometría ya
+   construida (el mismo `BuiltBuffer`, sin reconstruir nada) en un
+   framebuffer PROPIO y separado (`SimpleFramebuffer`, con su propia
+   textura de profundidad copiada de la real vía
+   `Framebuffer#copyDepthFrom` -- así el test de profundidad sigue
+   ocultando luces detrás de paredes incluso en este framebuffer
+   aislado).
+2. `WorldRenderEvents.END` (después de que TODO el render del mundo
+   terminó, antes de HUD/GUI -- ver la documentación de ese evento en
+   `fabric-rendering-v1`: "Use to draw overlays... as a hook that
+   precedes hand/held item and GUI rendering"), `BloomRenderer#onEnd`
+   difumina ESE framebuffer propio construyendo un
+   {@code PostEffectProcessor} propio con nuestro framebuffer como su
+   "mainTarget" -- dentro de ESE pipeline, "minecraft:main" significa
+   nuestro framebuffer, nunca el framebuffer real del juego -- y lo
+   compone de vuelta sobre el framebuffer real con mezcla ADITIVA,
+   usando `Framebuffer#draw(int,int,boolean)` (el mismo método que usa
+   Minecraft para volcar su propio framebuffer principal a la ventana,
+   reutilizado con `disableBlendIfTrue=false` para que respete la
+   mezcla aditiva que fijamos antes de llamarlo).
+
+La GUI, dibujada después de `WorldRenderEvents.END`, nunca pasa por
+ningún desenfoque -- el pipeline de blur jamás toca el framebuffer real
+directamente, sólo el nuestro.
+
+#### 23.3.2. Errores reales encontrados por la autoprueba, no supuestos
+
+Exactamente como en las fases 1 y 2, se construyó una autoprueba real
+(`BloomRenderer.selfTest()`, llamada 40 ticks tras arrancar, igual que
+la de material emisivo) que fuerza la construcción real del framebuffer
+y el `PostEffectProcessor`, y ejecuta un `render()` de prueba -- y
+encontró DOS errores reales que una simple compilación nunca habría
+detectado:
+
+1. **Identifier equivocado**: el primer intento usó
+   `Identifier.of("minecraft", "blur")`, asumiendo que
+   `PostEffectProcessor` resolvía un nombre corto por convención.
+   Falló con `FileNotFoundException: minecraft:blur`. Se confirmó
+   leyendo el bytecode real de `GameRenderer` que su propio campo
+   `BLUR_PROCESSOR` se construye como
+   `Identifier.ofVanilla("shaders/post/blur.json")` -- la ruta
+   completa del recurso, no un nombre corto. Corregido a
+   `Identifier.of("minecraft", "shaders/post/blur.json")`.
+2. **Falta `setupDimensions()`**: con el Identifier corregido, la
+   construcción funcionaba pero `render()` lanzaba
+   `NullPointerException: Cannot invoke "Matrix4f.get(FloatBuffer)"
+   because "values" is null` dentro de `PostEffectPass.render()`. Se
+   confirmó leyendo el bytecode real de `PostEffectProcessor` que el
+   CONSTRUCTOR calcula su propia matriz de proyección pero NUNCA la
+   empuja a cada `PostEffectPass` -- sólo `setupDimensions(int, int)`
+   recorre `passes` y llama a `pass.setProjectionMatrix(...)` en cada
+   una. Sin esa llamada, cada pasada intentaba renderizar con una
+   matriz de proyección nunca inicializada. Corregido llamando a
+   `blurProcessor.setupDimensions(width, height)` inmediatamente
+   después de construirlo.
+
+Tras ambas correcciones, la autoprueba pasó limpiamente dentro del
+cliente real:
+```
+[DIAG] Autoprueba Bloom real: framebuffer (854x480) y pipeline
+minecraft:blur construidos y ejecutados sin excepciones.
+```
+Sin ninguna otra excepción en el resto del log de esa sesión.
+
+#### 23.3.3. Por qué no puede desenfocar el Panel K -- verificado, no sólo argumentado
+
+- El `PostEffectProcessor` que ejecuta el desenfoque se construye
+  pasándole NUESTRO framebuffer como "mainTarget" -- dentro de ese
+  pipeline, cualquier referencia a "minecraft:main" en el JSON de
+  vanilla se resuelve contra NUESTRO framebuffer, nunca contra el
+  framebuffer real del juego (confirmado leyendo el bytecode del
+  constructor: el `Framebuffer` que se le pasa se guarda tal cual en el
+  campo `mainTarget`, sin ninguna comprobación especial de que sea "el"
+  framebuffer del juego).
+- `Framebuffer#endWrite()` (verificado con javap) enlaza el framebuffer
+  0 crudo, NO el framebuffer principal real de Minecraft -- por eso
+  nunca se usa; cada vez que se termina de escribir en nuestro
+  framebuffer o en el real, se vuelve a enlazar explícitamente el real
+  (`client.getFramebuffer().beginWrite(true)`), nunca se confía en que
+  quede "como estaba".
+- `Framebuffer#clear(boolean)` (verificado con javap) también llama a
+  `endWrite()` por dentro -- por eso el orden real es: limpiar, copiar
+  profundidad, Y SÓLO ENTONCES enlazar el framebuffer propio para
+  dibujar (ver comentarios en `BloomRenderer#captureFrame`).
+- Toda la composición ocurre en `WorldRenderEvents.END`, antes de que
+  nada de GUI se dibuje -- el Panel K se renderiza completamente
+  después de este punto, sobre el framebuffer real ya compuesto, nunca
+  a través de ningún pase de desenfoque.
+
+#### 23.3.4. Red de seguridad -- apagado seguro real (sección 5.11 del encargo)
+
+- **Desactivado por defecto** (`LightingConfig#realBloomEnabled = false`):
+  a diferencia de las fases 1 y 2 (cuya autoprueba SÍ llega a ejecutar
+  la ruta real de producción), la autoprueba de esta fase ejecuta una
+  construcción/render AISLADA, de prueba -- la ruta real de producción
+  (`captureFrame` durante `AFTER_TRANSLUCENT`, con geometría real de
+  árboles) nunca se ha ejecutado en este entorno, porque eso exige un
+  mundo cargado con emisores activos. Por eso se entrega desactivado,
+  activable explícitamente con `/apuyawarlighting bloomreal`.
+- **Auto-desactivación ante cualquier error real** (`disabledDueToError`):
+  cada paso que toca GL (crear framebuffers, construir el procesador,
+  renderizar, componer) está envuelto en `try/catch`; cualquier
+  excepción desactiva el Bloom real por el resto de la sesión y
+  registra un aviso -- los puntos/halos aditivos de siempre (nunca
+  tocados por este código) siguen funcionando exactamente igual. Esto
+  ya demostró funcionar en la práctica: los dos errores reales de
+  §23.3.2 se capturaron así, sin ningún crash ni pantalla negra, antes
+  de corregirse.
+- **Reenlace defensivo del framebuffer real** en cada punto de fallo
+  (`restoreMainFramebufferSafely`) -- incluso si algo falla a mitad de
+  la composición, el framebuffer real queda reenlazado antes de que el
+  control vuelva al motor de Minecraft.
+
+#### 23.3.5. Comandos y configuración nuevos
+
+`/apuyawarlighting bloomreal` (activar/desactivar). Reutiliza
+`bloomIntensity` (ya existía) como intensidad de composición -- aplicada
+al CAPTURAR (vía `RenderSystem.setShaderColor` + el uniform real
+`ColorModulator` que `position_color.fsh` multiplica contra el color
+del vértice, verificado leyendo el `.fsh` real), no al componer (el
+shader de blit de vanilla no tiene ningún uniform de color que
+multiplicar).
+
+#### 23.3.6. Lo que NO se implementó esta ronda, honestamente
+
+- **Compatibilidad con Iris/Sodium** (sección 5.10 del encargo): no
+  evaluada -- este entorno no puede instalar ni probar shaderpacks
+  externos. Sin afirmar compatibilidad no verificada.
+- **Perfiles LOW/MEDIUM/HIGH específicos para el Bloom real** (sección
+  5.7): por ahora el Bloom real usa siempre el mismo pipeline de 6
+  pasadas de vanilla, sin variar resolución/pasadas por calidad --
+  diferencia documentada, pendiente de una ronda futura si el equipo
+  confirma que el rendimiento lo justifica.
+- **Prueba 9 del encargo** (F3+T, cambio de resolución, reinicio):
+  `ensureBuffer` recrea el framebuffer y el procesador por completo si
+  las dimensiones de la ventana cambian (comparando contra las
+  últimas conocidas cada frame), pero esto NO se ha probado con un
+  cambio de resolución real dentro del juego -- sólo revisado en el
+  código.
+
+#### 23.3.7. Pruebas reales ejecutadas
+
+- `gradlew :apuyawar-lighting:compileJava`: éxito (tras 2 iteraciones
+  reales de corrección, documentadas en 23.3.2 -- no al primer intento,
+  a diferencia de las fases 1 y 2).
+- Autoprueba real dentro del cliente (`runClient` real, 3 ejecuciones):
+  la primera encontró el `FileNotFoundException`, la segunda el
+  `NullPointerException`, la tercera pasó limpiamente. Sin esta
+  autoprueba, ambos errores habrían llegado silenciosamente a
+  producción (capturados de forma segura por la red de la sección
+  23.3.4, pero sin que el Bloom real llegara a funcionar nunca).
+- `gradlew build` (4 módulos): éxito, sin regresión en ningún otro
+  módulo.
+
+#### 23.3.8. Pendiente -- honestamente, con instrucciones de prueba cautelosas
+
+**No se pudo probar la ruta real de producción** (geometría real de
+árboles, capturada durante `AFTER_TRANSLUCENT`, difuminada y compuesta
+sobre un mundo real) -- sólo la construcción/render aislado de la
+autoprueba. Dado el historial real con el desenfoque del Panel K,
+se recomienda al equipo:
+
+1. Activar primero en un mundo de prueba/respaldo, nunca el mundo
+   principal, por si acaso.
+2. `/apuyawarlighting bloomreal` para activar.
+3. Acercarse a un Abeto/Cerezo Celestial de noche y observar si
+   aparece un resplandor suave alrededor de los puntos/halos.
+4. Abrir el Panel K inmediatamente después, con el Bloom real activo,
+   y confirmar que el marco, los iconos y el texto siguen nítidos
+   (Prueba 8 del encargo) -- esta es la comprobación más importante de
+   toda la fase.
+5. Si algo se ve mal (desenfoque de la GUI, pantalla negra, colores
+   extraños), `/apuyawarlighting bloomreal` otra vez para desactivar de
+   inmediato, y revisar el log del cliente por cualquier línea
+   `[BLOOM]` -- la red de seguridad de 23.3.4 debería haberlo
+   desactivado solo, pero conviene confirmarlo.
+6. Probar F3+T y un cambio de resolución de ventana con el Bloom real
+   activo (Prueba 9 del encargo, no verificada en este entorno).
+
+Commit de esta fase: "APU YAWAR Lighting V4 fase 3: Bloom real de
+framebuffer, desactivado por defecto".

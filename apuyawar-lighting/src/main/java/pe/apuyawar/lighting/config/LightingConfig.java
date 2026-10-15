@@ -30,6 +30,21 @@ public final class LightingConfig {
     public float lightRadiusMultiplier = LightingQuality.MEDIUM.lightRadiusMultiplier;
     public float bloomIntensity = LightingQuality.MEDIUM.bloomIntensity;
     public float bloomRadiusMultiplier = LightingQuality.MEDIUM.bloomRadiusMultiplier;
+    /** V4, fase 3: Bloom REAL de framebuffer (ver
+     * {@code client.BloomRenderer}) -- extrae los puntos/halos
+     * aditivos a un framebuffer propio, lo difumina con el mismo
+     * pipeline de desenfoque multipasada que usa vanilla
+     * ({@code minecraft:blur}, reutilizado tal cual, nunca aplicado a
+     * {@code minecraft:main} directamente) y lo compone de vuelta antes
+     * de que se dibuje cualquier GUI. Por defecto DESACTIVADO: a
+     * diferencia de las fases 1 y 2 (verificadas con una autoprueba real
+     * dentro del cliente), esta fase sólo se pudo probar hasta la
+     * pantalla de título en este entorno -- nunca se ejecutó de verdad
+     * con un mundo cargado, que es el único momento en que el código
+     * nuevo corre. Activarlo es una decisión explícita del equipo
+     * (comando {@code /apuyawarlighting bloomreal}), no un cambio de
+     * comportamiento por defecto al actualizar a V4. */
+    public boolean realBloomEnabled = false;
     /** V4, fase 1: activa/desactiva el follaje emisivo real (ver
      * {@code client.EmissiveMaskGenerator}/{@code WorldLightingRenderer
      * #renderEmissiveSurfaces}) por separado de los puntos/halos de

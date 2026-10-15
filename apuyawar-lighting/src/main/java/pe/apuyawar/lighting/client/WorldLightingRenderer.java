@@ -166,6 +166,14 @@ final class WorldLightingRenderer {
         } else {
             BuiltBuffer built = buffer.end();
             drawAdditive(built);
+            // V4 fase 3: redibuja la MISMA geometría ya construida en el
+            // framebuffer propio del Bloom real -- debe pasar justo
+            // aquí, antes de que cualquier otro código vuelva a usar el
+            // Tessellator compartido (ver documentación de clase de
+            // BloomRenderer, punto 1).
+            if (config.realBloomEnabled) {
+                BloomRenderer.captureFrame(built, config);
+            }
         }
 
         if (config.emissiveMaterialEnabled) {
