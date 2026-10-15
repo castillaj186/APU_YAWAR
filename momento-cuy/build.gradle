@@ -10,14 +10,25 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    // Dependencia de proyecto normal, NO jar-in-jar (Loom's include() exige
-    // que el jar del modulo dependido ya exista antes de poder configurar
-    // este modulo, lo cual es un punto muerto de arranque la primera vez
-    // que se crea un modulo hermano nuevo). Se distribuyen como dos jars
-    // separados: la integracion real (MomentoCuyLightingBridge) igual se
-    // protege en tiempo de ejecucion con FabricLoader.isModLoaded, asi que
-    // un servidor/cliente sin apuyawar-lighting instalado sigue funcionando.
+    // modImplementation da acceso de compilacion/runtime al modulo; include
+    // (jar-in-jar) hace que Loom lo empaquete DENTRO del jar de momento-cuy
+    // en vez de depender de su cache separada de "mods remapeados" para
+    // dependencias de proyecto (.gradle/loom-cache/remapped_mods/), que
+    // resulto estar indexada por (id, version) y no por contenido -- servia
+    // una copia congelada de la primera vez que se corrio runClient sin
+    // importar cuantas veces se recompilara apuyawar-lighting despues (ver
+    // docs/23, seccion 17). Con include(), processIncludeJars (tarea normal
+    // de Gradle, con las dependencias de tarea correctas hacia
+    // :apuyawar-lighting:remapJar) se encarga de que el contenido siempre
+    // sea el actual -- sin borrar nada del classpath a mano.
+    //
+    // La primera vez que se intento include() (antes de que
+    // apuyawar-lighting existiera) Loom exigia que el jar ya existiera en
+    // disco para poder configurar este modulo, lo que era un punto muerto
+    // de arranque en un modulo hermano nuevo. Ya no aplica: el jar existe
+    // desde la primera build exitosa del modulo.
     modImplementation project(':apuyawar-lighting')
+    include project(':apuyawar-lighting')
 }
 processResources {
     inputs.property 'version', project.version
@@ -33,36 +44,4 @@ java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
     withSourcesJar()
-}
-
-// Causa real de "los comandos de apuyawar-lighting nunca se registran" /
-// "ningun log de ApuYawarLightingClient aparece": Loom cachea el jar
-// remapeado de una dependencia de proyecto (modImplementation project(...))
-// en .gradle/loom-cache/remapped_mods/, en una ruta separada de
-// apuyawar-lighting/build/libs/. Esa cache esta indexada por (id, version)
-// del mod, no por el contenido real del jar -- como mod_version nunca
-// cambia entre iteraciones de desarrollo, Loom seguia sirviendo la copia
-// remapeada de la PRIMERA vez que se corrio runClient, sin importar cuantas
-// veces se recompilara apuyawar-lighting despues. Se confirmo viendo el
-// tamano/fecha real del .class dentro de esa cache (más pequeño y más
-// viejo que el jar recien construido) y que no aparecia ningun log de
-// ApuYawarLightingClient hasta borrar esa entrada a mano.
-//
-// Esta tarea borra esa entrada de cache (por nombre de archivo, no por la
-// carpeta de version de mappings, que puede cambiar) antes de runClient/
-// runServer, para que SIEMPRE se remapee la version mas reciente de
-// apuyawar-lighting -- sin esto, cualquier cambio futuro al motor RGB
-// correria el mismo riesgo de probarse contra una copia vieja en silencio.
-tasks.register('clearStaleLightingRemapCache') {
-    doFirst {
-        def cacheRoot = rootProject.layout.projectDirectory.dir('.gradle/loom-cache/remapped_mods').asFile
-        if (cacheRoot.exists()) {
-            fileTree(cacheRoot) {
-                include '**/apuyawar-lighting-*.jar'
-            }.each { it.delete() }
-        }
-    }
-}
-tasks.matching { it.name == 'runClient' || it.name == 'runServer' }.configureEach {
-    dependsOn 'clearStaleLightingRemapCache'
 }

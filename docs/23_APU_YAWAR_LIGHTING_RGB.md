@@ -716,6 +716,12 @@ completos.
 
 ### Paso 7-8: corrección real, sin tocar la arquitectura del motor RGB
 
+> **Esta subsección describe el primer intento de corrección, que
+> resultó ser destructivo (borraba un archivo que el propio Gradle
+> necesitaba intacto al lanzar la JVM) y se reemplazó — ver sección 18
+> para la corrección real y definitiva.** Se deja el texto original sin
+> borrar para que quede el rastro completo de la investigación.
+
 La corrección NO fue en `LightingCommands.java` ni en ninguna clase del
 motor — fue en `momento-cuy/build.gradle`: una tarea nueva,
 `clearStaleLightingRemapCache`, que borra cualquier
@@ -748,10 +754,11 @@ Los 6 pasos de diagnóstico que pidió el equipo ya se confirmaron con una
 ejecución real (arriba) — lo único que falta es la prueba interactiva en
 el propio juego del equipo, ahora que la causa real está resuelta:
 
-1. Correr `gradlew :momento-cuy:runClient` (la caché stale ya no puede
-   volver a interponerse — se borra sola antes de lanzar, en cada
-   ejecución). Si el arranque parece tardar mucho justo después de "Created
-   ... gui.png-atlas", no es un cuelgue — puede tardar más de un minuto en
+1. Correr `gradlew :momento-cuy:runClient`. **Corrección importante tras
+   esta sección: el mecanismo descrito aquí abajo (borrar la caché antes
+   de lanzar) resultó ser destructivo y se reemplazó — ver sección 18.**
+   Si el arranque parece tardar mucho justo después de "Created ...
+   gui.png-atlas", no es un cuelgue — puede tardar más de un minuto en
    ese paso concreto; conviene esperar en vez de cancelar.
 2. Confirmar en el chat/consola que `/ayldiag` y `/apuyawarlighting`
    (con sus subcomandos) aparecen en las sugerencias y se pueden
@@ -763,3 +770,127 @@ el propio juego del equipo, ahora que la causa real está resuelta:
    `[DIAG]` y `/ayldiag` en un commit de limpieza aparte — se dejaron
    esta vez a propósito para que el propio equipo los vea en su sesión
    real, no por descuido.
+
+## 18. Corrección post-entrega (3) — la "solución" anterior borraba un archivo que la JVM necesitaba
+
+El equipo reportó, con evidencia de `latest.log`, el error real:
+
+```
+Class path entries reference missing files: .../.gradle/loom-cache/remapped_mods/.../apuyawar-lighting-0.1.0.jar
+```
+
+Tenía razón por completo. La tarea `clearStaleLightingRemapCache` de la
+sección 17 borraba exactamente el archivo que Gradle/Loom ya había
+decidido poner en el classpath de la JVM — la borrada ocurría en el
+momento de ejecución de esa tarea (`doFirst`, justo antes de
+`runClient`), pero el classpath en sí ya se había calculado durante la
+**configuración** del build, antes de que cualquier tarea se ejecutara.
+El resultado: Gradle lanzaba la JVM apuntando a un archivo que mi propia
+tarea acababa de eliminar un instante antes — el síntoma exacto que
+reportó el equipo.
+
+### Causa raíz real, más profunda que "hay que borrar la caché"
+
+Loom trata las dependencias de proyecto (`modImplementation
+project(':apuyawar-lighting')`) usadas para desarrollo igual que una
+dependencia Maven externa versionada: las remapea una vez a
+`.gradle/loom-cache/remapped_mods/.../(id)/(versión)/...jar` y asume que,
+para una versión dada, el contenido nunca cambia (una suposición correcta
+para una dependencia Maven real, pero falsa para un módulo hermano que
+seguimos editando en el mismo repositorio con una versión fija,
+`mod_version=0.1.0`, que nunca sube). Esa caché no es una salida de tarea
+de Gradle normal con seguimiento de entradas/salidas — es un mecanismo
+interno de Loom con su propia lógica de "ya existe, no hace falta
+rehacerlo", así que **ni dejarla intacta (bug original, sección 17) ni
+borrarla a mano en el momento equivocado (mi primer intento de arreglo)
+son correctos.**
+
+### Corrección real: jar-in-jar (`include`), no borrar nada
+
+La solución correcta, que pidió el equipo explícitamente ("no quiero
+soluciones que dependan de borrar manualmente el JAR"), es sacar a
+`apuyawar-lighting` de ese mecanismo de caché por completo. Loom ya trae
+el mecanismo correcto para esto: **jar-in-jar**
+(`include project(':apuyawar-lighting')`), que empaqueta el jar actual
+del módulo dentro del jar de `momento-cuy` en tiempo de compilación, vía
+una tarea de Gradle normal (`processIncludeJars`) con seguimiento de
+entradas/salidas real — **no** vía la caché separada de "mods remapeados
+para dependencias de proyecto".
+
+`momento-cuy/build.gradle` ahora declara ambas líneas, cada una con su
+propio propósito (patrón estándar documentado por Loom: `modImplementation`
+da acceso de compilación/ejecución, `include` empaqueta):
+
+```gradle
+modImplementation project(':apuyawar-lighting')
+include project(':apuyawar-lighting')
+```
+
+Se quitó por completo la tarea `clearStaleLightingRemapCache` y su
+`dependsOn` sobre `runClient`/`runServer` — cero borrado de archivos
+antes o durante la ejecución del cliente, tal como pidió el equipo.
+
+**Sobre el punto muerto de arranque que hizo descartar `include()` la
+primera vez** (documentado en la entrega original de este módulo): ese
+problema era real pero temporal — Loom exige que el jar del módulo
+dependido ya exista en disco para poder *configurar* el proyecto que lo
+incluye, lo cual era imposible la primerísima vez que se creó
+`apuyawar-lighting` (ningún jar existía todavía en ningún lado). Ahora
+que el módulo ya se ha compilado muchas veces a lo largo de esta serie de
+correcciones, ese archivo ya existe de forma permanente en
+`apuyawar-lighting/build/libs/`, así que el punto muerto ya no puede
+ocurrir — se confirmó con `gradlew :momento-cuy:compileJava` (configura
+sin error) y `gradlew :momento-cuy:build` (compila y empaqueta sin
+error).
+
+### Verificación real, no sólo razonamiento
+
+Inspeccionando el jar final de `momento-cuy` tras la build:
+
+```
+$ unzip -l momento-cuy-0.1.0.jar | grep apuyawar
+META-INF/jars/apuyawar-lighting-0.1.0.jar   (28013 bytes -- el tamaño del build mas reciente)
+```
+
+Y Loom inyectó automáticamente la declaración correcta en el propio
+`fabric.mod.json` de `momento-cuy` (no hubo que escribirla a mano):
+
+```json
+"jars": [ { "file": "META-INF/jars/apuyawar-lighting-0.1.0.jar" } ]
+```
+
+Con esto, se corrió `gradlew :momento-cuy:runClient` de nuevo:
+- **Ninguna advertencia de "Class path entries reference missing
+  files"** en todo el log — el error exacto que reportó el equipo ya no
+  aparece.
+- Los 3 logs `[DIAG]` de `ApuYawarLightingClient`/`LightingCommands`
+  aparecen de inmediato, confirmando contenido fresco (no la copia vieja
+  de antes).
+
+La misma ejecución continuó hasta cargar el mundo real por completo
+(múltiples ciclos de autoguardado normales, sin errores), y mostró la
+confirmación completa de registro de comandos:
+
+```
+[01:56:06] (apuyawar-lighting) [DIAG] ClientCommandRegistrationCallback disparado (dispatcher=com.mojang.brigadier.CommandDispatcher@3b48a38c)
+[01:56:06] (apuyawar-lighting) [DIAG] /ayldiag registrado
+[01:56:06] (apuyawar-lighting) [DIAG] /apuyawarlighting registrado, nodo='apuyawarlighting'
+```
+
+Los 9 puntos que pidió el equipo quedan confirmados con una sola
+ejecución real, de punta a punta: sin advertencia de archivo faltante,
+entrypoint ejecutado, evento disparado, nodo registrado, sin ninguna
+excepción en todo el proceso.
+
+### Pendiente para el equipo
+
+1. Correr `gradlew :momento-cuy:runClient` con normalidad — sin ningún
+   paso manual antes ni después.
+2. Confirmar que no aparece ninguna advertencia de archivo faltante.
+3. Confirmar `/ayldiag`, `/apuyawarlighting estado` y
+   `/apuyawarlighting test` en las sugerencias del chat y que se
+   ejecutan.
+4. Repetir el ciclo normal de desarrollo (editar `apuyawar-lighting`,
+   recompilar, volver a correr `runClient`) y confirmar que el contenido
+   siempre es el actual — ya no debería hacer falta ningún paso manual
+   de limpieza de caché.
