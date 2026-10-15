@@ -112,15 +112,20 @@ final class WorldLightingRenderer {
                             * config.lightIntensityMultiplier * dayNightFactor * flicker * emitter.fade());
                     if (alpha <= 0.01f) continue;
 
-                    // Corrección V2: con radio base 0.05 (diámetro 0.1
-                    // bloques, ~10 cm), un punto "pequeño" (coreRadiusMultiplier
-                    // 0.55) medía ~0.055 de radio -- casi invisible a
-                    // distancia normal, aun con el alfa correcto. Esto es
-                    // muy probablemente la causa numérica de "la copa
-                    // permanece casi totalmente oscura" (el equipo no
-                    // reportó alfa=0, reportó puntos que no se notan). Se
-                    // sube la base a 0.11 (~2.2×) -- un punto de partida
-                    // razonado, no confirmado visualmente todavía.
+                    // Corrección V2: radio base subido de 0.05 a 0.11
+                    // bloques (un punto "pequeño" pasó de ~5 a ~12 cm de
+                    // radio). Corrección V3: el video del equipo mostró que
+                    // la copa seguía oscura incluso con ese cambio -- la
+                    // causa principal no era el tamaño, era que
+                    // EmitterTracker sólo encontraba ~6 emisores reales en
+                    // vez de todas las hojas del árbol (ver EmitterTracker,
+                    // "Error 2" en docs/23: caché por chunk, antes el
+                    // escaneo tenía un radio vertical demasiado acoplado a
+                    // la posición del jugador en vez de cubrir el árbol
+                    // completo con fiabilidad). No se vuelve a subir este
+                    // número a ciegas -- primero hay que confirmar
+                    // visualmente si, con la detección corregida, el
+                    // tamaño actual ya es suficiente.
                     float radius = 0.11f * category.coreRadiusMultiplier * config.lightRadiusMultiplier;
                     Matrix4f pose = billboardPose(matrixStack, cameraPos, cameraRotation, worldX, worldY, worldZ);
                     addCircle(buffer, pose, radius, r, g, b, alpha);

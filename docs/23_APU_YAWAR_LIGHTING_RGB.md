@@ -1525,3 +1525,376 @@ que pidió el encargo, en este orden:
   la referencia no coincide con la geometría real del abeto
   (`straight_trunk_placer`/`spruce_foliage_placer`); esto es geometría,
   no iluminación, y el encargo pidió conservar los modelos originales.
+
+## 21. APU YAWAR Lighting V3 — corrección de los 7 errores confirmados en video
+
+El equipo grabó `errores.mp4` tras el commit `4364829` y describió, con
+mucho detalle técnico (incluyendo su propia revisión de código de
+`buildGroundSpots()`), 7 problemas concretos. **Nota de honestidad**: este
+entorno no tuvo acceso al archivo de video en sí — ningún adjunto llegó
+con esta ronda del encargo — así que el diagnóstico de esta sección se
+basa por completo en la descripción textual del equipo (incluyendo cifras
+exactas que reportaron, como `maxLuces=96 activos=6`) y en su propia
+revisión de código, no en haber visto el video. Se dice esto explícitamente
+en vez de dar a entender que se comprobó visualmente.
+
+### 21.1. Error 2 primero — por qué sólo 6 emisores activos con `maxluces=96`
+
+Este era el error raíz de varios de los demás (copa oscura, punta
+oscura): con el cupo general en 96 y sólo 6 activos, el cupo nunca era el
+cuello de botella — el problema estaba en que el **escaneo nunca
+encontraba el resto de las hojas reales**. Revisando `EmitterTracker`
+anterior a esta ronda:
+
+- El escaneo era un cubo recalculado desde cero cada 10 ticks, con un
+  límite duro `MAX_SCAN_RADIUS = 48` y una ventana vertical fija de
+  `VERTICAL_SCAN_HALF_HEIGHT = 20` bloques **centrada en la Y del
+  jugador en el momento del rescaneo** (no en la del árbol). Si el
+  jugador estaba, por ejemplo, de pie en el suelo junto a un abeto cuya
+  copa sube bastante por encima de su cabeza, buena parte de la copa
+  podía quedar fuera de esa ventana de ±20 — explicando directamente por
+  qué la punta (lo más alto) es lo primero en perderse.
+- `HIGH` fijaba `maxEffectDistance = 56`, pero el radio de escaneo
+  horizontal real estaba atado a una constante separada, no a ese valor
+  — subir el preset no ampliaba lo que el escaneo realmente recorría.
+
+**Corrección real (no sólo subir números)**: `EmitterTracker` ahora
+indexa por **caché de chunk** (`scanChunkForEmitters`, `ChunkCache`,
+`chunkKey`), no por cubo recalculado:
+
+- Cada chunk cargado dentro del radio de escaneo se indexa **una vez**
+  (16×16 columnas, ventana vertical de `CHUNK_CACHE_Y_WINDOW = 48`
+  bloques alrededor de la Y del jugador **en el momento en que ese chunk
+  se cachea por primera vez**, no recalculada cada rescaneo) y el
+  resultado se reutiliza en los rescaneos siguientes, revalidando sólo
+  el `BlockState` de cada posición ya cacheada (una consulta barata, no
+  un recorrido del chunk entero).
+- `MAX_NEW_CHUNK_SCANS_PER_RESCAN = 6` reparte el costo de "entrar a una
+  zona nueva" en varios rescaneos en vez de un único golpe grande.
+- `CHUNK_CACHE_TTL_RESCANS = 200` (≈100 s a 10 ticks/rescaneo) refresca
+  la caché de un chunk para notar árboles nuevos o crecidos.
+- `MAX_SCAN_RADIUS` subido de 48 a 80 — viable ahora porque el costo ya
+  no es un cubo recalculado cada vez.
+
+**Diagnóstico pedido explícitamente por el equipo**: nuevo comando
+`/apuyawarlighting debug hojas [radio]` (por defecto radio 24, hasta 80),
+wireado a `EmitterTracker.debugCountRealEmitters(...)` — un recorrido
+**sin ninguna caché**, bruto, de un cubo fijo alrededor del jugador, que
+cuenta por identificador de bloque (`hojas_pino_esmeralda`,
+`hojas_pino_sombrio`, cualquier otro emisor registrado) cuántos bloques
+reales hay, y lo imprime junto al número que `EmitterTracker.active()`
+está renderizando ahora mismo más el límite `maxluces`/`distanciaMax`
+vigentes. Esto permite distinguir, en una sola invocación, "pocas hojas
+reales" de "el escaneo no las encuentra" de "el cupo las recorta" — las
+tres causas que el equipo pidió diferenciar explícitamente.
+
+**No verificado visualmente**: no se ha confirmado en pantalla cuántas
+hojas reales tiene el abeto de prueba ni si el conteo tras la corrección
+sube de 6 a un número mucho mayor — el comando nuevo está listo
+precisamente para que el equipo haga esa comprobación.
+
+### 21.2. Error 1 — la luz desaparecía a distancia
+
+Causa real: la misma limitación de escaneo del §21.1 (ventana vertical
+atada a la Y del jugador, radio horizontal con tope bajo) hacía que,
+cuanto más lejos estuviera el árbol, más fácil era que su copa cayera
+fuera de la ventana indexada o del radio máximo — **no** era un problema
+de que `maxEffectDistance` y el radio de escaneo estuvieran mal
+separados entre sí (eso ya se había corregido en la V2, §20.4); era que
+el propio escaneo, aunque usara `maxEffectDistance` correctamente para
+el corte de distancia, no llegaba a indexar esas posiciones en primer
+lugar más allá de la ventana vertical fija. La caché por chunk (§21.1)
+ataca esto directamente: `CHUNK_CACHE_Y_WINDOW = 48` es más del doble
+de la ventana anterior, y como ahora es barato mantener el resultado
+cacheado, `MAX_SCAN_RADIUS` pudo subir de 48 a 80 sin recalcular un cubo
+completo cada 10 ticks.
+
+No se tocó el tamaño de ningún punto ni halo para "arreglar" esto — el
+encargo pidió explícitamente no inflar el tamaño como sustituto de una
+detección correcta.
+
+### 21.3. Error 3 — la punta del árbol seguía sin iluminarse
+
+Incluso corrigiendo la detección (§21.1), quedaba un segundo problema
+real, independiente: una vez que `found` (la lista de emisores
+detectados) supera `maxluces`, la selección anterior ordenaba por
+`(prioridad desc, distancia a la cámara asc)` y se quedaba con los `N`
+primeros — **puramente por cercanía a la cámara**. En un árbol visto
+desde el lado o desde abajo, la punta (la parte más alta) es casi
+siempre la más lejana en línea recta desde el jugador, nunca la más
+cercana — así que, en cuanto el árbol tiene más hojas reales que
+`maxluces`, el recorte por cercanía la descarta sistemáticamente antes
+que ninguna otra parte de la copa. Esto es exactamente lo que describió
+el equipo ("ignora la punta").
+
+**Corrección**: `selectStratifiedByHeight(...)` (nuevo, en
+`EmitterTracker`) reemplaza el recorte plano cuando `found.size() >
+maxluces`. Divide los emisores detectados en tres bandas por **altura
+real del propio árbol encontrado** (tercio inferior/medio/superior de
+los bloques detectados, no de la pantalla ni de la posición del
+jugador) y reparte el cupo total entre las tres bandas —
+`distributeQuota(...)` cede el cupo que una banda no puede usar (por
+tener menos candidatos reales que su parte proporcional) a las bandas
+que sí tienen margen, en vez de desperdiciarlo. Dentro de cada banda se
+conserva el mismo orden por prioridad+distancia de antes. Resultado: la
+banda superior (donde está la punta) recibe su parte del cupo aunque
+esté más lejos de la cámara que la banda inferior.
+
+**No verificado visualmente**: no se ha confirmado en pantalla si,
+con esto, la punta muestra puntos turquesa claramente visibles — el
+comando `/apuyawarlighting debug posiciones` permite comparar las
+coordenadas Y de los puntos activos contra la altura real de la copa
+para verificarlo sin depender sólo de la vista.
+
+### 21.4. Error 4 — el foco de suelo seguía desplazándose al caminar
+
+El equipo revisó `buildGroundSpots()` y encontró la causa exacta por su
+cuenta: aunque `cellKey` fuera estable, el representante elegido dentro
+de esa celda se **recalculaba desde cero en cada rescaneo** ("la hoja
+más alta, empate por `asLong()`") sobre el subconjunto de hojas que
+hubiera pasado el recorte de ese momento concreto — y ese subconjunto
+podía variar levemente (por el límite de luces, el borde del radio de
+escaneo, o ahora también por el reparto por bandas del §21.3) sin que
+el árbol cambiara en absoluto. Si la hoja "más alta disponible esta
+vez" no era la misma que "la más alta disponible la vez anterior",
+`anchorPos` saltaba, aunque siguiera siendo una hoja de la misma copa y
+de la misma celda.
+
+**Corrección**: `stickyGroundRepresentative` (mapa `celda → posición`,
+persistente entre rescaneos). `buildGroundSpots(...)` ahora, para cada
+celda: si ya había un representante pegajoso y **sigue siendo
+candidato** en esa celda este rescaneo, lo reutiliza directamente, sin
+recalcular "el mejor". Sólo si el representante anterior ya no es
+candidato (se rompió, decayó, o salió de rango) se elige uno nuevo
+-determinista, con el mismo criterio de antes- y se fija como el nuevo
+pegajoso. Esto hace que el foco pertenezca de verdad al árbol (una vez
+fijado, no se mueve mientras exista al menos una hoja de esa celda que
+siga siendo esa misma posición), no a qué subconjunto de hojas pasó el
+recorte en un instante dado.
+
+### 21.5. Error 5 — el foco de suelo seguía demasiado brillante
+
+Revisando `findGroundY(...)` con el código delante: `LeavesBlock` tiene
+colisión completa (confirmado por bytecode en una ronda anterior de este
+mismo documento), así que un rayo hacia abajo desde una hoja alta de una
+copa densa y por capas —como la del abeto, con varias capas de hoja
+apiladas verticalmente— encontraba casi siempre **otra hoja más abajo
+del mismo árbol** antes de llegar al suelo real. Eso daba una
+`verticalDistance` casi nula (la "hoja de abajo" está a 1-2 bloques,
+no a los 5-10 reales hasta el suelo) y, por la fórmula de atenuación por
+altura, una intensidad casi siempre cercana al máximo — muy probablemente
+la causa real de "el suelo sigue demasiado brillante", con mayor peso que
+el radio o la intensidad base.
+
+**Corrección**: `findGroundY(...)` ahora salta explícitamente cualquier
+bloque que sea él mismo un emisor registrado (otra hoja de la misma
+copa, u otra copa solapada) y continúa el rayo hacia abajo hasta
+encontrar un bloque con colisión o fluido real que NO sea una hoja
+conocida. Además, `groundSpotIntensity` bajó de `0.55` a `0.4` como
+ajuste complementario (no sustituto) — el encargo pidió separar
+explícitamente cuánto de "demasiado brillante" viene del decal RGB
+frente a la luminancia vanilla nivel 6 de `hojas_pino_esmeralda`; esa
+luminancia **no se tocó** esta ronda (no se eliminó ni se redujo sin
+evaluar su efecto en el resto del bosque, tal como pidió el encargo). La
+comparación real entre ambas fuentes (`/apuyawarlighting decals` para
+aislar el aporte RGB, apagar `rgbEnabled` para ver sólo la luminancia
+vanilla) queda como prueba pendiente del equipo, listada en §21.8.
+
+### 21.6. Error 6 — partículas celestiales sin densidad controlable real
+
+El campo `particleDensityMultiplier` existía en `LightingConfig` desde
+antes, pero no llegaba a ningún sitio: las hojas de `momento-cuy`
+(`MomentoCuyAbetoLeavesBlock`) son bloques **comunes**, registrados
+incondicionalmente incluso en servidores dedicados sin el motor RGB
+instalado — no pueden importar directamente ninguna clase de
+`apuyawar-lighting` (`environment: "client"`) sin romper esa garantía.
+
+**Arquitectura nueva** (3 piezas, cada una con un propósito concreto):
+
+1. `MomentoCuyParticleTuning` (nuevo, `momento-cuy`, paquete común, sin
+   ningún import de `apuyawar-lighting`): guarda un único
+   `volatile float movingParticleDensityMultiplier` (clamp 0.0–4.0), con
+   getter/setter estáticos. Si `apuyawar-lighting` no está instalado,
+   se queda en `1.0` — comportamiento normal, sin ningún control
+   externo.
+2. `MomentoCuyAbetoLeavesBlock.randomDisplayTick(...)`: la frecuencia ya
+   no es un número fijo (`4`/`12`) — se divide por
+   `MomentoCuyParticleTuning.movingParticleDensityMultiplier()`
+   (densidad `0` desactiva las partículas directamente, en vez de
+   calcular una probabilidad sin sentido; densidad más alta → divisor
+   de probabilidad más bajo → partículas más frecuentes).
+3. `MomentoCuyLightingBridge.register()` (cliente, ya protegido por
+   `FabricLoader.isModLoaded("apuyawar_lighting")`): registra un
+   `ClientTickEvents.END_CLIENT_TICK` que sincroniza, cada tick,
+   `ApuYawarLightingClient.config().particleDensityMultiplier` hacia
+   `MomentoCuyParticleTuning` — así un cambio del comando se nota sin
+   recargar el mundo.
+
+Nuevo comando: `/apuyawarlighting set particulasmoviles <valor>` —
+separado a propósito de `set puntosfijos` (densidad de los puntos LED
+fijos de la copa), exactamente la distinción que pidió el encargo: *"la
+densidad de partículas móviles debe estar realmente conectada a un
+control funcional, sin confundirla con la densidad de puntos LED
+fijos"*.
+
+**No ampliado esta ronda**: la cantidad/variedad de partículas en sí
+(número de chispas simultáneas, dispersión fuera del volumen de la
+copa, un sistema de partículas de cliente dedicado) — el encargo pedía
+primero conectar la densidad existente a un control real antes de
+ampliar el sistema, y esa es la pieza que faltaba. Si, tras probar el
+nuevo comando, la cantidad máxima alcanzable (densidad 4.0) sigue sin
+ser suficientemente visible, la siguiente ronda debería evaluar un
+sistema de partículas de cliente dedicado, tal como el encargo autorizó
+condicionalmente.
+
+### 21.7. Error 7 — la copa seguía demasiado oscura
+
+Tratado deliberadamente **en último lugar**, siguiendo el orden
+obligatorio del encargo: la copa oscura era, con alta probabilidad, un
+síntoma de los Errores 1-3 (detección incompleta + recorte sesgado por
+cercanía), no un problema de tamaño o intensidad por sí solo. No se
+volvió a subir el radio base (`0.11` bloques, fijado en la V2) ni la
+intensidad general esta ronda — el comentario correspondiente en
+`WorldLightingRenderer` se actualizó para documentar por qué, en vez de
+cambiarse a ciegas otra vez. El material emisivo real (la opción 2/3 de
+§20.7) sigue sin implementarse, por las mismas razones de riesgo no
+verificable documentadas en esa sección — no se afirma haber implementado
+una capa emisiva real cuando lo que existe sigue siendo geometría
+aditiva flotando delante del bloque.
+
+Si, tras corregir la detección y el reparto por bandas, la copa sigue
+viéndose oscura en una prueba real, el siguiente paso sería recalibrar
+`lightRadiusMultiplier`/`lightIntensityMultiplier` — pero sólo después de
+confirmar con `/apuyawarlighting debug hojas` que el número real de
+puntos renderizados ya es alto, para no repetir el error de subir
+tamaño/intensidad sobre una detección todavía incompleta.
+
+### 21.8. Pruebas ejecutadas con evidencia real
+
+- `gradlew build` (4 módulos, dos ejecuciones completas tras cada tanda
+  de cambios): **éxito**, incluyendo `apuyawar-systems:verifyJudgments`
+  (128 objetivos, sin regresión) y `momento-cuy:processIncludeJars`
+  (jar-in-jar intacto, sin la tarea destructiva de limpieza de caché).
+- `gradlew :apuyawar-lighting:compileJava` tras el rediseño completo de
+  `EmitterTracker` (caché por chunk, reparto por bandas, representante
+  pegajoso, `findGroundY` corregido): éxito. Se detectó y corrigió antes
+  de este resultado un error real de API (`world.getTopYInclusive()` no
+  existe en 1.21.1; se verificó con `javap` contra el jar de Minecraft
+  cacheado en este entorno que los métodos reales son
+  `getBottomY()`/`getTopY()` — exclusivo — y se usó `getTopY() - 1`).
+- `gradlew :momento-cuy:runClient`: arranque completo hasta la pantalla
+  de título (carga de mods, mixins, recursos, atlas de texturas, motor
+  de sonido), mod `apuyawar_lighting` presente en la lista de 57 mods
+  cargados, los tres logs `[DIAG]` de inicialización del cliente
+  aparecen sin ninguna excepción. **Esta vez, a diferencia de rondas
+  anteriores, el proceso no llegó a cargar un mundo real** — el arranque
+  automatizado no hace clic en "un jugador"/"cargar mundo" (no hay
+  control de entrada en este entorno) y el proceso se cerró tras el
+  tiempo de espera sin que nadie lo uniera a una partida. No se puede
+  afirmar para esta ronda, por tanto, que el escaneo por caché de chunk
+  o el reparto por bandas se ejecutaran de verdad contra bloques reales
+  — sólo que el cliente arranca y los comandos se registran sin
+  excepciones. Ver `/tmp/runclient_v3.log` de esta sesión.
+
+**No verificado visualmente — ninguna de las siguientes afirmaciones se
+ha comprobado en pantalla**, porque este entorno no tiene control de
+entrada ni captura de imagen, sólo registro de texto:
+
+- Si el conteo real de hojas (`/apuyawarlighting debug hojas`) ahora
+  supera los 6 anteriores y de cuánto se trata en el árbol de prueba.
+- Si la punta del abeto muestra puntos turquesa visibles tras el
+  reparto por bandas (§21.3).
+- Si el foco de suelo deja de desplazarse al caminar/rotar cámara
+  (§21.4) y si su brillo ya es razonable (§21.5).
+- Si la densidad de partículas móviles, ajustada por el nuevo comando,
+  produce un cambio visible real (§21.6).
+- Si la copa, en conjunto, ya se parece más a la referencia (§21.7).
+
+### 21.9. Pruebas pendientes para el equipo — las 10 solicitadas, en orden
+
+Usar **un único abeto de prueba** y anotar la coordenada de su tronco con
+`/apuyawarlighting debug posiciones` nada más plantarlo/encontrarlo
+(apuntar la posición más baja reportada, que corresponde a hojas cerca
+de la base), para poder comparar todos los resultados contra el mismo
+árbol:
+
+1. **Rotar la cámara sin moverse**: `/apuyawarlighting debug focos` y
+   `debug posiciones` antes/después — ninguna coordenada debería
+   cambiar.
+2. **Caminar en círculo alrededor del árbol**: repetir `debug focos` en
+   4-6 puntos del círculo — el `ancla=` de cada foco no debería
+   cambiar mientras el árbol siga en rango (corrección del §21.4).
+3. **Alejarse y acercarse** (10/20/30/45/60 bloques, respetando chunks
+   cargados): `/apuyawarlighting debug hojas 80` en cada distancia,
+   comparando el total de hojas reales (que no cambia, es el mismo
+   árbol) contra "Puntos de copa renderizados ahora mismo" — debería
+   mantenerse estable mientras la distancia sea menor que
+   `distanciaMax`, y reducirse progresivamente más allá (nunca
+   desaparecer de golpe).
+4. **Mirar desde arriba y desde abajo**: confirmar que la punta
+   (§21.3) se ve iluminada en ambos casos, no sólo desde un ángulo.
+5. **Mirar directamente a la punta**: anotar si hay puntos turquesa
+   claramente visibles ahí, comparando con `debug posiciones` (buscar
+   las coordenadas Y más altas de la lista).
+6. **Emisor de prueba independiente** (`/apuyawarlighting test`):
+   confirmar que sigue anclado al caminar/rotar, sin relación con los
+   cambios de esta ronda (ya se probó en rondas anteriores, repetir
+   como control).
+7. **RGB con decals on/off** (`/apuyawarlighting decals`): aislar
+   cuánto brillo de suelo viene del decal frente a la luminancia
+   vanilla de `hojas_pino_esmeralda` (§21.5) — apagar también
+   `rgbEnabled` para ver sólo la luminancia vanilla, sin ningún decal
+   ni punto de copa.
+8. **Presets LOW/MEDIUM/HIGH** (`/apuyawarlighting preset <nombre>`):
+   confirmar que los 8 campos de calidad cambian juntos (ya corregido
+   en la V2, repetir como control) y que `debug hojas`/`debug emisores`
+   reflejan el cambio de `maxluces`/`distanciaMax`.
+9. **Árbol con partículas habilitadas/deshabilitadas**: probar
+   `/apuyawarlighting set particulasmoviles 0`, `1`, `4` y observar si
+   la frecuencia de chispas cambia visiblemente (§21.6).
+10. **Varios árboles cercanos**: plantar o encontrar 2-3 abetos juntos,
+    repetir `debug focos` — debería seguir habiendo como mucho un foco
+    por celda de 8×8 ocupada, nunca uno por árbol si comparten celda ni
+    uno por hoja.
+
+En cada prueba, registrar: emisores seleccionados (`debug emisores`),
+focos activos (`debug focos`), posiciones ancla (`debug posiciones`) y
+el momento de cada actualización (cada ~0.5 s, `SCAN_INTERVAL_TICKS =
+10`), tal como pidió el encargo.
+
+### 21.10. Qué se conservó sin tocar
+
+Panel K y su nitidez, la Ruleta y sus ocho colores, los modelos/crecimiento
+de los árboles (ninguna geometría de `MomentoCuyAbetoLeavesBlock` ni de los
+generadores de árbol se modificó), el Cerezo Celestial y sus pétalos
+(`MomentoCuyBlossomLeavesBlock` no se tocó esta ronda, ver §21.6 sobre por
+qué el cerezo no se incluyó en el wireado de densidad todavía), el Cuy
+Jardinero 3D, la dimensión Momento Cuy, los bloques personalizados, los
+comandos existentes, la integración jar-in-jar (sin reintroducir ninguna
+limpieza destructiva de caché de Loom) y la compatibilidad con Fabric
+1.21.1.
+
+### 21.11. Comandos nuevos de esta ronda
+
+```
+/apuyawarlighting debug hojas [radio]        -- conteo real de hojas emisoras (sin caché) vs. renderizadas
+/apuyawarlighting set particulasmoviles <v>  -- densidad de partículas MÓVILES (0.0-4.0), separada de "puntosfijos"
+```
+
+### 21.12. Instrucciones exactas para probar en Minecraft
+
+1. `cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient` (o desde el
+   launcher de desarrollo habitual).
+2. Cargar el mundo guardado existente (o uno nuevo), ir de día o de
+   noche a un Abeto Celestial.
+3. `/apuyawarlighting estado` — confirmar `RGB=true` y anotar
+   `maxLuces`/`activos`/`distanciaMax` actuales.
+4. `/apuyawarlighting debug hojas 24` — anotar el total real de hojas
+   emisoras en un radio de 24 bloques alrededor del jugador, desglosado
+   por tipo de bloque.
+5. Seguir la secuencia de pruebas de §21.9, anotando los comandos
+   `debug emisores`/`debug focos`/`debug posiciones` en cada paso.
+6. Si algo sigue mal, citar el paso exacto de §21.9 en el que ocurre y
+   el resultado exacto de los comandos `debug`, no sólo una descripción
+   visual — así la siguiente ronda puede partir de números, no de una
+   nueva grabación.

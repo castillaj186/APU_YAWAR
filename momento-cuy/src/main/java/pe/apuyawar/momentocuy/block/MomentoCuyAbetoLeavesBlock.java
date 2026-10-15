@@ -31,7 +31,16 @@ import org.joml.Vector3f;
  * deriva lateral además de la vertical — "movimiento lateral ligero"
  * pedido en el encargo, antes sólo había deriva en Y. No se duplicó el
  * sistema: sigue siendo el mismo {@code DustParticleEffect} vía
- * {@code randomDisplayTick}, sólo con parámetros distintos.</p> */
+ * {@code randomDisplayTick}, sólo con parámetros distintos.</p>
+ *
+ * <p><b>Densidad conectada a un control real (corrección "Error 6")</b>:
+ * la frecuencia ya no es un número fijo — se divide por
+ * {@link MomentoCuyParticleTuning#movingParticleDensityMultiplier()},
+ * que `apuyawar-lighting` sincroniza en caliente desde
+ * {@code LightingConfig#particleDensityMultiplier} cuando está instalado
+ * (si no, se queda en 1.0, el comportamiento normal). Densidad 0
+ * desactiva las partículas por completo en vez de calcular una
+ * probabilidad absurda.</p> */
 public final class MomentoCuyAbetoLeavesBlock extends LeavesBlock {
     private static final DustParticleEffect TURQUESA = new DustParticleEffect(new Vector3f(0.25f, 0.85f, 0.82f), 1.0f);
     private static final DustParticleEffect CELESTE = new DustParticleEffect(new Vector3f(0.42f, 0.70f, 1.0f), 0.9f);
@@ -43,7 +52,10 @@ public final class MomentoCuyAbetoLeavesBlock extends LeavesBlock {
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         super.randomDisplayTick(state, world, pos, random);
-        int chance = world.isNight() ? 4 : 12;
+        float density = MomentoCuyParticleTuning.movingParticleDensityMultiplier();
+        if (density <= 0.0f) return;
+        int baseChance = world.isNight() ? 4 : 12;
+        int chance = Math.max(1, Math.round(baseChance / density));
         if (random.nextInt(chance) != 0) return;
         double x = pos.getX() + random.nextDouble();
         double y = pos.getY() + random.nextDouble() * 0.6 + 0.1;

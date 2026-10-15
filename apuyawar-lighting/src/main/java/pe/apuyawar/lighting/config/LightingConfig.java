@@ -31,17 +31,22 @@ public final class LightingConfig {
     public float bloomIntensity = LightingQuality.MEDIUM.bloomIntensity;
     public float bloomRadiusMultiplier = LightingQuality.MEDIUM.bloomRadiusMultiplier;
     public float emissiveMaterialIntensity = 1.0f;
-    /** Reservado/sin usar en el renderizador: ya no controla el muestreo
-     * de puntos fijos de la copa (eso ahora es
-     * {@link #fixedPointDensityMultiplier}) — se conserva el campo, con su
-     * nombre y valor, únicamente para no romper
-     * {@code config/apuyawar_lighting.json} ya guardados por el equipo;
-     * queda reservado para una futura integración con las partículas
-     * móviles de {@code MomentoCuyAbetoLeavesBlock} (ver docs/23, sección
-     * "Partículas celestiales" — no se conectó todavía porque esas clases
-     * son bloques comunes que deben cargar sin {@code apuyawar-lighting}
-     * instalado, y acoplarlas directamente a esta config rompería esa
-     * garantía). */
+    /** Densidad de las PARTÍCULAS MÓVILES (las de
+     * {@code MomentoCuyAbetoLeavesBlock}/{@code MomentoCuyBlossomLeavesBlock}),
+     * separada de {@link #fixedPointDensityMultiplier} (los puntos fijos
+     * de la copa) — sección "Error 6" del encargo de corrección: "la
+     * densidad de partículas móviles debe estar realmente conectada a un
+     * control funcional, sin confundirla con la densidad de puntos LED
+     * fijos". Reactivado en la corrección V3: antes este campo existía
+     * pero no llegaba a ningún sitio (los bloques de hoja de
+     * {@code momento-cuy} son comunes y no pueden importar clases de
+     * {@code apuyawar-lighting} sin romper la garantía de que el mod
+     * funcione sin el motor RGB instalado). Ahora
+     * {@code MomentoCuyLightingBridge} (cliente, ya protegido por
+     * {@code FabricLoader.isModLoaded}) sincroniza este valor, cada tick,
+     * hacia {@code MomentoCuyParticleTuning} (una clase común sin ninguna
+     * dependencia de {@code apuyawar-lighting}), que es lo que las hojas
+     * leen de verdad. */
     public float particleDensityMultiplier = LightingQuality.MEDIUM.particleDensityMultiplier;
     public float dayIntensityMultiplier = 0.55f;
     public float nightIntensityMultiplier = 1.0f;
@@ -86,7 +91,7 @@ public final class LightingConfig {
      * la copa a propósito, para que el suelo sea claramente secundario
      * respecto del resplandor de las hojas (sección 3, objetivo central
      * del encargo V2). */
-    public float groundSpotIntensity = 0.55f;
+    public float groundSpotIntensity = 0.4f;
 
     /** Ticks para que un emisor que entra/sale del rango de efecto suba o
      * baje su intensidad de 0 a 1 (o viceversa) — evita el salto brusco de

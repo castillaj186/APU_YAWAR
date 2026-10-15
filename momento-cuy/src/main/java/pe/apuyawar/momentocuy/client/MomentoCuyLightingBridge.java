@@ -1,9 +1,12 @@
 package pe.apuyawar.momentocuy.client;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.util.Identifier;
 import pe.apuyawar.lighting.ApuYawarLighting;
 import pe.apuyawar.lighting.EmitterProfile;
+import pe.apuyawar.lighting.client.ApuYawarLightingClient;
 import pe.apuyawar.momentocuy.block.MomentoCuyBlocks;
+import pe.apuyawar.momentocuy.block.MomentoCuyParticleTuning;
 
 /**
  * Registra las hojas del Abeto y el Cerezo Celestial como emisores RGB de
@@ -43,5 +46,16 @@ final class MomentoCuyLightingBridge {
                         .withSecondary(0xFFD659)
                         .withAnimated()
                         .withPriority(2));
+
+        // Corrección "Error 6": la densidad de partículas MÓVILES
+        // (LightingConfig#particleDensityMultiplier, ajustable por
+        // /apuyawarlighting) debe llegar de verdad a
+        // MomentoCuyAbetoLeavesBlock/MomentoCuyBlossomLeavesBlock, no sólo
+        // existir en el config sin efecto. Se sincroniza cada tick de
+        // cliente (no sólo al cargar) para que un cambio en caliente del
+        // comando se note sin reiniciar el mundo.
+        ClientTickEvents.END_CLIENT_TICK.register(client ->
+                MomentoCuyParticleTuning.setMovingParticleDensityMultiplier(
+                        ApuYawarLightingClient.config().particleDensityMultiplier));
     }
 }

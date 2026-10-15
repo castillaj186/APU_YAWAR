@@ -76,6 +76,7 @@ final class LightingCommands {
                                 .then(setFloatField("bloom", c -> c.bloomIntensity, (c, v) -> c.bloomIntensity = v))
                                 .then(setFloatField("radiobloom", c -> c.bloomRadiusMultiplier, (c, v) -> c.bloomRadiusMultiplier = v))
                                 .then(setFloatField("puntosfijos", c -> c.fixedPointDensityMultiplier, (c, v) -> c.fixedPointDensityMultiplier = v))
+                                .then(setFloatField("particulasmoviles", c -> c.particleDensityMultiplier, (c, v) -> c.particleDensityMultiplier = v))
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
                                 .then(setFloatField("intensidaddecal", c -> c.groundDecalIntensityMultiplier, (c, v) -> c.groundDecalIntensityMultiplier = v))
@@ -133,6 +134,10 @@ final class LightingCommands {
                                 .then(ClientCommandManager.literal("emisores").executes(LightingCommands::debugEmitters))
                                 .then(ClientCommandManager.literal("posiciones").executes(LightingCommands::debugPositions))
                                 .then(ClientCommandManager.literal("focos").executes(LightingCommands::debugGroundSpots))
+                                .then(ClientCommandManager.literal("hojas")
+                                        .executes(ctx -> debugRealLeafCounts(ctx, 24))
+                                        .then(ClientCommandManager.argument("radio", IntegerArgumentType.integer(4, 80))
+                                                .executes(ctx -> debugRealLeafCounts(ctx, IntegerArgumentType.getInteger(ctx, "radio")))))
                                 .then(ClientCommandManager.literal("puntos").executes(ctx -> {
                                     LightingConfig config = ApuYawarLightingClient.config();
                                     config.debugHideFixedPoints = !config.debugHideFixedPoints;
@@ -247,6 +252,36 @@ final class LightingCommands {
                     + " sueloY=" + spot.groundY()
                     + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", spot.fade()));
         }
+        return 1;
+    }
+
+    /** "Error 2" del encargo de corrección: distingue el número de
+     * emisores realmente registrados en el mundo (hoja por hoja, cubo
+     * fijo de escaneo SIN caché -- ver
+     * {@link EmitterTracker#debugCountRealEmitters}) del número que
+     * {@code EmitterTracker.active()} termina renderizando -- para poder
+     * confirmar si una cifra baja viene de "pocas hojas reales", de "el
+     * escaneo no las encuentra" o de "el límite de maxluces las recorta". */
+    private static int debugRealLeafCounts(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx, int radius) {
+        var client = net.minecraft.client.MinecraftClient.getInstance();
+        if (client.world == null || client.player == null) {
+            feedback(ctx.getSource(), "Sin mundo cargado.");
+            return 1;
+        }
+        var counts = EmitterTracker.debugCountRealEmitters(client.world, client.player.getBlockPos(), radius);
+        if (counts.isEmpty()) {
+            feedback(ctx.getSource(), "0 bloques emisores reales en un radio de " + radius + " bloques.");
+        } else {
+            int total = 0;
+            for (var entry : counts.entrySet()) {
+                feedback(ctx.getSource(), "  " + entry.getKey() + " = " + entry.getValue());
+                total += entry.getValue();
+            }
+            feedback(ctx.getSource(), "Total hojas emisoras reales (radio " + radius + "): " + total);
+        }
+        LightingConfig config = ApuYawarLightingClient.config();
+        feedback(ctx.getSource(), "Puntos de copa renderizados ahora mismo: " + EmitterTracker.active().size()
+                + " (límite maxluces=" + config.maxActiveLights + ", distanciaMax=" + config.maxEffectDistance + ")");
         return 1;
     }
 

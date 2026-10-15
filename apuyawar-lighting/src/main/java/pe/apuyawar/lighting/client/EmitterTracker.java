@@ -23,54 +23,71 @@ import java.util.Set;
 /**
  * Mantiene, sin recorrer todo el mundo cada frame, la lista acotada de
  * posiciones de bloque cercanas a la cámara que son un emisor registrado,
- * y la lista separada de focos de suelo (ver {@link GroundSpot} y la
- * sección V2 de docs/23).
+ * y la lista separada de focos de suelo (ver {@link GroundSpot}).
  *
- * <p>No es un sistema reactivo a nivel de bloque individual (no hay un
- * evento de "bloque colocado/roto" barato para esto en la Fabric API sin
- * añadir mixins propios al motor de chunks) — en su lugar, cada
- * {@link #SCAN_INTERVAL_TICKS} ticks (medio segundo) vuelve a recorrer un
- * volumen acotado alrededor del jugador, sólo dentro de secciones de
- * chunk ya cargadas.</p>
- *
- * <p><b>Rediseño V2 del foco de suelo (ver docs/23)</b>: la ronda anterior
- * ya hizo que la elegibilidad de una hoja para decal fuera determinista
- * por posición (no por cercanía al jugador), pero seguía siendo **un
- * decal por cada hoja candidata** — con el radio del decal derivado del
- * radio de luz de la hoja (6 bloques → ~3 de radio), muchas hojas bajo la
- * misma copa producían decals superpuestos que, con mezcla aditiva, se
- * fusionaban en una sola mancha grande, tan ancha como la proyección de
- * la copa. Ahora los focos de suelo son una {@link GroundSpot} **por
- * celda espacial** ({@link #GROUND_CELL_SIZE} bloques, una rejilla fija
- * en coordenadas del mundo, no centrada en el jugador): como mucho un
- * foco por celda ocupada, con radio propio
- * ({@code LightingConfig#groundSpotRadius}) completamente independiente
- * del radio de luz de las hojas. Un abeto típico cabe en 1-2 celdas, así
- * que produce 1-2 focos pequeños, no decenas superpuestos.</p>
+ * <p><b>Corrección V3 (ver docs/23, "corrección de errores confirmados en
+ * video")</b>: tres cambios reales a partir de la revisión de código del
+ * equipo, no sólo ajustes de números:</p>
+ * <ol>
+ * <li><b>Escaneo por caché de chunk</b> en vez de un cubo recalculado
+ *     desde cero cada rescaneo — el costo de escanear hasta
+ *     {@code maxEffectDistance} ya no crece sin control (sección "Error
+ *     1").</li>
+ * <li><b>Representante de foco de suelo "pegajoso"</b>
+ *     ({@link #stickyGroundRepresentative}): una vez elegido, una celda
+ *     sigue usando la MISMA hoja mientras siga siendo candidata, en vez
+ *     de recalcular "la mejor" en cada rescaneo — antes, aunque la celda
+ *     fuera la misma, la hoja representante (y por tanto {@code anchorPos})
+ *     podía cambiar sin que el árbol cambiara (sección "Error 4").</li>
+ * <li><b>{@code findGroundY} ya no puede confundir otra hoja de la misma
+ *     copa con el suelo real</b> — las hojas tienen colisión completa, así
+ *     que un rayo hacia abajo desde una hoja alta encontraba casi siempre
+ *     OTRA hoja más abajo del mismo árbol antes de llegar al suelo de
+ *     verdad, dando una distancia vertical casi nula y por tanto un foco
+ *     casi siempre al máximo de intensidad (sección "Error 5").</li>
+ * </ol>
  */
 public final class EmitterTracker {
     private static final int SCAN_INTERVAL_TICKS = 10;
     /** Tope duro de radio de escaneo horizontal, por rendimiento —
      * {@code config.maxEffectDistance} puede pedir más, pero nunca se
-     * escanea más allá de esto (sección 3 del encargo: separar radio de
-     * influencia y distancia de visibilidad, sin disparar el costo). */
-    private static final int MAX_SCAN_RADIUS = 48;
-    /** El escaneo vertical NO crece con el radio horizontal (antes sí,
-     * haciendo el costo O(radio³)) — los árboles no son tan altos, así
-     * que un rango vertical fijo y más pequeño basta y es mucho más
-     * barato para radios de escaneo grandes. */
-    private static final int VERTICAL_SCAN_HALF_HEIGHT = 20;
+     * escanea más allá de esto. Subido de 48 a 80 ahora que el escaneo es
+     * por chunk cacheado, no por cubo recalculado cada vez. */
+    private static final int MAX_SCAN_RADIUS = 80;
+    /** Ventana vertical (bloques arriba/abajo de la Y del jugador EN EL
+     * MOMENTO en que un chunk se cachea por primera vez) que se indexa al
+     * construir la caché de ese chunk. Limitación documentada: si el
+     * jugador cachea un chunk estando, por ejemplo, bajo tierra, y luego
+     * sube mucho más alto, un árbol de ese mismo chunk podría quedar fuera
+     * de la ventana ya cacheada hasta que la caché se reconstruya (ver
+     * {@link #CHUNK_CACHE_TTL_RESCANS}). */
+    private static final int CHUNK_CACHE_Y_WINDOW = 48;
+    /** Cuántos chunks SIN caché (o con caché caducada) se indexan como
+     * máximo en un mismo rescaneo — reparte el costo de "entrar a una
+     * zona nueva" en varios rescaneos (unos segundos) en vez de un único
+     * golpe grande, tal como pidió el encargo ("evita un escaneo cúbico
+     * enorme en cada actualización"). */
+    private static final int MAX_NEW_CHUNK_SCANS_PER_RESCAN = 6;
+    /** Cada cuántos rescaneos se considera "vieja" la caché de un chunk y
+     * se vuelve a indexar desde cero (para notar árboles nuevos/crecidos
+     * en un chunk ya cacheado) — 200 rescaneos × 0.5 s ≈ 100 s. */
+    private static final int CHUNK_CACHE_TTL_RESCANS = 200;
     /** Lado (en bloques) de cada celda de la rejilla de focos de suelo —
      * fija en coordenadas del mundo, nunca centrada en el jugador. */
     private static final int GROUND_CELL_SIZE = 8;
-    private static final int GROUND_SCAN_DEPTH = 24;
+    private static final int GROUND_SCAN_DEPTH = 32;
 
     private static int tickCounter = 0;
+    private static long rescanCounter = 0;
     private static List<ActiveEmitter> active = List.of();
     private static List<GroundSpot> groundSpots = List.of();
     private static ActiveEmitter testEmitter = null;
     private static final Map<Long, Float> fade = new HashMap<>();
     private static final Map<Long, Float> groundFade = new HashMap<>();
+    private static final Map<Long, ChunkCache> chunkCache = new HashMap<>();
+    /** Representante "pegajoso" de cada celda de foco de suelo -- ver
+     * documentación de clase, punto 2. */
+    private static final Map<Long, BlockPos> stickyGroundRepresentative = new HashMap<>();
 
     private EmitterTracker() {}
 
@@ -125,6 +142,10 @@ public final class EmitterTracker {
         return (cx << 32) ^ (cz & 0xFFFFFFFFL);
     }
 
+    private static long chunkKey(int chunkX, int chunkZ) {
+        return (((long) chunkX) << 32) ^ (chunkZ & 0xFFFFFFFFL);
+    }
+
     private static void onTick(MinecraftClient client) {
         updateFadeMap(fade, activePositionKeys(), ApuYawarLightingClient.config().fadeTransitionTicks);
         updateFadeMap(groundFade, groundSpotKeys(), ApuYawarLightingClient.config().fadeTransitionTicks);
@@ -147,9 +168,7 @@ public final class EmitterTracker {
 
     /** Sube/baja cada valor del mapa hacia 1 (si su clave está en
      * {@code targets}) o hacia 0 (si no) — se llama todos los ticks, no
-     * sólo en el rescaneo, para que la transición sea fluida. Compartida
-     * entre el fundido de puntos y el de focos de suelo: misma mecánica,
-     * mapas y claves distintos. */
+     * sólo en el rescaneo, para que la transición sea fluida. */
     private static void updateFadeMap(Map<Long, Float> map, Set<Long> targets, int transitionTicks) {
         float step = 1.0f / Math.max(1, transitionTicks);
         for (Long key : targets) {
@@ -170,16 +189,16 @@ public final class EmitterTracker {
     }
 
     private static void rescan(MinecraftClient client) {
+        rescanCounter++;
         ClientWorld world = client.world;
         if (world == null || client.player == null) {
             active = List.of();
             groundSpots = List.of();
-            // El emisor de prueba no se limpiaba al abandonar el mundo
-            // (desconectar o volver al menú) -- quedaba apuntando a un
-            // BlockPos de un mundo que ya no existe.
             testEmitter = null;
             fade.clear();
             groundFade.clear();
+            chunkCache.clear();
+            stickyGroundRepresentative.clear();
             return;
         }
         LightingConfig config = ApuYawarLightingClient.config();
@@ -192,67 +211,216 @@ public final class EmitterTracker {
         Vec3d cameraPos = client.player.getPos();
         BlockPos center = client.player.getBlockPos();
         Map<net.minecraft.util.Identifier, EmitterProfile> registered = ApuYawarLighting.registeredEmitters();
-        List<ActiveEmitter> found = new ArrayList<>();
-        // Corrección de arquitectura (sección 6 del encargo): la distancia
-        // de detección ya NO depende de profile.radius() (eso mezclaba
-        // "qué tan lejos se ve" con "qué tan grande es el halo") -- sólo
-        // de maxEffectDistance, el control real de visibilidad.
         float maxDist = Math.max(1f, config.maxEffectDistance);
         int scanRadius = (int) Math.min(MAX_SCAN_RADIUS, Math.ceil(maxDist));
 
-        BlockPos.Mutable cursor = new BlockPos.Mutable();
-        for (int dx = -scanRadius; dx <= scanRadius; dx++) {
-            for (int dz = -scanRadius; dz <= scanRadius; dz++) {
-                int worldX = center.getX() + dx;
-                int worldZ = center.getZ() + dz;
-                if (!world.isChunkLoaded(worldX >> 4, worldZ >> 4)) continue;
-                for (int dy = -VERTICAL_SCAN_HALF_HEIGHT; dy <= VERTICAL_SCAN_HALF_HEIGHT; dy++) {
-                    cursor.set(worldX, center.getY() + dy, worldZ);
-                    if (!world.isInBuildLimit(cursor)) continue;
-                    BlockState state = world.getBlockState(cursor);
-                    if (state.isAir()) continue;
-                    net.minecraft.util.Identifier id = Registries.BLOCK.getId(state.getBlock());
-                    EmitterProfile profile = registered.get(id);
-                    if (profile == null) continue;
-                    double distSq = cursor.toCenterPos().squaredDistanceTo(cameraPos);
-                    if (distSq > (double) maxDist * maxDist) continue;
-                    found.add(new ActiveEmitter(cursor.toImmutable(), profile, distSq));
-                }
-            }
-        }
+        List<ActiveEmitter> found = scanViaChunkCache(world, center, cameraPos, registered, scanRadius, maxDist);
 
         found.sort(Comparator.<ActiveEmitter>comparingInt(e -> -e.profile.priority())
                 .thenComparingDouble(e -> e.distanceSq));
         int cap = Math.max(1, config.maxActiveLights);
-        List<ActiveEmitter> capped = found.size() > cap ? new ArrayList<>(found.subList(0, cap)) : new ArrayList<>(found);
+        List<ActiveEmitter> capped = found.size() > cap ? selectStratifiedByHeight(found, cap) : new ArrayList<>(found);
         active = capped;
 
-        groundSpots = config.groundDecalsEnabled ? buildGroundSpots(world, capped) : List.of();
+        groundSpots = config.groundDecalsEnabled ? buildGroundSpots(world, registered, capped) : List.of();
+    }
+
+    /** Recorre los chunks dentro de {@code scanRadius}, usando (y
+     * completando, con presupuesto limitado) la caché por chunk en vez de
+     * volver a mirar cada bloque crudo cada vez — ver documentación de
+     * clase, punto 1. */
+    private static List<ActiveEmitter> scanViaChunkCache(ClientWorld world, BlockPos center, Vec3d cameraPos,
+                                                           Map<net.minecraft.util.Identifier, EmitterProfile> registered,
+                                                           int scanRadius, float maxDist) {
+        List<ActiveEmitter> found = new ArrayList<>();
+        int minChunkX = (center.getX() - scanRadius) >> 4;
+        int maxChunkX = (center.getX() + scanRadius) >> 4;
+        int minChunkZ = (center.getZ() - scanRadius) >> 4;
+        int maxChunkZ = (center.getZ() + scanRadius) >> 4;
+        double maxDistSq = (double) maxDist * maxDist;
+        int newScans = 0;
+
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                if (!world.isChunkLoaded(cx, cz)) continue;
+                long key = chunkKey(cx, cz);
+                ChunkCache cache = chunkCache.get(key);
+                boolean stale = cache != null && (rescanCounter - cache.builtAtRescan) > CHUNK_CACHE_TTL_RESCANS;
+                if ((cache == null || stale) && newScans < MAX_NEW_CHUNK_SCANS_PER_RESCAN) {
+                    cache = scanChunkForEmitters(world, cx, cz, center.getY(), registered);
+                    chunkCache.put(key, cache);
+                    newScans++;
+                }
+                if (cache == null) continue; // sin presupuesto este rescaneo, se cachea en uno futuro
+                for (BlockPos pos : cache.positions) {
+                    // El bloque pudo cambiar desde que se cacheó (decaimiento,
+                    // rotura, crecimiento) -- se revalida contra el mundo real
+                    // en cada rescaneo, que es barato (una consulta por
+                    // posición ya cacheada, no un escaneo de todo el chunk).
+                    BlockState state = world.getBlockState(pos);
+                    EmitterProfile profile = registered.get(Registries.BLOCK.getId(state.getBlock()));
+                    if (profile == null) continue;
+                    double distSq = pos.toCenterPos().squaredDistanceTo(cameraPos);
+                    if (distSq > maxDistSq) continue;
+                    found.add(new ActiveEmitter(pos, profile, distSq));
+                }
+            }
+        }
+        return found;
+    }
+
+    /** Corrección "Error 3" del encargo de corrección V3: cuando los
+     * emisores reales detectados superan {@code maxluces}, el recorte
+     * anterior era puramente "los más cercanos a la cámara" -- en un árbol
+     * visto desde el lado o desde abajo, eso deja sistemáticamente fuera
+     * la punta (casi siempre la parte más lejana en línea recta desde el
+     * jugador, nunca la más cercana). Ahora el cupo se reparte entre tres
+     * bandas de ALTURA REAL DEL PROPIO ÁRBOL detectado (tercio inferior,
+     * medio y superior de los bloques encontrados, no de la pantalla ni
+     * de la posición del jugador), cada banda ya ordenada por
+     * prioridad+distancia (orden heredado de {@code found}, que el
+     * llamador ya ordenó así) -- así la punta siempre recibe su parte
+     * proporcional del cupo en vez de competir en una sola lista global
+     * por cercanía. */
+    private static List<ActiveEmitter> selectStratifiedByHeight(List<ActiveEmitter> found, int cap) {
+        int minY = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        for (ActiveEmitter e : found) {
+            int y = e.pos().getY();
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+        int span = maxY - minY;
+        if (span <= 0) {
+            return new ArrayList<>(found.subList(0, cap));
+        }
+
+        List<ActiveEmitter> lower = new ArrayList<>();
+        List<ActiveEmitter> middle = new ArrayList<>();
+        List<ActiveEmitter> upper = new ArrayList<>();
+        for (ActiveEmitter e : found) {
+            double frac = (e.pos().getY() - minY) / (double) span;
+            if (frac < 1.0 / 3.0) lower.add(e);
+            else if (frac < 2.0 / 3.0) middle.add(e);
+            else upper.add(e);
+        }
+
+        int[] quota = distributeQuota(cap, lower.size(), middle.size(), upper.size());
+        List<ActiveEmitter> result = new ArrayList<>(cap);
+        result.addAll(lower.subList(0, Math.min(quota[0], lower.size())));
+        result.addAll(middle.subList(0, Math.min(quota[1], middle.size())));
+        result.addAll(upper.subList(0, Math.min(quota[2], upper.size())));
+        return result;
+    }
+
+    /** Reparte {@code cap} en tres cupos (uno por banda de altura),
+     * empezando por un tercio cada una y, si alguna banda tiene menos
+     * candidatos de los que le tocan, cediendo lo que no puede usar a las
+     * demás bandas que todavía tengan margen -- así un árbol con poca
+     * copa en un tercio (p. ej. la punta, siempre más estrecha) no
+     * desperdicia cupo: lo recibe la banda con más hojas reales. */
+    private static int[] distributeQuota(int cap, int lowerCount, int middleCount, int upperCount) {
+        int[] counts = {lowerCount, middleCount, upperCount};
+        int[] quota = {cap / 3, cap / 3, cap - 2 * (cap / 3)};
+        for (int pass = 0; pass < 3; pass++) {
+            int leftover = 0;
+            boolean[] saturated = new boolean[3];
+            for (int i = 0; i < 3; i++) {
+                if (quota[i] > counts[i]) {
+                    leftover += quota[i] - counts[i];
+                    quota[i] = counts[i];
+                    saturated[i] = true;
+                }
+            }
+            if (leftover == 0) break;
+            List<Integer> open = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                if (!saturated[i] && quota[i] < counts[i]) open.add(i);
+            }
+            if (open.isEmpty()) break;
+            int share = leftover / open.size();
+            int rem = leftover % open.size();
+            for (int idx : open) {
+                int add = share + (rem-- > 0 ? 1 : 0);
+                quota[idx] = Math.min(counts[idx], quota[idx] + add);
+            }
+        }
+        return quota;
+    }
+
+    /** Indexa un chunk completo (16×16 columnas) una sola vez: todas las
+     * posiciones que sean en ese momento un emisor registrado, dentro de
+     * una ventana vertical fija alrededor de la Y del jugador en el
+     * momento de cachear (ver {@link #CHUNK_CACHE_Y_WINDOW}). */
+    private static ChunkCache scanChunkForEmitters(ClientWorld world, int chunkX, int chunkZ, int playerY,
+                                                     Map<net.minecraft.util.Identifier, EmitterProfile> registered) {
+        List<BlockPos> positions = new ArrayList<>();
+        int minY = Math.max(world.getBottomY(), playerY - CHUNK_CACHE_Y_WINDOW);
+        int maxY = Math.min(world.getTopY() - 1, playerY + CHUNK_CACHE_Y_WINDOW);
+        int baseX = chunkX << 4;
+        int baseZ = chunkZ << 4;
+        BlockPos.Mutable cursor = new BlockPos.Mutable();
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    cursor.set(baseX + x, y, baseZ + z);
+                    BlockState state = world.getBlockState(cursor);
+                    if (state.isAir()) continue;
+                    if (registered.containsKey(Registries.BLOCK.getId(state.getBlock()))) {
+                        positions.add(cursor.toImmutable());
+                    }
+                }
+            }
+        }
+        return new ChunkCache(positions, rescanCounter);
     }
 
     /** Un foco de suelo como máximo por celda ocupada de la rejilla fija
-     * (ver documentación de clase) -- nunca uno por hoja. El
-     * representante de cada celda se elige de forma determinista (la hoja
-     * más alta; empate por {@code BlockPos#asLong()}), no por el primero
-     * que aparezca al iterar, para que el resultado no dependa del orden
-     * de escaneo. */
-    private static List<GroundSpot> buildGroundSpots(ClientWorld world, List<ActiveEmitter> emitters) {
-        Map<Long, ActiveEmitter> representativeByCell = new HashMap<>();
+     * (ver documentación de clase) -- nunca uno por hoja, y el
+     * representante de cada celda es "pegajoso": una vez elegido, sigue
+     * siendo el mismo mientras continúe siendo candidato en esa celda, en
+     * vez de recalcularse "el mejor" en cada rescaneo (eso es lo que
+     * hacía que {@code anchorPos} pudiera moverse sin que el árbol
+     * cambiara realmente -- ver documentación de clase, punto 2). */
+    private static List<GroundSpot> buildGroundSpots(ClientWorld world,
+                                                       Map<net.minecraft.util.Identifier, EmitterProfile> registered,
+                                                       List<ActiveEmitter> emitters) {
+        Map<Long, List<ActiveEmitter>> byCell = new HashMap<>();
         for (ActiveEmitter e : emitters) {
             if (!e.isFoliage()) continue;
-            long key = cellKey(e.pos());
-            ActiveEmitter current = representativeByCell.get(key);
-            if (current == null || isBetterRepresentative(e, current)) {
-                representativeByCell.put(key, e);
+            byCell.computeIfAbsent(cellKey(e.pos()), k -> new ArrayList<>()).add(e);
+        }
+
+        List<GroundSpot> spots = new ArrayList<>(byCell.size());
+        for (var entry : byCell.entrySet()) {
+            long key = entry.getKey();
+            List<ActiveEmitter> candidates = entry.getValue();
+            BlockPos sticky = stickyGroundRepresentative.get(key);
+            ActiveEmitter chosen = null;
+            if (sticky != null) {
+                for (ActiveEmitter c : candidates) {
+                    if (c.pos().equals(sticky)) {
+                        chosen = c;
+                        break;
+                    }
+                }
             }
-        }
-        List<GroundSpot> spots = new ArrayList<>(representativeByCell.size());
-        for (var entry : representativeByCell.entrySet()) {
-            ActiveEmitter rep = entry.getValue();
-            Integer groundY = findGroundY(world, rep.pos());
+            if (chosen == null) {
+                // No hay representante pegajoso todavía, o el anterior ya no
+                // es candidato en esta celda (se rompió/decayó/salió de
+                // rango) -- se elige uno nuevo, determinista, y se fija.
+                for (ActiveEmitter c : candidates) {
+                    if (chosen == null || isBetterRepresentative(c, chosen)) chosen = c;
+                }
+                stickyGroundRepresentative.put(key, chosen.pos());
+            }
+            Integer groundY = findGroundY(world, chosen.pos(), registered);
             if (groundY == null) continue;
-            spots.add(new GroundSpot(entry.getKey(), rep.pos(), groundY, rep.profile()));
+            spots.add(new GroundSpot(key, chosen.pos(), groundY, chosen.profile()));
         }
+        // Limpia celdas que ya no tienen ningún candidato (el árbol salió de
+        // rango del todo) para no acumular memoria indefinidamente.
+        stickyGroundRepresentative.keySet().retainAll(byCell.keySet());
         return spots;
     }
 
@@ -261,21 +429,70 @@ public final class EmitterTracker {
         return candidate.pos().asLong() < current.pos().asLong();
     }
 
-    /** Primer bloque sólido por debajo de {@code from}, o {@code null} si no
-     * hay ninguno dentro de {@link #GROUND_SCAN_DEPTH} bloques (evita rayos
-     * sin fin hacia el vacío de las islas flotantes). */
-    private static Integer findGroundY(ClientWorld world, BlockPos from) {
+    /** Primer bloque sólido por debajo de {@code from} que NO sea él mismo
+     * un emisor registrado (una hoja), o {@code null} si no hay ninguno
+     * dentro de {@link #GROUND_SCAN_DEPTH} bloques.
+     *
+     * <p><b>Corrección real (ver documentación de clase, punto 3)</b>: las
+     * hojas (`LeavesBlock`) tienen colisión completa -- un rayo hacia
+     * abajo desde una hoja alta de una copa densa y por capas (como la
+     * del abeto) encontraba casi siempre OTRA hoja más abajo del mismo
+     * árbol antes de llegar al suelo real, dando una
+     * {@code verticalDistance} casi nula y por tanto una atenuación casi
+     * siempre al máximo -- la causa real, con alta probabilidad, de "el
+     * suelo sigue demasiado iluminado" (sección 5 del encargo). Ahora se
+     * saltan explícitamente los bloques que son ellos mismos un emisor
+     * registrado, continuando el rayo hacia abajo hasta encontrar
+     * terreno/agua real.</p> */
+    private static Integer findGroundY(ClientWorld world, BlockPos from,
+                                        Map<net.minecraft.util.Identifier, EmitterProfile> registered) {
         BlockPos.Mutable cursor = from.mutableCopy();
         for (int i = 0; i < GROUND_SCAN_DEPTH; i++) {
             cursor.setY(cursor.getY() - 1);
             if (!world.isInBuildLimit(cursor)) return null;
             BlockState state = world.getBlockState(cursor);
+            if (registered.containsKey(Registries.BLOCK.getId(state.getBlock()))) {
+                continue; // es otra hoja (u otro emisor) de la misma copa, no es "suelo"
+            }
             if (!state.getCollisionShape(world, cursor).isEmpty() || !state.getFluidState().isEmpty()) {
                 return cursor.getY();
             }
         }
         return null;
     }
+
+    /** Diagnóstico bajo demanda (sección "Error 2" del encargo): recorre
+     * de verdad, sin usar ninguna caché, un volumen fijo alrededor de
+     * {@code center}, y cuenta por identificador de bloque cuántas
+     * posiciones son un emisor registrado -- para poder comparar contra
+     * {@link #active()} y ver exactamente cuántas hojas reales hay, y
+     * cuántas de ellas llegan al renderizador. No se usa en el render
+     * normal, sólo quien invoque el comando de depuración lo llama. */
+    public static Map<net.minecraft.util.Identifier, Integer> debugCountRealEmitters(ClientWorld world, BlockPos center, int radius) {
+        Map<net.minecraft.util.Identifier, EmitterProfile> registered = ApuYawarLighting.registeredEmitters();
+        Map<net.minecraft.util.Identifier, Integer> counts = new HashMap<>();
+        BlockPos.Mutable cursor = new BlockPos.Mutable();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int worldX = center.getX() + dx;
+                int worldZ = center.getZ() + dz;
+                if (!world.isChunkLoaded(worldX >> 4, worldZ >> 4)) continue;
+                for (int dy = -radius; dy <= radius; dy++) {
+                    cursor.set(worldX, center.getY() + dy, worldZ);
+                    if (!world.isInBuildLimit(cursor)) continue;
+                    BlockState state = world.getBlockState(cursor);
+                    if (state.isAir()) continue;
+                    net.minecraft.util.Identifier id = Registries.BLOCK.getId(state.getBlock());
+                    if (registered.containsKey(id)) {
+                        counts.merge(id, 1, Integer::sum);
+                    }
+                }
+            }
+        }
+        return counts;
+    }
+
+    private record ChunkCache(List<BlockPos> positions, long builtAtRescan) {}
 
     public record ActiveEmitter(BlockPos pos, EmitterProfile profile, double distanceSq, float fade) {
         public ActiveEmitter(BlockPos pos, EmitterProfile profile, double distanceSq) {
