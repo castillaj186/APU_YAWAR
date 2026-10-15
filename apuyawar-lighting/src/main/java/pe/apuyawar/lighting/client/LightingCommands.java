@@ -32,9 +32,17 @@ import pe.apuyawar.lighting.config.LightingQuality;
 final class LightingCommands {
     private static final Logger LOGGER = LoggerFactory.getLogger("apuyawar-lighting");
 
+    /** Huella de compilación inequívoca (sección "diagnóstico de clases
+     * cargadas" del encargo) -- se cambia a mano cada vez que se investiga
+     * un problema de clases viejas, para poder confirmar en el log que el
+     * .class realmente cargado es el que se acaba de compilar, no una
+     * copia cacheada de otra sesión. */
+    private static final String BUILD_FINGERPRINT = "V3-classload-diag-a052613+04-namedElements-fix";
+
     private LightingCommands() {}
 
     static void register() {
+        logClassOrigin();
         LOGGER.info("[DIAG] LightingCommands.register() invocado");
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             LOGGER.info("[DIAG] ClientCommandRegistrationCallback disparado (dispatcher={})", dispatcher);
@@ -283,6 +291,55 @@ final class LightingCommands {
         feedback(ctx.getSource(), "Puntos de copa renderizados ahora mismo: " + EmitterTracker.active().size()
                 + " (límite maxluces=" + config.maxActiveLights + ", distanciaMax=" + config.maxEffectDistance + ")");
         return 1;
+    }
+
+    /** Diagnóstico pedido explícitamente por el equipo tras reportar que
+     * los comandos nuevos de la V3 no aparecían en el juego aunque el
+     * build fuera exitoso: imprime, de forma inequívoca, de qué JAR o
+     * directorio viene de verdad la clase {@code LightingCommands} que
+     * esta JVM cargó, y lista TODAS las copias de ese recurso que el
+     * classloader puede ver -- si hay más de una, confirma una colisión
+     * de classpath, no sólo una caché estática sin usar. */
+    private static void logClassOrigin() {
+        LOGGER.info("[DIAG] BUILD_FINGERPRINT={}", BUILD_FINGERPRINT);
+        logOrigin(LightingCommands.class, "LightingCommands");
+        logOrigin(ApuYawarLightingClient.class, "ApuYawarLightingClient");
+    }
+
+    private static void logOrigin(Class<?> type, String label) {
+        try {
+            var codeSource = type.getProtectionDomain().getCodeSource();
+            LOGGER.info("[DIAG] {} codeSource={}", label,
+                    codeSource != null ? codeSource.getLocation() : "null (bootstrap/sin CodeSource)");
+        } catch (Exception e) {
+            LOGGER.warn("[DIAG] {} no se pudo leer codeSource: {}", label, e.toString());
+        }
+
+        String resourcePath = type.getName().replace('.', '/') + ".class";
+        try {
+            java.net.URL direct = type.getClassLoader().getResource(resourcePath);
+            LOGGER.info("[DIAG] {} getResource({})={}", label, resourcePath, direct);
+        } catch (Exception e) {
+            LOGGER.warn("[DIAG] {} getResource falló: {}", label, e.toString());
+        }
+
+        try {
+            var resources = type.getClassLoader().getResources(resourcePath);
+            int count = 0;
+            while (resources.hasMoreElements()) {
+                java.net.URL url = resources.nextElement();
+                LOGGER.info("[DIAG] {} getResources()[{}]={}", label, count, url);
+                count++;
+            }
+            if (count > 1) {
+                LOGGER.warn("[DIAG] {} tiene {} copias visibles en el classpath -- COLISION real, "
+                        + "la que gane depende del orden del classpath, no del commit mas reciente.", label, count);
+            } else if (count == 0) {
+                LOGGER.warn("[DIAG] {} getResources() no encontro ninguna copia (inesperado)", label);
+            }
+        } catch (Exception e) {
+            LOGGER.warn("[DIAG] {} getResources falló: {}", label, e.toString());
+        }
     }
 
     private static void feedback(FabricClientCommandSource source, String message) {

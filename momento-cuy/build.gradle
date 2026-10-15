@@ -10,24 +10,56 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    // modImplementation da acceso de compilacion/runtime al modulo; include
-    // (jar-in-jar) hace que Loom lo empaquete DENTRO del jar de momento-cuy
-    // en vez de depender de su cache separada de "mods remapeados" para
-    // dependencias de proyecto (.gradle/loom-cache/remapped_mods/), que
-    // resulto estar indexada por (id, version) y no por contenido -- servia
-    // una copia congelada de la primera vez que se corrio runClient sin
-    // importar cuantas veces se recompilara apuyawar-lighting despues (ver
-    // docs/23, seccion 17). Con include(), processIncludeJars (tarea normal
-    // de Gradle, con las dependencias de tarea correctas hacia
-    // :apuyawar-lighting:remapJar) se encarga de que el contenido siempre
-    // sea el actual -- sin borrar nada del classpath a mano.
+    // Corrección V3 (ver docs/23, sección "diagnóstico de clases
+    // cargadas"): `modImplementation project(':apuyawar-lighting')`
+    // estaba aquí hasta ahora, junto a `include(...)`. El problema real,
+    // confirmado en vivo con un log de diagnóstico en
+    // `LightingCommands.register()` (que nunca apareció en el juego
+    // aunque el .class recién compilado SÍ lo tenía) y con
+    // `gradlew :momento-cuy:dependencies --configuration runtimeClasspath`:
+    // al declararlo como dependencia "mod" (prefijo `mod*`), Loom lo
+    // resuelve en `runtimeClasspath` a través de SU PROPIA caché de
+    // "mods remapeados" (`net_fabricmc_yarn_....pe.apuyawar:apuyawar-lighting:0.1.0`,
+    // el mismo esquema que usa para dependencias EXTERNAS, indexado por
+    // (id, version), no por contenido -- sección 17 de docs/23). Esa
+    // caché resultó NO regenerarse nunca por sí sola tras recompilar
+    // apuyawar-lighting (confirmado recompilando y re-resolviendo varias
+    // veces sin que el .jar cacheado cambiara un solo byte) ni con
+    // `--rerun-tasks` (no es una Tarea de Gradle, es caché de resolución
+    // de dependencias/transformaciones de artefacto) ni con
+    // `--refresh-dependencies` (lo tocó pero sirvió el MISMO contenido
+    // viejo). Sólo borrarlo a mano forzaba una regeneración correcta --
+    // pero el equipo pidió explícitamente no depender de borrar cachés
+    // a mano ni de tareas que borren un JAR del classpath antes de
+    // ejecutar Minecraft (ya salió mal una vez, sección 18 de docs/23).
     //
-    // La primera vez que se intento include() (antes de que
-    // apuyawar-lighting existiera) Loom exigia que el jar ya existiera en
-    // disco para poder configurar este modulo, lo que era un punto muerto
-    // de arranque en un modulo hermano nuevo. Ya no aplica: el jar existe
-    // desde la primera build exitosa del modulo.
-    modImplementation project(':apuyawar-lighting')
+    // Arreglo real, no un rodeo: la documentación oficial de Fabric Loom
+    // para *multi-project builds* (dos módulos Loom del MISMO build)
+    // recomienda exactamente este caso -- usar la configuración
+    // `namedElements` del proyecto dependido en vez de una dependencia
+    // `mod*`:
+    //   implementation project(path: ":name", configuration: "namedElements")
+    // `namedElements` expone la salida del proyecto que NO se remapea a
+    // nombres intermediarios (al contrario que la variante por defecto
+    // de un `project(...)`, pensada para producción) -- apuyawar-lighting
+    // ya está compilado contra las mappings con nombre (Yarn, igual que
+    // momento-cuy, mismo build), así que no hace falta ninguna traducción
+    // intermediary/named entre ambos, y por tanto tampoco hace falta
+    // pasar por la caché de "mods remapeados" que causaba el problema.
+    // Al ser una dependencia normal (no `mod*`), SÍ llega a
+    // `runtimeClasspath` (necesario para que
+    // `MomentoCuyLightingBridge` -- protegido por
+    // `FabricLoader.isModLoaded` -- encuentre las clases en tiempo
+    // de ejecución), apuntando siempre a la salida compilada actual del
+    // proyecto, con el seguimiento normal de Gradle (no a un artefacto
+    // cacheado aparte).
+    implementation project(path: ':apuyawar-lighting', configuration: 'namedElements')
+    // `include` sigue encargándose, por sí solo, de empaquetar
+    // apuyawar-lighting dentro del jar de distribución de momento-cuy
+    // (jar-in-jar real, para producción) -- ya tomaba el jar remapeado
+    // directamente de `:apuyawar-lighting:remapJar` (confirmado: el jar
+    // de `processIncludeJars` nunca estuvo obsoleto en ninguna de las
+    // pruebas de esta ronda), sin pasar por la caché problemática.
     include project(':apuyawar-lighting')
 }
 processResources {

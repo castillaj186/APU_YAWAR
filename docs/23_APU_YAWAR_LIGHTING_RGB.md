@@ -1898,3 +1898,187 @@ limpieza destructiva de caché de Loom) y la compatibilidad con Fabric
    el resultado exacto de los comandos `debug`, no sólo una descripción
    visual — así la siguiente ronda puede partir de números, no de una
    nueva grabación.
+
+## 22. Clases viejas en `runClient` — causa raíz real y arreglo definitivo
+
+Tras subir la V3, el equipo reportó evidencia concluyente de que Minecraft
+seguía ejecutando una versión antigua de `LightingCommands.java`:
+`/apuyawarlighting estado` mostraba el formato viejo (`particulas=...`, sin
+la segunda línea de `decals`/`radioFoco`/`distanciaMax`), y el árbol de
+sugerencias de `/apuyawarlighting` sólo ofrecía `preset`/`set`/`test`/
+`toggle` -- ni `decals` ni `debug`, aunque ambos estaban en el código del
+commit `a052613`. Habían probado
+`.\gradlew.bat :apuyawar-lighting:build :momento-cuy:runClient --rerun-tasks`
+sin éxito.
+
+### 22.1. Diagnóstico pedido por el equipo -- implementado tal cual
+
+Se añadió un diagnóstico temporal en `LightingCommands.register()`
+(`logClassOrigin()`, queda en el código hasta que el equipo confirme en
+vivo que ya no hace falta) que imprime, apenas arranca el cliente -- sin
+necesidad de cargar un mundo, ya que `register()` corre durante
+`onInitializeClient()`:
+
+- `BUILD_FINGERPRINT`, una constante que se cambia a mano en cada
+  investigación, para confirmar sin ambigüedad qué compilación corrió.
+- `LightingCommands.class.getProtectionDomain().getCodeSource().getLocation()`.
+- `getClassLoader().getResource(...)` y, más importante,
+  `getClassLoader().getResources(...)` (plural) -- lista TODAS las copias
+  de esa clase visibles para el classloader, con una advertencia si hay
+  más de una (colisión real de classpath).
+- Lo mismo para `ApuYawarLightingClient.class`.
+
+### 22.2. Causa raíz confirmada, paso a paso
+
+1. **Prueba directa de que corría bytecode viejo**: se recompiló
+   `apuyawar-lighting` con el diagnóstico nuevo (confirmado con `javap`/
+   extracción directa del .class que el .jar fresco SÍ tenía
+   `BUILD_FINGERPRINT`), se corrió
+   `gradlew :apuyawar-lighting:build :momento-cuy:runClient --rerun-tasks`
+   -- exactamente el comando que había probado el equipo -- y el log del
+   juego **no mostró ninguna línea nueva de diagnóstico**, sólo las 3
+   líneas `[DIAG]` antiguas. Prueba directa, por ejecución real, de que
+   el `.class` que corre no es el que se acaba de compilar.
+2. **Localización de la causa**: `gradlew :momento-cuy:dependencies
+   --configuration runtimeClasspath` mostró `apuyawar-lighting` resuelto
+   bajo el identificador sintético
+   `net_fabricmc_yarn_1_21_1_1_21_1_build_3_v2.pe.apuyawar:apuyawar-lighting:0.1.0`
+   -- el MISMO esquema de nombres que usa Loom para dependencias
+   EXTERNAS (coincide con la ruta real en disco,
+   `.gradle/loom-cache/remapped_mods/net_fabricmc_yarn_.../pe/apuyawar/apuyawar-lighting/0.1.0/apuyawar-lighting-0.1.0.jar`,
+   un archivo de 29772 bytes con fecha de las 01:53, muy anterior a
+   cualquier cambio de esta sesión). Confirmado extrayendo el `.class`
+   real de ese jar: contenía el código VIEJO (sin `puntosFijos` ni
+   `decals` ni `debug`, exactamente el síntoma reportado).
+3. **Por qué `modImplementation project(':apuyawar-lighting')` causaba
+   esto**: al declarar la dependencia con el prefijo `mod*`, Loom la
+   procesa con el MISMO pipeline de remapeado-y-caché que usa para mods
+   externos (artefactos de Maven, publicados una sola vez por versión,
+   donde cachear por (id, version) es seguro porque el contenido nunca
+   cambia sin cambiar la versión). Para un proyecto HERMANO en pleno
+   desarrollo, esa suposición es falsa: el contenido cambia constantemente
+   sin que `version` (`0.1.0`) cambie nunca.
+4. **Por qué ni `--rerun-tasks` ni `--refresh-dependencies` lo arreglaban
+   -- confirmado empíricamente, no sólo supuesto**:
+   - `--rerun-tasks` fuerza a re-ejecutar *Tareas* de Gradle con
+     up-to-date-check obsoleto. Esta caché no es la salida de ninguna
+     Tarea declarada -- es caché de resolución de dependencias/
+     transformación de artefactos, interna de Loom, y `--rerun-tasks` no
+     tiene ningún efecto sobre ella (confirmado: se recompiló
+     `apuyawar-lighting`, se re-resolvió `runtimeClasspath` de
+     `momento-cuy` DOS veces, con `--rerun-tasks` real, y el archivo
+     cacheado no cambió ni un byte ninguna de las dos veces).
+   - `--refresh-dependencies` sí tocó el archivo (nueva fecha de
+     modificación, tras ~3m45s), pero **sirvió el mismo contenido viejo**
+     -- confirmado extrayendo el `.class` de nuevo tras el refresh y
+     comparando: seguía sin el fingerprint más reciente.
+   - Sólo **borrar el archivo a mano** forzaba una regeneración real,
+     con el contenido actual -- confirmado tres veces en esta sesión. Pero
+     el equipo pidió explícitamente no depender de limpiar cachés a mano
+     ni de una tarea que borre un jar del classpath antes de arrancar
+     Minecraft (ver §18 de este documento: una tarea así ya causó un
+     problema peor, una condición de carrera real, en una ronda
+     anterior).
+
+### 22.3. Arreglo real aplicado
+
+La documentación oficial de Fabric Loom, para el caso exacto de "un
+proyecto Loom depende de otro proyecto Loom del mismo build", recomienda
+la configuración `namedElements` del proyecto dependido en vez de una
+dependencia `mod*`:
+
+```groovy
+implementation project(path: ':apuyawar-lighting', configuration: 'namedElements')
+```
+
+`namedElements` expone la salida del proyecto que **no** se remapea a
+nombres intermediarios (al contrario que la variante por defecto de un
+`project(...)`, pensada para producción) -- como ambos proyectos ya
+comparten las mismas mappings con nombre (Yarn) dentro del mismo build de
+Gradle, no hace falta ninguna traducción intermediary/named entre ellos,
+así que tampoco hace falta pasar por la caché de "mods remapeados" que
+causaba el problema. Al ser una dependencia normal (no `mod*`), sigue
+llegando a `runtimeClasspath` -- necesario para que
+`MomentoCuyLightingBridge` (protegido por `FabricLoader.isModLoaded`)
+encuentre las clases en tiempo de ejecución -- pero apuntando siempre a
+la salida compilada actual del proyecto, con el seguimiento normal de
+Gradle, nunca a un artefacto cacheado aparte.
+
+`include project(':apuyawar-lighting')` (jar-in-jar, para la distribución
+real) se deja intacto -- nunca fue la causa: siempre tomó el jar
+directamente de `:apuyawar-lighting:remapJar`, confirmado en esta misma
+investigación extrayendo el `.class` del jar anidado dentro del jar de
+distribución de `momento-cuy` y comprobando que también tenía el
+fingerprint más reciente.
+
+**Intentos intermedios que se probaron y se descartaron** (documentados
+para que no se repitan sin motivo):
+- `compileOnly project(':apuyawar-lighting')` (sin `include` ni ningún
+  prefijo `mod*`): arregló la caché obsoleta, pero `apuyawar_lighting`
+  dejó de aparecer en la lista de mods del cliente en desarrollo (56 mods
+  en vez de 57) -- `compileOnly` nunca llega a `runtimeClasspath`, así
+  que `fabric.mod.json` del módulo nunca estuvo en el classpath real, y
+  `MomentoCuyClient` nunca llegó a invocar
+  `ApuYawarLightingClient.onInitializeClient()` (ni un solo log `[DIAG]`
+  apareció).
+- `modCompileOnly project(':apuyawar-lighting')`: mismo resultado -- el
+  prefijo `mod` no cambia que "CompileOnly" nunca contribuye a
+  `runtimeClasspath`.
+
+### 22.4. Verificación real ejecutada
+
+Con el diagnóstico de §22.1 y el arreglo de §22.3 aplicados:
+
+- `gradlew :momento-cuy:dependencies --configuration runtimeClasspath`:
+  `apuyawar-lighting` aparece como `+--- project :apuyawar-lighting`, sin
+  ningún identificador sintético de Loom.
+- `gradlew :momento-cuy:compileJava`: éxito.
+- `gradlew :momento-cuy:runClient` (normal, SIN `--rerun-tasks`,
+  ejecutado DOS VECES por separado, sección "9. Vuelve a iniciar el
+  cliente una segunda vez" del encargo): en ambas, el log mostró
+  `Loading 57 mods` (con `apuyawar_lighting` en la lista) y
+  `BUILD_FINGERPRINT=V3-classload-diag-a052613+04-namedElements-fix` --
+  el valor exacto fijado en esta ronda, **no** el de ninguna ronda
+  anterior -- con `codeSource=.../apuyawar-lighting/build/devlibs/apuyawar-lighting-0.1.0-dev.jar`
+  y una sola entrada en `getResources()` (sin advertencia de colisión).
+- `gradlew build` (4 módulos): éxito, incluyendo
+  `apuyawar-systems:verifyJudgments` (128 objetivos, sin regresión --
+  confirma que Panel K/Ruleta no se vieron afectados, ya que este cambio
+  es sólo de configuración de dependencias de `momento-cuy`, sin tocar
+  ningún código de `apuyawar-systems`).
+- Extracción directa del `.class` realmente cargado
+  (`apuyawar-lighting/build/devlibs/apuyawar-lighting-0.1.0-dev.jar`,
+  confirmado por `codeSource` arriba): contiene `puntosFijos`, `decals`,
+  `hojas`, `focos` y `particulasmoviles` -- los 4 nombres de comando que
+  el equipo reportó como ausentes.
+- Extracción del `.class` dentro de `META-INF/jars/apuyawar-lighting-0.1.0.jar`
+  en `momento-cuy/build/libs/momento-cuy-0.1.0.jar` (la ruta de
+  PRODUCCIÓN, jar-in-jar real): también contiene el fingerprint más
+  reciente -- confirma que el empaquetado de distribución nunca estuvo
+  afectado por este problema.
+
+### 22.5. Lo que queda pendiente -- honestamente
+
+Siguiendo la instrucción del encargo ("si no puedes ejecutar los
+comandos mediante la interfaz, verifica al menos el bytecode real
+cargado y deja claramente pendiente la prueba interactiva"): **no se
+pudo escribir `/apuyawarlighting estado` ni ningún otro comando dentro
+del juego** -- este entorno no tiene control de teclado/ratón, sólo
+arranca el proceso real y lee sus logs. Lo verificado es que el bytecode
+que el juego carga, confirmado por su propio `ProtectionDomain` en tiempo
+de ejecución, es el actual y contiene las cadenas de texto de los
+comandos nuevos. Falta que el equipo, dentro del juego:
+
+1. Confirme que `/apuyawarlighting estado` imprime `puntosFijos=` y la
+   segunda línea de `decals`/`radioFoco`/`intensidadFoco`/`distanciaMax`.
+2. Confirme que `/apuyawarlighting decals`, `debug hojas 24` y
+   `debug focos` aparecen en las sugerencias y ejecutan sin error.
+3. Confirme que Momento Cuy (bloques, Cuy Jardinero, dimensión) y el
+   Panel K siguen funcionando con normalidad -- no se tocó ningún código
+   de esos sistemas, sólo la configuración de dependencias de
+   `momento-cuy/build.gradle`, pero la confirmación visual queda
+   pendiente del equipo.
+
+Una vez confirmado, el diagnóstico de §22.1 (`logClassOrigin`,
+`BUILD_FINGERPRINT`) se retira en un commit aparte, igual que los logs
+`[DIAG]` originales de `ApuYawarLightingClient`/`LightingCommands`.
