@@ -75,5 +75,23 @@ final class CelestialParticleSpawner {
         double vy = world.random.nextDouble() * 0.004;
         double vz = (world.random.nextDouble() - 0.5) * 0.004;
         world.addParticle(type, x, y, z, vx, vy, vz);
+
+        // V4.1, fase 1/3 (sección 4.4/6.4 del encargo: "las partículas
+        // celestiales también deben poder contribuir al [Bloom]... una
+        // estrella especial puede generar un destello más visible"
+        // frente a una mota/chispa pequeña) -- sólo se registra si el
+        // Bloom real está activo, para no acumular ecos que nadie va a
+        // consumir. La partícula visual la sigue dibujando Minecraft;
+        // esto es sólo su contribución adicional al framebuffer propio
+        // del Bloom.
+        if (config.realBloomEnabled) {
+            float r = star ? profile.secondaryRed() != null ? profile.secondaryRed() : profile.red() : profile.red();
+            float g = star ? profile.secondaryGreen() != null ? profile.secondaryGreen() : profile.green() : profile.green();
+            float b = star ? profile.secondaryBlue() != null ? profile.secondaryBlue() : profile.blue() : profile.blue();
+            float size = star ? 0.35f : 0.16f;
+            float alpha = star ? 0.9f : 0.5f;
+            int lifeTicks = star ? 18 : 10;
+            BloomRenderer.registerParticleEcho(x, y, z, r, g, b, size, alpha, lifeTicks);
+        }
     }
 }

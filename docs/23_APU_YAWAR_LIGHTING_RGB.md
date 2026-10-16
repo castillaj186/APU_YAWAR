@@ -2671,3 +2671,112 @@ este entorno.
 
 Commit de esta fase: "APU YAWAR Lighting V4 fase 4: presupuesto real
 por árbol y caché más receptiva".
+
+## 24. APU YAWAR Lighting V4.1 — Integración Neón Celestial
+
+El equipo probó la V4 real dentro de Minecraft y confirmó que el motor
+carga, los comandos funcionan y hay píxeles luminosos -- pero "el Bloom
+no produce el resplandor neón esperado" y la copa seguía muy oscura.
+Esta sección documenta la causa real encontrada y las cuatro entregas
+de esta ronda.
+
+### 24.1. Entrega 1 — corrección e integración del Bloom real
+
+**Hipótesis del equipo, confirmada leyendo el código tal cual estaba**:
+exactamente como sospechó el encargo ("la captura para Bloom parece
+estar realizada antes de que algunas superficies emisivas sean
+renderizadas"), `WorldLightingRenderer#render` llamaba a
+`BloomRenderer.captureFrame(built, config)` INMEDIATAMENTE después de
+dibujar los puntos/halos de siempre, y ANTES de que
+`renderEmissiveSurfaces` (el follaje emisivo real de la V4 fase 1)
+dibujara nada. Las partículas celestiales (V4 fase 2) nunca pasaban por
+`WorldLightingRenderer` en absoluto -- las dibuja el sistema de
+partículas de Minecraft directamente. Además, la `captureFrame` de la
+V4 limpiaba el framebuffer propio (`clear()`) en CADA llamada -- así
+que aunque se hubiera llamado una segunda vez, habría borrado la
+primera captura en vez de acumularse con ella. El Bloom real sólo podía
+mostrar los círculos aditivos antiguos: exactamente el síntoma
+reportado.
+
+**Arquitectura corregida** (`BloomRenderer`, reescrito): ciclo de vida
+explícito por frame en vez de una única llamada que hacía todo de
+golpe:
+
+1. `beginCapture(config)` -- una vez por frame, al principio de
+   `WorldLightingRenderer#render`: limpia el framebuffer propio y copia
+   la profundidad real UNA sola vez.
+2. `captureColorGeometry(built, intensity)` -- los puntos/halos de
+   siempre (formato `POSITION_COLOR`).
+3. `captureTexturedGeometry(built, textureId, intensity)` -- NUEVO:
+   llamado ahora desde dentro de `renderEmissiveSurfaces`, justo
+   después de `drawEmissiveAdditive`, una vez por cada grupo de máscara
+   emisiva (formato `POSITION_TEXTURE_COLOR`, con su propia textura).
+   Antes de esta corrección, este paso no existía -- es la pieza que
+   faltaba para que el Bloom incluyera el follaje emisivo.
+4. `captureParticleEchoes(...)` -- NUEVO: dibuja un pequeño círculo
+   aditivo, SÓLO en el framebuffer de Bloom, por cada "eco" de
+   partícula celestial reciente (ver 24.3) -- la partícula real la
+   sigue dibujando Minecraft; esto es sólo su contribución adicional al
+   resplandor.
+5. `endCapture()` -- una vez por frame, al final.
+6. `WorldRenderEvents.END` (sin cambios de fondo): difumina el
+   framebuffer propio (ahora con TODAS las contribuciones acumuladas) y
+   lo compone de vuelta con mezcla aditiva.
+
+Cada método de captura reenlaza el framebuffer propio (ya limpio, con
+la profundidad ya copiada por `beginCapture`), dibuja, y vuelve a
+enlazar el framebuffer REAL antes de devolver el control -- así el
+resto del render normal (incluida la siguiente pasada a capturar) nunca
+se ve afectado, y ninguna pasada individual puede borrar el trabajo de
+la anterior.
+
+**Oclusión y transparencia conservadas** (sección 4.3 del encargo): sin
+cambios respecto a la V4 -- cada captura sigue usando la profundidad
+real copiada (`copyDepthFrom`) y el test de profundidad `LEQUAL`, así
+que una hoja detrás de una pared sigue sin generar Bloom visible a
+través de ella; los huecos de recorte de la máscara emisiva (alfa 0)
+siguen sin "rellenar" nada en el Bloom tampoco, por la misma razón que
+en el framebuffer real.
+
+**Reutilización de `BuiltBuffer` investigada** (sección 4.5 del
+encargo): confirmado leyendo el bytecode real de
+`BufferRenderer.drawWithGlobalProgram` que NO cierra ni libera el
+`BuiltBuffer` que recibe -- sólo sube sus bytes a un `VertexBuffer` y
+dibuja. Es seguro volver a dibujar el mismo `BuiltBuffer` más de una
+vez (una al framebuffer real, otra al de Bloom), siempre que no se
+vuelva a usar el `Tessellator` compartido entre ambas llamadas -- por
+eso cada captura ocurre INMEDIATAMENTE después del dibujo real
+correspondiente, nunca más tarde.
+
+**Autoprueba V4.1** (reescrita -- la de la V4 sólo construía un
+framebuffer y un `PostEffectProcessor` de usar y tirar, sin ejercitar
+nunca el ciclo de captura real): ahora ejecuta el ciclo COMPLETO sobre
+el framebuffer compartido de verdad -- `beginCapture` →
+`captureColorGeometry` (triángulo de prueba) → `registerParticleEcho` +
+`captureParticleEchoes` → `endCapture` → difuminado real → composite.
+Verificado con `runClient` real:
+```
+[DIAG] Autoprueba Bloom real: ciclo completo (captura de color + eco de
+partícula + desenfoque minecraft:blur + composite) ejecutado sin
+excepciones sobre el framebuffer real.
+```
+Sin ninguna otra excepción en el resto del log de esa sesión; la
+autoprueba de material emisivo (V4 fase 1) sigue pasando sin cambios,
+confirmando que la restructuración no rompió nada ya verificado.
+
+**Por qué sigue sin poder desenfocar el Panel K** (sección 4.7 del
+encargo, restricción absoluta): sin cambios de fondo respecto a la V4
+(§23.3.3) -- toda la composición sigue ocurriendo en
+`WorldRenderEvents.END`, antes de la GUI, y el pipeline de desenfoque
+sigue operando exclusivamente sobre el framebuffer propio.
+
+**No verificado visualmente todavía**: la autoprueba confirma que el
+PIPELINE completo (captura múltiple + difuminado + composite) funciona
+de verdad dentro del cliente real, incluyendo la corrección de incluir
+follaje emisivo y partículas -- pero sigue sin poder verse un árbol real
+en un mundo cargado en este entorno. `realBloomEnabled` sigue
+desactivado por defecto por esa razón (sección 24.5 más abajo con las
+instrucciones de prueba).
+
+Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 1: Bloom real
+incluye ahora follaje emisivo y partículas".

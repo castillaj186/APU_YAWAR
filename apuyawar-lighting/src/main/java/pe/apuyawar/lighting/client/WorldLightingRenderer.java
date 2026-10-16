@@ -81,6 +81,18 @@ final class WorldLightingRenderer {
         float simplifyBeyond = Math.max(1f, config.simplifyDetailBeyondDistance);
         float simplifyBeyondSq = simplifyBeyond * simplifyBeyond;
 
+        // V4.1, fase 1: abre la captura del Bloom UNA vez por frame,
+        // antes de cualquier dibujo -- corrige la causa real reportada
+        // ("el Bloom no incluye el follaje emisivo ni las partículas"):
+        // antes se capturaba justo después de los puntos/halos y NUNCA
+        // se volvía a capturar nada más, así que el follaje emisivo
+        // (más abajo) y los ecos de partículas nunca llegaban al
+        // framebuffer de Bloom. Ver documentación de clase de
+        // BloomRenderer para el ciclo de vida completo.
+        if (config.realBloomEnabled) {
+            BloomRenderer.beginCapture(config);
+        }
+
         BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         boolean anyVertex = false;
 
@@ -166,18 +178,22 @@ final class WorldLightingRenderer {
         } else {
             BuiltBuffer built = buffer.end();
             drawAdditive(built);
-            // V4 fase 3: redibuja la MISMA geometría ya construida en el
-            // framebuffer propio del Bloom real -- debe pasar justo
-            // aquí, antes de que cualquier otro código vuelva a usar el
-            // Tessellator compartido (ver documentación de clase de
-            // BloomRenderer, punto 1).
             if (config.realBloomEnabled) {
-                BloomRenderer.captureFrame(built, config);
+                BloomRenderer.captureColorGeometry(built, config.bloomIntensity);
             }
         }
 
         if (config.emissiveMaterialEnabled) {
             renderEmissiveSurfaces(active, cameraPos, config, dayNightFactor, worldTime);
+        }
+
+        if (config.realBloomEnabled) {
+            // V4.1: contribución de las partículas celestiales recientes
+            // (ver CelestialParticleSpawner/BloomRenderer#registerParticleEcho)
+            // -- las partículas en sí las dibuja el sistema de Minecraft;
+            // esto es sólo su eco adicional dentro del framebuffer de Bloom.
+            BloomRenderer.captureParticleEchoes(matrixStack, cameraPos, cameraRotation, config.bloomIntensity);
+            BloomRenderer.endCapture();
         }
     }
 
@@ -225,6 +241,16 @@ final class WorldLightingRenderer {
             }
             BuiltBuffer built = buffer.end();
             drawEmissiveAdditive(built, entry.getKey());
+            // V4.1, fase 1: antes de esta corrección, el follaje emisivo
+            // nunca se capturaba para el Bloom -- era exactamente el
+            // síntoma reportado ("el Bloom no incluye adecuadamente las
+            // nuevas superficies emisivas"). El alfa real ya está
+            // horneado en los vértices de `built` (calculado arriba);
+            // aquí sólo se escala la intensidad GLOBAL del Bloom, igual
+            // que para los puntos/halos.
+            if (config.realBloomEnabled) {
+                BloomRenderer.captureTexturedGeometry(built, entry.getKey(), config.bloomIntensity);
+            }
         }
     }
 
