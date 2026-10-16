@@ -7,6 +7,7 @@ import net.minecraft.client.particle.SpriteBillboardParticle;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.SimpleParticleType;
+import pe.apuyawar.lighting.config.LightingConfig;
 
 /**
  * "Chispa celestial" (sección 4.2.B del encargo V4): núcleo brillante +
@@ -19,17 +20,28 @@ import net.minecraft.particle.SimpleParticleType;
 final class CelestialSparkParticle extends SpriteBillboardParticle {
     private final double driftPhase;
 
+    private final double speedScale;
+
     private CelestialSparkParticle(ClientWorld world, double x, double y, double z,
                                      double velocityX, double velocityY, double velocityZ,
                                      SpriteProvider spriteProvider, int rgb) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
+        // V4.1, entrega 3 (sección 6.5 del encargo: "verifica que todos
+        // los controles modifiquen realmente el comportamiento en
+        // ejecución") -- leídos en vivo al nacer la partícula, no sólo
+        // guardados en el config sin usar.
+        LightingConfig config = ApuYawarLightingClient.config();
+        float sizeScale = Math.max(0.1f, config.celestialParticleSizeMultiplier);
+        float lifeScale = Math.max(0.1f, config.celestialParticleLifetimeMultiplier);
+        this.speedScale = Math.max(0.0, config.celestialParticleSpeedMultiplier);
+
         this.setSprite(spriteProvider);
         this.red = ((rgb >> 16) & 0xFF) / 255f;
         this.green = ((rgb >> 8) & 0xFF) / 255f;
         this.blue = (rgb & 0xFF) / 255f;
         this.alpha = 0.85f;
-        this.scale = 0.12f + this.random.nextFloat() * 0.08f;
-        this.maxAge = 40 + this.random.nextInt(40);
+        this.scale = (0.12f + this.random.nextFloat() * 0.08f) * sizeScale;
+        this.maxAge = Math.max(4, Math.round((40 + this.random.nextInt(40)) * lifeScale));
         this.gravityStrength = 0f;
         this.collidesWithWorld = false;
         this.velocityX = velocityX;
@@ -51,8 +63,8 @@ final class CelestialSparkParticle extends SpriteBillboardParticle {
         // encargo: "no quiero partículas cayendo rápidamente", "oscilación
         // suave", "no todas en la misma dirección" (cada chispa tiene su
         // propia fase, fijada al nacer).
-        double wobble = Math.sin((this.age * 0.08) + this.driftPhase) * 0.0025;
-        this.move(this.velocityX + wobble, this.velocityY * 0.4, this.velocityZ - wobble);
+        double wobble = Math.sin((this.age * 0.08) + this.driftPhase) * 0.0025 * speedScale;
+        this.move((this.velocityX + wobble) * speedScale, this.velocityY * 0.4 * speedScale, (this.velocityZ - wobble) * speedScale);
         this.velocityY *= 0.98;
         float progress = this.age / (float) this.maxAge;
         this.alpha = 0.85f * (progress < 0.15f ? progress / 0.15f : clamp01(1f - (progress - 0.6f) / 0.4f));

@@ -7,6 +7,7 @@ import net.minecraft.client.particle.SpriteBillboardParticle;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.SimpleParticleType;
+import pe.apuyawar.lighting.config.LightingConfig;
 
 /**
  * "Estrella celestial" (sección 4.2.C del encargo V4): poco frecuente,
@@ -19,10 +20,19 @@ import net.minecraft.particle.SimpleParticleType;
  */
 final class CelestialStarParticle extends SpriteBillboardParticle {
     private final SpriteProvider spriteProvider;
+    private final float maxScale;
 
     private CelestialStarParticle(ClientWorld world, double x, double y, double z,
                                     SpriteProvider spriteProvider, int rgb) {
         super(world, x, y, z, 0, 0, 0);
+        // V4.1, entrega 3: ver documentación equivalente en
+        // CelestialSparkParticle -- mismos tres controles, leídos en
+        // vivo al nacer.
+        LightingConfig config = ApuYawarLightingClient.config();
+        float sizeScale = Math.max(0.1f, config.celestialParticleSizeMultiplier);
+        float lifeScale = Math.max(0.1f, config.celestialParticleLifetimeMultiplier);
+        float speedScale = Math.max(0.0f, config.celestialParticleSpeedMultiplier);
+
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
         this.red = ((rgb >> 16) & 0xFF) / 255f;
@@ -30,12 +40,13 @@ final class CelestialStarParticle extends SpriteBillboardParticle {
         this.blue = (rgb & 0xFF) / 255f;
         this.alpha = 1.0f;
         this.scale = 0.0f;
-        this.maxAge = 16 + this.random.nextInt(10);
+        this.maxScale = 0.22f * sizeScale;
+        this.maxAge = Math.max(4, Math.round((16 + this.random.nextInt(10)) * lifeScale));
         this.gravityStrength = 0f;
         this.collidesWithWorld = false;
-        this.velocityX = (this.random.nextDouble() - 0.5) * 0.004;
-        this.velocityY = this.random.nextDouble() * 0.006;
-        this.velocityZ = (this.random.nextDouble() - 0.5) * 0.004;
+        this.velocityX = (this.random.nextDouble() - 0.5) * 0.004 * speedScale;
+        this.velocityY = this.random.nextDouble() * 0.006 * speedScale;
+        this.velocityZ = (this.random.nextDouble() - 0.5) * 0.004 * speedScale;
     }
 
     @Override
@@ -55,7 +66,7 @@ final class CelestialStarParticle extends SpriteBillboardParticle {
         // estrella que se queda flotando grande.
         float grow = Math.min(1f, progress / 0.25f);
         float fade = progress < 0.5f ? 1f : clamp01(1f - (progress - 0.5f) / 0.5f);
-        this.scale = 0.22f * grow;
+        this.scale = maxScale * grow;
         this.alpha = fade;
     }
 

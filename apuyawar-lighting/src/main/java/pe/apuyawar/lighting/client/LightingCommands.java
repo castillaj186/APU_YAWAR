@@ -86,6 +86,9 @@ final class LightingCommands {
                                 .then(setFloatField("puntosfijos", c -> c.fixedPointDensityMultiplier, (c, v) -> c.fixedPointDensityMultiplier = v))
                                 .then(setFloatField("particulasmoviles", c -> c.particleDensityMultiplier, (c, v) -> c.particleDensityMultiplier = v))
                                 .then(setFloatField("fraccionestrellas", c -> c.celestialStarFraction, (c, v) -> c.celestialStarFraction = v))
+                                .then(setFloatField("tamanoparticulas", c -> c.celestialParticleSizeMultiplier, (c, v) -> c.celestialParticleSizeMultiplier = v))
+                                .then(setFloatField("duracionparticulas", c -> c.celestialParticleLifetimeMultiplier, (c, v) -> c.celestialParticleLifetimeMultiplier = v))
+                                .then(setFloatField("velocidadparticulas", c -> c.celestialParticleSpeedMultiplier, (c, v) -> c.celestialParticleSpeedMultiplier = v))
                                 .then(setFloatField("intensidadmaterial", c -> c.emissiveMaterialIntensity, (c, v) -> c.emissiveMaterialIntensity = v))
                                 .then(setFloatField("dia", c -> c.dayIntensityMultiplier, (c, v) -> c.dayIntensityMultiplier = v))
                                 .then(setFloatField("noche", c -> c.nightIntensityMultiplier, (c, v) -> c.nightIntensityMultiplier = v))
@@ -236,6 +239,9 @@ final class LightingCommands {
                 "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f fraccionEstrellas=%.2f bloomReal=%s",
                 c.emissiveMaterialEnabled, c.emissiveMaterialIntensity, c.particleDensityMultiplier, c.celestialStarFraction,
                 c.realBloomEnabled));
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "tamanoParticulas=%.2f duracionParticulas=%.2f velocidadParticulas=%.2f",
+                c.celestialParticleSizeMultiplier, c.celestialParticleLifetimeMultiplier, c.celestialParticleSpeedMultiplier));
         return 1;
     }
 

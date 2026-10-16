@@ -2859,3 +2859,87 @@ que el primero en un árbol denso.
 
 Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 2: follaje
 emisivo con presupuesto propio, independiente de maxluces".
+
+### 24.3. Entrega 3 — partículas y estrellas celestiales avanzadas
+
+**Bloom en partículas (sección 6.4 del encargo)**: ya resuelto como
+parte de la Entrega 1 (§24.1) -- `BloomRenderer.captureParticleEchoes`,
+alimentado por `CelestialParticleSpawner.registerParticleEcho` cada vez
+que nace una chispa o una estrella con el Bloom real activo. La
+contribución YA está diferenciada por tipo, tal como pidió el encargo
+("una mota pequeña debe producir un halo pequeño... una estrella
+especial puede generar un destello más visible"): tamaño 0.35 y alfa
+0.9 para estrella, 0.16 y 0.5 para chispa -- la estrella genera un eco
+más del doble de grande.
+
+**Controles reales nuevos** (sección 6.5 del encargo: "verifica que
+todos los controles modifiquen realmente el comportamiento en
+ejecución"): tres campos nuevos, leídos EN VIVO al nacer cada
+chispa/estrella (no guardados sin usar):
+
+```
+/apuyawarlighting set tamanoparticulas <valor>      -- escala this.scale
+/apuyawarlighting set duracionparticulas <valor>     -- escala this.maxAge
+/apuyawarlighting set velocidadparticulas <valor>    -- escala la deriva/oscilación por tick
+```
+
+Se mantienen `particulasmoviles` (densidad) y `fraccionestrellas` (V4
+fase 2), sin cambios -- ambos ya estaban conectados de verdad.
+"Distancia" (sección 6.5) ya estaba cubierta: las partículas sólo nacen
+desde `EmitterTracker.active()`, que ya está acotado por
+`maxEffectDistance`. "Activación" ya existe (`particulasmoviles 0`
+desactiva). "Calidad": estos tres campos se dejan como ajuste manual
+independiente, no ligados a LOW/MEDIUM/HIGH -- igual que otros campos
+de ajuste fino del motor (p. ej. `groundSpotRadius`).
+
+**Distribución tridimensional y movimiento natural** (secciones 6.2 y
+6.3 del encargo): sin cambios de fondo respecto a la V4 fase 2 -- ya
+nacen alrededor de posiciones reales de hojas (hasta ~0.9 bloques de
+desplazamiento en cada eje, algunas fuera del volumen de la hoja a
+propósito) y con movimiento propio (oscilación con fase individual,
+nunca todas en la misma dirección). No se amplió esta ronda para no
+"aumentar la cantidad indiscriminadamente" sin una razón real -- el
+equipo puede ahora ajustar tamaño/duración/velocidad directamente con
+los comandos nuevos si, tras probar, sigue pareciendo poco visible.
+
+**Cerezo Celestial -- pétalos verificados intactos** (sección 6.6 del
+encargo: "no reemplaces las partículas de pétalos existentes"):
+confirmado con `git log` que `MomentoCuyBlossomLeavesBlock.java` (el
+bloque que genera los pétalos) no se ha tocado en ningún commit de todo
+este trabajo de iluminación RGB, desde el primer commit de la rama.
+Las partículas celestiales del Cerezo (chispa/estrella rosa+dorado, V4
+fase 2) siguen siendo un sistema aparte, que coexiste con los pétalos
+sin sustituirlos.
+
+**Rendimiento** (sección 6.7 del encargo): sin cambios de fondo -- la
+probabilidad de spawn sigue baja y escalando con `maxluces` (vía
+`EmitterTracker.active()`), nunca con el tamaño del bosque completo;
+los controles nuevos (tamaño/duración/velocidad) no añaden ningún
+recorrido nuevo del mundo, sólo escalan valores ya calculados al nacer
+cada partícula.
+
+**Limitación conocida, honesta**: la "mota" original
+(`MomentoCuyAbetoLeavesBlock`, en `momento-cuy`) sigue SIN contribuir
+al Bloom -- sólo chispa/estrella (en `apuyawar-lighting`) lo hacen.
+Acoplar la mota al Bloom exigiría que `momento-cuy` (común, sin
+`apuyawar-lighting` como dependencia obligatoria) llamara de vuelta a
+`apuyawar-lighting` desde su propio `randomDisplayTick` -- un cambio de
+arquitectura mayor, fuera del alcance de esta ronda. Dado que el
+encargo pide una jerarquía mota < chispa < estrella en su contribución
+al resplandor, "mota = sin contribución, chispa = pequeña, estrella =
+mayor" sigue siendo una interpretación razonable de esa jerarquía,
+aunque no sea literalmente "una contribución pequeña pero distinta de
+cero".
+
+**Pruebas reales ejecutadas**: `gradlew :apuyawar-lighting:compileJava`
+éxito; `gradlew :momento-cuy:runClient` real -- ambas autopruebas (V4
+fase 1, V4.1 entrega 1) siguen pasando sin cambios; `gradlew build` (4
+módulos) éxito.
+
+**No verificado visualmente**: si las chispas/estrellas, con los
+nuevos multiplicadores en 1.0 (sin cambios respecto a antes) o
+aumentados por el equipo, se ven claramente alrededor de un árbol real
+-- exige un mundo cargado, no disponible en este entorno.
+
+Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 3: controles
+reales de tamaño/duración/velocidad para chispas y estrellas".

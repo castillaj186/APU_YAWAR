@@ -75,6 +75,19 @@ public final class LightingConfig {
      * "cantidad de estrellas especiales" como control independiente de
      * la densidad general. */
     public float celestialStarFraction = 0.07f;
+    /** V4.1, entrega 3 (sección 6.5 del encargo: "tamaño... verifica que
+     * todos los controles modifiquen realmente el comportamiento en
+     * ejecución") -- escala el tamaño real de chispas y estrellas
+     * (leído directamente por {@code CelestialSparkParticle}/
+     * {@code CelestialStarParticle} al nacer, no sólo guardado sin
+     * usar). */
+    public float celestialParticleSizeMultiplier = 1.0f;
+    /** V4.1, entrega 3: escala la duración (vida en ticks) de chispas y
+     * estrellas. */
+    public float celestialParticleLifetimeMultiplier = 1.0f;
+    /** V4.1, entrega 3: escala la velocidad de deriva de chispas y
+     * estrellas (oscilación/ascenso/descenso). */
+    public float celestialParticleSpeedMultiplier = 1.0f;
     public float dayIntensityMultiplier = 0.55f;
     public float nightIntensityMultiplier = 1.0f;
     public int maxActiveLights = LightingQuality.MEDIUM.maxActiveLights;
