@@ -3048,3 +3048,227 @@ cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
    confirmar que ningún árbol consume todo el presupuesto.
 8. F3 para FPS reales con 1/5/10/20 árboles, RGB on/off, Bloom on/off
    (sección 7.7, pendiente de medición real).
+
+## 25. APU YAWAR Lighting V4.2 — corrección de renderizado real
+
+El equipo grabó un video real (`los active y nada no se ven las
+luces.mp4`) con evidencia precisa: `maxLuces=96 activos=96`, 527
+superficies de follaje emisivo registradas, 22 focos de suelo
+registrados -- pero visualmente casi nada de eso se traducía en
+iluminación real. El encargo fue explícito: "los números... demuestran
+que existen datos registrados, pero no demuestran que los vértices
+estén dibujándose correctamente." Esta sección documenta el recorrido
+completo del pipeline, las dos causas REALES encontradas (no
+hipótesis sin confirmar), y las correcciones aplicadas.
+
+### 25.1. Entrega 1 — diagnósticos reales de renderizado
+
+Antes de corregir nada, se instrumentó el pipeline para distinguir
+"registrado" de "dibujado de verdad" -- exactamente la distinción que
+pidió el encargo (sección 3.2).
+
+**`WorldLightingRenderer.RenderStats`** (nuevo): contadores reales del
+ÚLTIMO frame renderizado, reconstruidos desde cero en cada `render()`
+-- nunca acumulados entre frames:
+- `groundSpotsRegistered` / `groundSpotsDrawn` / `groundSpotsDiscardedByAlpha`.
+- `emissiveSurfacesAvailable` / `emissiveQuadsDrawn`.
+- `pointLightCirclesDrawn`.
+
+Expuestos por el comando nuevo `/apuyawarlighting debug render`.
+
+**`WorldLightingRenderer.diagnoseGroundSpot`** (nuevo, extraído de
+`addGroundSpot`): centraliza EXACTAMENTE el mismo cálculo (distancia
+vertical, caída, alfa final, motivo de descarte) que usa el render
+real, para que el comando `/apuyawarlighting debug focos` (ampliado)
+NUNCA pueda mostrar "todo bien" mientras el render descarta el foco
+por otra razón -- antes sólo mostraba `ancla`/`sueloY`/`fundido`, sin
+ninguna forma de saber si ese foco realmente producía un triángulo.
+Ahora muestra también `alturaAncla`, `distVertical`, `caida`, y el
+resultado final: `DIBUJADO (alfa=...)` o
+`DESCARTADO: <motivo exacto>`.
+
+**Foco de suelo de prueba independiente** (sección 4.2 del encargo):
+`/apuyawarlighting test foco` -- coloca un foco magenta (deliberadamente
+distinto del turquesa de producción) justo debajo de los pies del
+jugador, con `groundY` = esa misma altura, **distancia vertical
+siempre cero**, ignorando por completo la selección de hojas/sticky
+representative/`findGroundY`. Si este foco tampoco se ve, el problema
+está en el pipeline de dibujo (geometría/profundidad/shader); si SÍ se
+ve, el problema está en la selección de la hoja representante -- esto
+permitió aislar la causa real (ver 25.2) de forma concluyente.
+
+**Corrección del retorno anticipado** (sección 5.5 del encargo):
+`WorldLightingRenderer#render` salía inmediatamente si `active` Y
+`spots` estaban vacíos, SIN comprobar `EmitterTracker.emissiveSurfaces()`
+-- confirmado leyendo el código, era una condición real, aunque en la
+práctica `active`/`emissiveSurfaces` comparten la misma fuente
+(`found` en `EmitterTracker#rescan`) y rara vez uno está vacío sin el
+otro. Corregida de todas formas, para que la emisión de las hojas
+nunca dependa de que existan puntos luminosos o focos de suelo activos.
+
+### 25.2. Entrega 2 — causa real: focos de suelo registrados pero invisibles
+
+**Causa confirmada** (no sólo la hipótesis del equipo -- confirmada
+leyendo el código real): `EmitterTracker#isBetterRepresentative`
+preferÍa la hoja de MAYOR altura de cada celda como representante del
+foco de suelo. Combinado con `WorldLightingRenderer#addGroundSpot`,
+donde `maxDistance = groundSpotRadius * 6` (≈9.6 bloques con el valor
+por defecto 1.6) y el foco se descarta POR COMPLETO (cero vértices) en
+cuanto la distancia vertical del ancla al suelo supera ese valor -- para
+un Abeto Celestial de más de ~10 bloques de alto (la silueta real de
+pino, con varias capas), la hoja MÁS ALTA de la copa, elegida como
+representante, está casi garantizado que exceda esa distancia. El foco
+quedaba registrado en `EmitterTracker.groundSpots()` (con `anchorPos`,
+`groundY`, etc. todos válidos) pero `addGroundSpot` nunca llegaba a
+generar un solo triángulo -- exactamente "22 focos registrados" sin
+ningún píxel visible, el síntoma reportado.
+
+**Corrección**: `isBetterRepresentative` invertido para preferir la
+hoja de MENOR altura de la celda (más cerca del suelo real, donde la
+caída vertical es mínima) -- sigue siendo una elección determinista
+(mismo empate por `BlockPos#asLong()`), sólo cambia CUÁL hoja gana. No
+se tocó `groundSpotRadius`/`maxDistance`/ningún multiplicador --
+exactamente lo que pidió el encargo: "no cambies los valores a ciegas",
+corregir la SELECCIÓN, no la magnitud.
+
+**No verificado visualmente**: confirmado por lectura de código y por
+el razonamiento matemático (verticalDistance ahora típicamente de 2-5
+bloques para la hoja más baja de un abeto, muy por debajo de los 9.6
+del corte), pero no se pudo ver el resultado en pantalla en este
+entorno. El comando `/apuyawarlighting debug focos` ahora reporta la
+distancia vertical y el motivo de descarte exacto para que el equipo lo
+confirme con números reales, no sólo visualmente.
+
+### 25.3. Entrega 3 — causa real: follaje emisivo registrado pero invisible
+
+**Causa confirmada** (sección 5.1/5.2 del encargo, exactamente el tipo
+de problema que pidió investigar: "revisa si existe algún problema de
+profundidad"): `WorldLightingRenderer#addEmissiveCube` calculaba
+`ox = pos.getX() - cameraPos.x` (coordenadas relativas a la cámara) y
+las pasaba DIRECTAMENTE a `buffer.vertex(x, y, z)` -- el método de 3
+argumentos, SIN ninguna matriz. Esto es diferente de TODO lo demás en
+el mismo archivo: los puntos de luz (`billboardPose`) y los focos de
+suelo (`addGroundSpot`) usan `matrixStack.push()/translate()/pop()` y
+pasan el resultado a `vertex(pose, x, y, z)`. El cubo emisivo, en
+cambio, dependía de que `RenderSystem.getModelViewMatrix()` (la matriz
+GLOBAL que usa `BufferRenderer.drawWithGlobalProgram` para TODO el
+buffer) coincidiera exactamente, bit a bit, con lo que `matrixStack`
+representa en ese punto del frame -- una coincidencia nunca
+garantizada. La diferencia resultante entre la profundidad real de la
+hoja (dibujada por el pipeline normal de Minecraft, que SÍ usa su
+propio matrixStack) y la del cubo emisivo (con una ruta de
+transformación potencialmente distinta) encaja exactamente con el
+síntoma reportado: cientos de superficies "registradas" que en la
+práctica fallan el test de profundidad `LEQUAL` de forma inconsistente,
+dejando sólo fragmentos sueltos visibles ("solamente se aprecian
+pequeños grupos de píxeles luminosos... concentrado en determinadas
+regiones") en vez de la hoja completa.
+
+**Corrección**: `addEmissiveCube`/`quad` reescritos para usar
+`matrixStack.push()/translate()/pop()` exactamente igual que
+`addGroundSpot`, con las coordenadas locales del cubo (0..1) pasadas a
+través de `vertex(pose, x, y, z)` -- la MISMA ruta de transformación
+que ya usa el resto del archivo. `renderEmissiveSurfaces` ahora recibe
+`matrixStack` como parámetro para poder hacer esto.
+
+**No se desactivó el depth test** (restricción explícita del encargo:
+"no desactives indiscriminadamente el depth test para ocultar el
+problema") -- sigue en `LEQUAL`, con `depthMask(false)`, exactamente
+igual que antes. Las hojas detrás de paredes siguen sin generar brillo
+visible a través de ellas, por el mismo mecanismo de siempre.
+
+**Máscaras emisivas -- revisadas, sin cambios necesarios** (sección
+5.3 del encargo): el umbral adaptativo de `EmissiveMaskGenerator` ya
+se validó en la V4 (§23.1) contra las 4 texturas reales del proyecto,
+dando 7.4%-11.7% de píxeles emisivos -- ni degenerado ni "toda la
+textura". No se tocó esta ronda; la causa real estaba en la geometría/
+transformación, no en qué píxeles selecciona la máscara.
+
+**No verificado visualmente**: igual que la Entrega 2, confirmado por
+lectura de código (la inconsistencia de matrices es un hecho
+verificable en el código fuente, no una suposición), pero no visto en
+pantalla. El comando `/apuyawarlighting debug render` reporta ahora
+cuántas superficies emisivas había disponibles contra cuántos cubos se
+dibujaron de verdad -- útil para que el equipo confirme si el número
+"dibujados" se acerca al de "disponibles" tras esta corrección.
+
+### 25.4. Entrega 4 — verificación de la integración del Bloom
+
+El encargo pidió explícitamente no empezar esta fase hasta que las
+máscaras se representaran correctamente -- cumplido: esta fase es de
+VERIFICACIÓN, no de nuevo código. `BloomRenderer.captureTexturedGeometry`
+(V4.1) captura el MISMO `built` que `drawEmissiveAdditive` dibuja al
+framebuffer real -- con la corrección de matrices de la Entrega 3 ya
+aplicada ANTES de que `built` se construya, el Bloom hereda
+automáticamente la geometría corregida, sin necesitar ningún cambio
+adicional en `BloomRenderer`.
+
+Confirmado con `runClient` real, tras aplicar las correcciones de las
+entregas 1-3: la autoprueba de Bloom (`[DIAG] Autoprueba Bloom real:
+ciclo completo...`) sigue pasando sin excepciones, igual que la
+autoprueba de material emisivo -- ninguna de las dos regresó.
+
+Los focos de suelo siguen excluidos del Bloom (V4.1, §24.4) -- sin
+cambios, confirmado que la corrección de la Entrega 2 no reintrodujo
+ninguna ruta de captura hacia el Bloom para los focos.
+
+### 25.5. Entrega 5 — estabilidad y optimización, revisión confirmada
+
+Revisado explícitamente si las correcciones de las Entregas 1-3
+introducen algún riesgo nuevo de inestabilidad (sección 7 del
+encargo):
+
+- **`isBetterRepresentative` invertido**: sigue siendo determinista
+  (mismo empate por `asLong()`), el mecanismo "pegajoso"
+  (`stickyGroundRepresentative`) no se tocó -- sólo cambia CUÁL hoja
+  gana la primera vez que se elige un representante nuevo. No
+  introduce ningún nuevo origen de movimiento del foco.
+- **Corrección de matrices del cubo emisivo**: un cambio puramente de
+  posicionamiento/profundidad, sin ningún efecto sobre la caché por
+  chunk, el presupuesto por árbol, ni la detección de emisores.
+- **`RenderStats`/foco de prueba**: instrumentación nueva, aditiva,
+  sin ningún efecto sobre el camino normal salvo cuando se invoca
+  explícitamente por comando.
+
+No se encontró ninguna razón para tocar la caché por chunk, el
+presupuesto por árbol, ni la lógica de focos persistentes esta ronda
+-- ya revisados y confirmados en la V4 fase 4 y la V4.1 entrega 4.
+
+### 25.6. Pruebas reales ejecutadas
+
+- `gradlew :apuyawar-lighting:compileJava`: éxito.
+- `gradlew :momento-cuy:runClient` real: ambas autopruebas (material
+  emisivo, Bloom real) siguen pasando sin excepciones tras las
+  correcciones.
+- `gradlew build` (4 módulos): éxito, sin regresión.
+
+### 25.7. Comandos nuevos/ampliados
+
+```
+/apuyawarlighting debug render        -- contadores reales: registrado vs. dibujado
+/apuyawarlighting debug focos         -- ampliado: distVertical, caida, motivo de descarte
+/apuyawarlighting test foco           -- foco de suelo de prueba, distancia vertical 0
+```
+
+### 25.8. Pendiente -- instrucciones de prueba para el equipo
+
+```
+cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
+```
+
+1. `/apuyawarlighting test foco` -- debe aparecer un foco MAGENTA bajo
+   los pies, inmediatamente. Si no aparece, el problema sigue siendo el
+   pipeline de dibujo (reportar este resultado exacto).
+2. Acercarse a un Abeto Celestial real, activar decals si no lo están.
+3. `/apuyawarlighting debug focos` -- confirmar que los focos reales
+   ahora dicen `DIBUJADO`, no `DESCARTADO: distancia vertical...`.
+4. Observar el suelo bajo el árbol -- debe verse un foco turquesa
+   pequeño, no ausente.
+5. `/apuyawarlighting debug render` -- confirmar que
+   "cubos dibujados" se acerca al número de "superficies disponibles"
+   (antes, probablemente, dibujados << disponibles).
+6. Observar la copa completa de noche, con los halos antiguos ocultos
+   (`debug puntos`) y Bloom desactivado -- las hojas deben mostrar
+   emisión propia visible en varias regiones, no sólo puntos sueltos.
+7. Repetir con Bloom activado -- comparar resplandor.
+8. Abrir el Panel K con Bloom activo -- confirmar nitidez.
