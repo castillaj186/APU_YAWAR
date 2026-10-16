@@ -169,10 +169,6 @@ final class WorldLightingRenderer {
             }
         }
 
-        for (EmitterTracker.GroundSpot spot : spots) {
-            anyVertex |= addGroundSpot(buffer, matrixStack, cameraPos, spot, config, dayNightFactor);
-        }
-
         if (!anyVertex) {
             buffer.endNullable();
         } else {
@@ -180,6 +176,29 @@ final class WorldLightingRenderer {
             drawAdditive(built);
             if (config.realBloomEnabled) {
                 BloomRenderer.captureColorGeometry(built, config.bloomIntensity);
+            }
+        }
+
+        // V4.1, entrega 4 (sección 7.5 del encargo: "si el Bloom provoca
+        // que un foco pequeño se convierta nuevamente en una enorme
+        // mancha cian, corrige su contribución a la máscara emisiva"):
+        // los focos de suelo se dibujan en su PROPIO buffer, separado
+        // del de los puntos/halos de arriba, y NUNCA se capturan para
+        // el Bloom -- ya son discos relativamente grandes y suaves; un
+        // desenfoque adicional por encima recrearía exactamente la
+        // mancha grande que ya se corrigió en la V2 (ver docs/23 §20).
+        // Siguen dibujándose con normalidad en el framebuffer real, sin
+        // ningún cambio visual ahí.
+        if (!spots.isEmpty()) {
+            BufferBuilder groundBuffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+            boolean anyGroundVertex = false;
+            for (EmitterTracker.GroundSpot spot : spots) {
+                anyGroundVertex |= addGroundSpot(groundBuffer, matrixStack, cameraPos, spot, config, dayNightFactor);
+            }
+            if (!anyGroundVertex) {
+                groundBuffer.endNullable();
+            } else {
+                drawAdditive(groundBuffer.end());
             }
         }
 

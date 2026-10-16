@@ -2943,3 +2943,108 @@ aumentados por el equipo, se ven claramente alrededor de un árbol real
 
 Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 3: controles
 reales de tamaño/duración/velocidad para chispas y estrellas".
+
+### 24.4. Entrega 4 — optimización, estabilidad y corrección del motor RGB
+
+**Riesgo real identificado y corregido antes de que se manifestara**
+(sección 7.5 del encargo, advertencia explícita: "si el Bloom provoca
+que un foco pequeño se convierta nuevamente en una enorme mancha cian,
+corrige su contribución a la máscara emisiva"): revisando el código de
+la Entrega 1, los focos de suelo se dibujaban en el MISMO buffer que
+los puntos/halos de la copa, y ese buffer combinado era exactamente el
+que se capturaba para el Bloom -- es decir, los focos de suelo SÍ
+estaban recibiendo desenfoque de Bloom, con el riesgo real de
+recrear la mancha grande que ya se corrigió en la V2 (docs/23 §20),
+esta vez vía el desenfoque en vez de vía el tamaño del decal.
+
+**Corrección** (`WorldLightingRenderer#render`): los focos de suelo
+ahora se dibujan en su PROPIO buffer, separado del de los puntos/halos,
+con su propio ciclo `Tessellator.begin()`/`.end()` -- se siguen
+dibujando con normalidad en el framebuffer real (sin cambio visual
+ahí), pero NUNCA se pasan a `BloomRenderer.captureColorGeometry`. El
+Bloom real queda así limitado a los puntos de luz, el follaje emisivo y
+las partículas -- nunca el suelo, tal como pidió la sección 7.5 ("la
+copa debe ser la protagonista").
+
+**Revisión del resto de la sección 7, sin cambios necesarios -- ya
+resuelto en rondas anteriores, verificado de nuevo esta ronda**:
+
+- **7.1, presupuesto de los 96 emisores**: ya resuelto en la V4 fase 4
+  (`selectWithPerTreeBudget`) y reforzado en la Entrega 2 de esta ronda
+  (presupuesto separado para follaje emisivo). No se aumentó
+  `maxActiveLights` -- sigue siendo "usar mejor los emisores
+  existentes", no "tener más luces a cualquier costo", tal como pidió
+  el encargo.
+- **7.2, identidad espacial estable**: sin cambios -- cada emisor sigue
+  siendo una `BlockPos` real, nunca reasignada por azar; el
+  representante "pegajoso" de cada foco de suelo (V3) sigue intacto.
+  Las listas nuevas de esta ronda (`emissiveSurfaces`) derivan del
+  MISMO escaneo determinista que `active()`, así que no introducen
+  ninguna fuente nueva de inestabilidad.
+- **7.3, caché por chunk**: sin cambios respecto a la V4 fase 4 (TTL de
+  80 rescaneos). `emissiveSurfaces` comparte la misma caché que
+  `active()` -- no hay dos escaneos independientes que puedan
+  desincronizarse entre sí.
+- **7.4, rendimiento del Bloom**: confirmado revisando
+  `BloomRenderer` -- el framebuffer propio y el `PostEffectProcessor`
+  sólo se recrean cuando cambian las dimensiones de la ventana
+  (`ensureBuffer`), nunca por frame; se liberan correctamente
+  (`disposeBuffers`) si un error real desactiva el módulo. La única
+  adición de esta ronda (separar el buffer de focos de suelo) añade
+  como mucho una llamada de dibujo más por frame cuando hay focos
+  activos (normalmente 1-2), no un framebuffer nuevo.
+- **7.6, distancia y LOD**: sin cambios -- `maxEffectDistance` (visión),
+  `simplifyDetailBeyondDistance` (LOD de halos) y el radio de escaneo
+  siguen siendo conceptos separados desde la V2.
+
+**7.7, pruebas de rendimiento -- honestamente, no medible en este
+entorno**: sin control de teclado/ratón ni overlay de depuración (F3)
+visible, no hay forma de medir FPS reales con 1/5/10/20 árboles, ni
+comparar RGB on/off, LOW/MEDIUM/HIGH, o Bloom on/off numéricamente. El
+encargo pidió explícitamente "no inventes valores de FPS" -- no se
+inventa ninguno. Lo que SÍ se puede afirmar, por análisis de
+complejidad (no medición): ninguna estructura de datos nueva de esta
+ronda recorre el mundo más de lo que ya hacía `EmitterTracker` antes de
+la V4.1; el costo de dibujo adicional (follaje emisivo con presupuesto
+propio, ecos de partículas) escala con el número real de hojas
+emisoras y partículas activas, acotado por los mismos límites de
+siempre (`MAX_EMISSIVE_SURFACES=600`, `MAX_PARTICLE_ECHOES=96`).
+
+**Pruebas reales ejecutadas**: `gradlew :apuyawar-lighting:compileJava`
+éxito; `gradlew :momento-cuy:runClient` real -- ambas autopruebas (V4
+fase 1, V4.1 entrega 1) siguen pasando sin cambios; `gradlew build` (4
+módulos) éxito.
+
+**Pendiente para el equipo** (sección 7.7 del encargo, con F3 real
+dentro del juego): medir FPS con 1, 5, 10 y 20 árboles celestiales
+juntos, comparando RGB desactivado / LOW / MEDIUM / HIGH / Bloom
+activado / Bloom desactivado -- las métricas reales deben venir de una
+sesión de juego real, no de este entorno.
+
+Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 4: focos de
+suelo ya no contribuyen al Bloom real".
+
+### 24.5. Instrucciones de prueba para el equipo (las cuatro entregas)
+
+```
+cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
+```
+
+1. `/apuyawarlighting debug emisores` -- confirmar que "hojas con
+   follaje emisivo" (Entrega 2) es sustancialmente mayor que "puntos de
+   copa activos" en un árbol denso.
+2. Observar la copa completa, incluida la punta, de noche.
+3. `/apuyawarlighting bloomreal` en un mundo de respaldo -- comparar la
+   copa con Bloom activado/desactivado desde la misma posición.
+4. Abrir el Panel K inmediatamente con el Bloom activo -- confirmar
+   nitidez (la prueba más importante, por el historial real con este
+   problema).
+5. Observar el suelo bajo el árbol con Bloom activo -- el foco debe
+   seguir pequeño, NO convertirse en una mancha grande.
+6. `/apuyawarlighting set tamanoparticulas 2.0` (y `duracionparticulas`,
+   `velocidadparticulas`) -- confirmar que el comportamiento cambia de
+   verdad.
+7. Plantar varios árboles juntos -- `/apuyawarlighting debug arboles` y
+   confirmar que ningún árbol consume todo el presupuesto.
+8. F3 para FPS reales con 1/5/10/20 árboles, RGB on/off, Bloom on/off
+   (sección 7.7, pendiente de medición real).
