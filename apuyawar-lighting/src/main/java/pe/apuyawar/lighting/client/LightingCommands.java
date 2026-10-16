@@ -166,6 +166,7 @@ final class LightingCommands {
                                 .then(ClientCommandManager.literal("focos").executes(LightingCommands::debugGroundSpots))
                                 .then(ClientCommandManager.literal("materialemisivo").executes(LightingCommands::debugEmissiveMaterial))
                                 .then(ClientCommandManager.literal("arboles").executes(LightingCommands::debugTreeBudgets))
+                                .then(ClientCommandManager.literal("render").executes(LightingCommands::debugRenderStats))
                                 .then(ClientCommandManager.literal("hojas")
                                         .executes(ctx -> debugRealLeafCounts(ctx, 24))
                                         .then(ClientCommandManager.argument("radio", IntegerArgumentType.integer(4, 80))
@@ -177,7 +178,9 @@ final class LightingCommands {
                                     return 1;
                                 })))
                         .then(ClientCommandManager.literal("test")
-                                .executes(LightingCommands::toggleTestEmitter))
+                                .executes(LightingCommands::toggleTestEmitter)
+                                .then(ClientCommandManager.literal("foco")
+                                        .executes(LightingCommands::toggleTestGroundSpot)))
                         .then(ClientCommandManager.literal("estado")
                                 .executes(LightingCommands::showStatus)));
             LOGGER.info("[DIAG] /apuyawarlighting registrado, nodo='{}'", node.getName());
@@ -221,6 +224,32 @@ final class LightingCommands {
                 profile.red(), profile.green(), profile.blue(), null, null, null,
                 profile.intensity(), profile.radius(), profile.falloff(), EmitterType.SOLID, 1, 99, true, null, false));
         feedback(ctx.getSource(), "Emisor de prueba colocado en " + pos.toShortString());
+        return 1;
+    }
+
+    /** V4.2, entrega 2 (sección 4.2 del encargo: "necesito un modo
+     * diagnóstico que dibuje temporalmente un foco en coordenadas de
+     * mundo conocidas... debe ignorar temporalmente la lógica de
+     * selección de hojas"). Coloca el foco de prueba justo debajo de
+     * los pies del jugador, con {@code groundY} = esa misma altura --
+     * distancia vertical SIEMPRE cero, así que si este foco tampoco se
+     * ve, el problema está en el pipeline de dibujo (geometría,
+     * profundidad, shader), no en la selección de hojas ni en la
+     * fórmula de caída. Color magenta muy visible, deliberadamente
+     * distinto del turquesa de producción -- nunca debe quedar activado
+     * por accidente en una entrega final. */
+    private static int toggleTestGroundSpot(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        if (EmitterTracker.hasTestGroundSpot()) {
+            EmitterTracker.clearTestGroundSpot();
+            feedback(ctx.getSource(), "Foco de suelo de prueba retirado");
+            return 1;
+        }
+        var player = ctx.getSource().getPlayer();
+        BlockPos feet = player.getBlockPos();
+        EmitterProfile profile = EmitterProfile.foliage(0xFF00FF, 1.0f, 6.0f, 1);
+        EmitterTracker.setTestGroundSpot(feet, feet.getY() - 1, profile);
+        feedback(ctx.getSource(), "Foco de suelo de prueba colocado en " + feet.toShortString()
+                + " (magenta, distancia vertical 0 a propósito -- si no se ve, el problema es el pipeline de dibujo, no la selección de hojas)");
         return 1;
     }
 
@@ -332,6 +361,25 @@ final class LightingCommands {
         return 1;
     }
 
+    /** V4.2, entrega 1 (sección 3.2 del encargo: "no declares que algo
+     * es visible únicamente porque se registró un draw call") -- los
+     * contadores REALES del último frame dibujado: cuántos focos de
+     * suelo/superficies emisivas llegaron a producir geometría de
+     * verdad, no sólo cuántos están "registrados" en las listas de
+     * {@code EmitterTracker}. */
+    private static int debugRenderStats(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
+        var stats = WorldLightingRenderer.lastFrameStats();
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "Puntos de luz dibujados: %d", stats.pointLightCirclesDrawn));
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "Focos de suelo: %d registrados -> %d dibujados, %d descartados (sin alfa suficiente)",
+                stats.groundSpotsRegistered, stats.groundSpotsDrawn, stats.groundSpotsDiscardedByAlpha));
+        feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
+                "Follaje emisivo: %d superficies disponibles -> %d cubos dibujados",
+                stats.emissiveSurfacesAvailable, stats.emissiveQuadsDrawn));
+        return 1;
+    }
+
     /** V2: "mostrar focos" -- a diferencia de los puntos de copa (uno por
      * hoja), los focos de suelo son como mucho uno por celda de 8×8
      * bloques (ver {@code EmitterTracker}), así que normalmente son muy
@@ -342,10 +390,27 @@ final class LightingCommands {
             feedback(ctx.getSource(), "Sin focos de suelo activos ahora mismo.");
             return 1;
         }
+        LightingConfig config = ApuYawarLightingClient.config();
+        var client = net.minecraft.client.MinecraftClient.getInstance();
+        float dayNightFactor = (client.world != null && client.world.isDay())
+                ? config.dayIntensityMultiplier : config.nightIntensityMultiplier;
+        // V4.2, entrega 1 (sección 4.1 del encargo): usa EXACTAMENTE el
+        // mismo cálculo que el render real (ver
+        // WorldLightingRenderer#diagnoseGroundSpot) -- así este comando
+        // nunca puede mostrar "todo bien" mientras el render descarta
+        // el foco por otra razón.
         for (var spot : spots) {
+            var diag = WorldLightingRenderer.diagnoseGroundSpot(spot, config, dayNightFactor);
+            String estado = diag.discardReason() == null
+                    ? "DIBUJADO (alfa=" + String.format(java.util.Locale.ROOT, "%.2f", diag.alpha()) + ")"
+                    : "DESCARTADO: " + diag.discardReason();
             feedback(ctx.getSource(), "ancla=" + spot.anchorPos().toShortString()
+                    + " alturaAncla=" + spot.anchorPos().getY()
                     + " sueloY=" + spot.groundY()
-                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", spot.fade()));
+                    + " distVertical=" + String.format(java.util.Locale.ROOT, "%.1f", diag.verticalDistance())
+                    + " caida=" + String.format(java.util.Locale.ROOT, "%.3f", diag.falloff())
+                    + " fundido=" + String.format(java.util.Locale.ROOT, "%.2f", spot.fade())
+                    + " -> " + estado);
         }
         return 1;
     }

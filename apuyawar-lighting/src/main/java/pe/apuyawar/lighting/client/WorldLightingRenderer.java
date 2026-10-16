@@ -59,6 +59,39 @@ import java.util.Map;
 final class WorldLightingRenderer {
     private static final int CIRCLE_SEGMENTS = 14;
 
+    /** V4.2, entrega 1 (sección 3.2 del encargo: "distinguir emisores
+     * detectados... superficies enviadas al renderizador... focos de
+     * suelo detectados/descartados/enviados a la GPU" -- "no declares
+     * que algo es visible únicamente porque se registró un draw
+     * call"). Contadores reales del ÚLTIMO frame renderizado,
+     * reconstruidos desde cero en cada {@link #render} -- nunca
+     * acumulados entre frames, para que reflejen el estado actual, no
+     * un historial. Expuestos de sólo lectura vía
+     * {@code LightingCommands} (comando {@code debug render}). */
+    static final class RenderStats {
+        int groundSpotsRegistered;
+        int groundSpotsDiscardedByAlpha;
+        int groundSpotsDrawn;
+        int emissiveSurfacesAvailable;
+        int emissiveQuadsDrawn;
+        int pointLightCirclesDrawn;
+
+        void reset() {
+            groundSpotsRegistered = 0;
+            groundSpotsDiscardedByAlpha = 0;
+            groundSpotsDrawn = 0;
+            emissiveSurfacesAvailable = 0;
+            emissiveQuadsDrawn = 0;
+            pointLightCirclesDrawn = 0;
+        }
+    }
+
+    private static final RenderStats lastFrameStats = new RenderStats();
+
+    static RenderStats lastFrameStats() {
+        return lastFrameStats;
+    }
+
     private WorldLightingRenderer() {}
 
     static void register() {
@@ -68,9 +101,24 @@ final class WorldLightingRenderer {
     private static void render(WorldRenderContext context) {
         List<EmitterTracker.ActiveEmitter> active = EmitterTracker.active();
         List<EmitterTracker.GroundSpot> spots = EmitterTracker.groundSpots();
-        if (active.isEmpty() && spots.isEmpty()) return;
+        List<EmitterTracker.ActiveEmitter> emissiveCandidates = EmitterTracker.emissiveSurfaces();
+        // V4.2, entrega 1 (sección 5.5 del encargo: "investiga si el
+        // renderizador puede salir anticipadamente aunque existan
+        // superficies emisivas válidas... no quiero que la emisión de
+        // las hojas dependa de que existan puntos luminosos activos o
+        // focos de suelo") -- confirmado: esta condición NO comprobaba
+        // `emissiveCandidates` antes de esta corrección. En la práctica
+        // `active`/`emissiveCandidates` comparten la misma fuente
+        // (`found` en `EmitterTracker#rescan`) y rara vez uno está vacío
+        // sin el otro, pero es una condición real, no sólo teórica --
+        // corregida aquí en vez de dejarla como "no debería pasar".
+        if (active.isEmpty() && spots.isEmpty() && emissiveCandidates.isEmpty()) return;
         MatrixStack matrixStack = context.matrixStack();
         if (matrixStack == null) return;
+
+        lastFrameStats.reset();
+        lastFrameStats.groundSpotsRegistered = spots.size();
+        lastFrameStats.emissiveSurfacesAvailable = emissiveCandidates.size();
 
         LightingConfig config = ApuYawarLightingClient.config();
         Vec3d cameraPos = context.camera().getPos();
@@ -148,6 +196,7 @@ final class WorldLightingRenderer {
                     Matrix4f pose = billboardPose(matrixStack, cameraPos, cameraRotation, worldX, worldY, worldZ);
                     addCircle(buffer, pose, radius, r, g, b, alpha);
                     anyVertex = true;
+                    lastFrameStats.pointLightCirclesDrawn++;
 
                     // Halo de dos capas (núcleo ya dibujado arriba, halo
                     // intermedio + resplandor exterior tenue) -- tres
@@ -212,7 +261,7 @@ final class WorldLightingRenderer {
             // follaje emisivo, aunque técnicamente dibujar un cubo con
             // textura no comparte el mismo costo que un punto de luz
             // con halos.
-            renderEmissiveSurfaces(EmitterTracker.emissiveSurfaces(), cameraPos, config, dayNightFactor, worldTime);
+            renderEmissiveSurfaces(emissiveCandidates, matrixStack, cameraPos, config, dayNightFactor, worldTime);
         }
 
         if (config.realBloomEnabled) {
@@ -235,8 +284,8 @@ final class WorldLightingRenderer {
      * bloque -- ver {@code EmissiveMaskGenerator} para la justificación
      * completa. Agrupado por textura de máscara resultante para no
      * cambiar de textura en cada emisor. */
-    private static void renderEmissiveSurfaces(List<EmitterTracker.ActiveEmitter> emissiveCandidates, Vec3d cameraPos,
-                                                 LightingConfig config, float dayNightFactor, long worldTime) {
+    private static void renderEmissiveSurfaces(List<EmitterTracker.ActiveEmitter> emissiveCandidates, MatrixStack matrixStack,
+                                                 Vec3d cameraPos, LightingConfig config, float dayNightFactor, long worldTime) {
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
         Map<Identifier, List<EmitterTracker.ActiveEmitter>> byMask = new HashMap<>();
         for (EmitterTracker.ActiveEmitter emitter : emissiveCandidates) {
@@ -260,8 +309,9 @@ final class WorldLightingRenderer {
                 }
                 float alpha = clamp01(config.emissiveMaterialIntensity * dayNightFactor * flicker * emitter.fade());
                 if (alpha <= 0.02f) continue;
-                addEmissiveCube(buffer, emitter.pos(), cameraPos, alpha);
+                addEmissiveCube(buffer, matrixStack, emitter.pos(), cameraPos, alpha);
                 any = true;
+                lastFrameStats.emissiveQuadsDrawn++;
             }
             if (!any) {
                 buffer.endNullable();
@@ -286,46 +336,73 @@ final class WorldLightingRenderer {
      * nunca orientado a cámara. El color por vértice es blanco con el
      * alfa global ya calculado: el color visible real viene de la
      * máscara (textura), no del vértice -- así el mismo cubo sirve para
-     * cualquier perfil sin repetir la mezcla de color aquí. */
-    private static void addEmissiveCube(BufferBuilder buffer, BlockPos pos, Vec3d cameraPos, float alpha) {
-        double ox = pos.getX() - cameraPos.x;
-        double oy = pos.getY() - cameraPos.y;
-        double oz = pos.getZ() - cameraPos.z;
+     * cualquier perfil sin repetir la mezcla de color aquí.
+     *
+     * <p><b>Corrección real V4.2 (sección 5.1/5.2 del encargo: "revisa
+     * si existe algún problema de profundidad... investiga una técnica
+     * robusta")</b>: la versión anterior calculaba
+     * {@code ox = pos.getX() - cameraPos.x} y pasaba esas coordenadas
+     * DIRECTAMENTE a {@code buffer.vertex(x, y, z)} (el método de 3
+     * argumentos, sin matriz) -- es decir, NUNCA pasaba por
+     * {@code matrixStack}, al contrario que TODO lo demás en este
+     * archivo ({@code billboardPose} para los puntos de luz,
+     * {@code addGroundSpot} para los focos de suelo). En su lugar,
+     * dependía de que {@code RenderSystem.getModelViewMatrix()} (la
+     * matriz GLOBAL que {@code BufferRenderer.drawWithGlobalProgram}
+     * usa para TODO el buffer) coincidiera exactamente, bit a bit, con
+     * lo que {@code matrixStack} representa en este punto del frame --
+     * una coincidencia nunca garantizada, y la diferencia resultante
+     * entre la profundidad real de la hoja (dibujada por el pipeline
+     * normal de Minecraft, que SÍ usa su propio matrixStack) y la del
+     * cubo emisivo (con una transformación potencialmente distinta)
+     * encaja exactamente con el síntoma reportado: cientos de
+     * superficies "registradas" que en la práctica fallan el test de
+     * profundidad `LEQUAL` de forma inconsistente, dejando sólo
+     * fragmentos sueltos visibles en vez de la hoja completa. Ahora usa
+     * {@code matrixStack.push()/translate()/pop()} exactamente igual
+     * que {@code addGroundSpot}, con las coordenadas locales del cubo
+     * (0..1) pasadas a través de {@code vertex(pose, x, y, z)} -- la
+     * MISMA ruta de transformación que ya usa el resto del archivo. */
+    private static void addEmissiveCube(BufferBuilder buffer, MatrixStack matrixStack, BlockPos pos, Vec3d cameraPos, float alpha) {
+        matrixStack.push();
+        matrixStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+        Matrix4f pose = new Matrix4f(matrixStack.peek().getPositionMatrix());
+        matrixStack.pop();
         int a = clampByte(alpha);
 
         // down (y=0)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 0, 0, 0,  1, 0, 0,  1, 0, 1,  0, 0, 1);
         // up (y=1)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 0, 1, 0,  0, 1, 1,  1, 1, 1,  1, 1, 0);
         // north (z=0)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 0, 0, 0,  0, 1, 0,  1, 1, 0,  1, 0, 0);
         // south (z=1)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 1, 0, 1,  1, 1, 1,  0, 1, 1,  0, 0, 1);
         // west (x=0)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 0, 0, 1,  0, 1, 1,  0, 1, 0,  0, 0, 0);
         // east (x=1)
-        quad(buffer, ox, oy, oz, a,
+        quad(buffer, pose, a,
                 1, 0, 0,  1, 1, 0,  1, 1, 1,  1, 0, 1);
     }
 
-    /** Añade una cara (4 vértices, UV 0..1 en el orden dado) desplazada
-     * por {@code (ox, oy, oz)} -- coordenadas ya relativas a la cámara,
-     * nunca multiplicadas por ninguna matriz de rotación: es geometría
-     * real del mundo, no un billboard. */
-    private static void quad(BufferBuilder buffer, double ox, double oy, double oz, int alpha,
+    /** Añade una cara (4 vértices, UV 0..1 en el orden dado), transformada
+     * por {@code pose} -- la MISMA matriz que ya usan los puntos de luz
+     * y los focos de suelo en este archivo, nunca coordenadas crudas
+     * sin pasar por ninguna matriz. */
+    private static void quad(BufferBuilder buffer, Matrix4f pose, int alpha,
                               double x0, double y0, double z0,
                               double x1, double y1, double z1,
                               double x2, double y2, double z2,
                               double x3, double y3, double z3) {
-        buffer.vertex((float) (ox + x0), (float) (oy + y0), (float) (oz + z0)).texture(0f, 0f).color(255, 255, 255, alpha);
-        buffer.vertex((float) (ox + x1), (float) (oy + y1), (float) (oz + z1)).texture(1f, 0f).color(255, 255, 255, alpha);
-        buffer.vertex((float) (ox + x2), (float) (oy + y2), (float) (oz + z2)).texture(1f, 1f).color(255, 255, 255, alpha);
-        buffer.vertex((float) (ox + x3), (float) (oy + y3), (float) (oz + z3)).texture(0f, 1f).color(255, 255, 255, alpha);
+        buffer.vertex(pose, (float) x0, (float) y0, (float) z0).texture(0f, 0f).color(255, 255, 255, alpha);
+        buffer.vertex(pose, (float) x1, (float) y1, (float) z1).texture(1f, 0f).color(255, 255, 255, alpha);
+        buffer.vertex(pose, (float) x2, (float) y2, (float) z2).texture(1f, 1f).color(255, 255, 255, alpha);
+        buffer.vertex(pose, (float) x3, (float) y3, (float) z3).texture(0f, 1f).color(255, 255, 255, alpha);
     }
 
     private static void drawEmissiveAdditive(BuiltBuffer built, Identifier textureId) {
@@ -391,6 +468,43 @@ final class WorldLightingRenderer {
      * (como mucho uno por celda), no uno por hoja.</p> */
     private static boolean addGroundSpot(BufferBuilder buffer, MatrixStack matrixStack, Vec3d cameraPos,
                                           EmitterTracker.GroundSpot spot, LightingConfig config, float dayNightFactor) {
+        GroundSpotDiagnosis diag = diagnoseGroundSpot(spot, config, dayNightFactor);
+        if (diag.discardReason() != null) {
+            // V4.2, entrega 1: "no declares que algo es visible
+            // únicamente porque se registró un draw call" -- este es
+            // EXACTAMENTE el caso que el diagnóstico debe distinguir:
+            // el foco existe en EmitterTracker.groundSpots() pero no
+            // produce NINGÚN vértice aquí.
+            lastFrameStats.groundSpotsDiscardedByAlpha++;
+            return false;
+        }
+
+        EmitterProfile profile = spot.profile();
+        var pos = spot.anchorPos();
+        matrixStack.push();
+        matrixStack.translate(pos.getX() + 0.5 - cameraPos.x, diag.groundSurfaceY() - cameraPos.y, pos.getZ() + 0.5 - cameraPos.z);
+        Matrix4f pose = new Matrix4f(matrixStack.peek().getPositionMatrix());
+        matrixStack.pop();
+        // Rota el abanico 90° sobre X para que quede plano en el suelo (XZ)
+        // en vez de vertical (XY, orientación por defecto de addCircle).
+        pose.rotateX((float) Math.PI / 2f);
+        addCircle(buffer, pose, diag.radius(), profile.red(), profile.green(), profile.blue(), diag.alpha());
+        lastFrameStats.groundSpotsDrawn++;
+        return true;
+    }
+
+    /** V4.2, entrega 1 (sección 4.1 del encargo: "registra para cada
+     * foco de prueba: posición del ancla, altura del ancla, altura
+     * detectada del suelo, distancia vertical, factor de caída,
+     * intensidad configurada, alfa final, motivo de descarte si
+     * existe"). Centraliza EXACTAMENTE el mismo cálculo que
+     * {@link #addGroundSpot} usa para dibujar de verdad -- usado tanto
+     * ahí como por {@code LightingCommands#debugGroundSpots}, para que
+     * el diagnóstico nunca pueda desincronizarse del render real. */
+    record GroundSpotDiagnosis(double groundSurfaceY, double verticalDistance, double maxDistance,
+                                 float falloff, float alpha, float radius, String discardReason) {}
+
+    static GroundSpotDiagnosis diagnoseGroundSpot(EmitterTracker.GroundSpot spot, LightingConfig config, float dayNightFactor) {
         EmitterProfile profile = spot.profile();
         var pos = spot.anchorPos();
         double groundSurfaceY = spot.groundY() + 1.01;
@@ -398,22 +512,19 @@ final class WorldLightingRenderer {
         double maxDistance = Math.max(2.0, config.groundSpotRadius * 6.0);
         float linear = clamp01(1.0f - (float) (verticalDistance / maxDistance));
         float falloff = (float) Math.pow(linear, Math.max(0.1f, profile.falloff()));
-        if (falloff <= 0.02f) return false;
-
+        float radius = Math.max(0.1f, config.groundSpotRadius);
+        if (falloff <= 0.02f) {
+            return new GroundSpotDiagnosis(groundSurfaceY, verticalDistance, maxDistance, falloff, 0f, radius,
+                    "distancia vertical (" + String.format(java.util.Locale.ROOT, "%.1f", verticalDistance)
+                            + " bloques) supera el rango de caída (" + String.format(java.util.Locale.ROOT, "%.1f", maxDistance) + ")");
+        }
         float alpha = clamp01(config.groundSpotIntensity * config.groundDecalIntensityMultiplier
                 * dayNightFactor * falloff * spot.fade());
-        if (alpha <= 0.01f) return false;
-        float radius = Math.max(0.1f, config.groundSpotRadius);
-
-        matrixStack.push();
-        matrixStack.translate(pos.getX() + 0.5 - cameraPos.x, groundSurfaceY - cameraPos.y, pos.getZ() + 0.5 - cameraPos.z);
-        Matrix4f pose = new Matrix4f(matrixStack.peek().getPositionMatrix());
-        matrixStack.pop();
-        // Rota el abanico 90° sobre X para que quede plano en el suelo (XZ)
-        // en vez de vertical (XY, orientación por defecto de addCircle).
-        pose.rotateX((float) Math.PI / 2f);
-        addCircle(buffer, pose, radius, profile.red(), profile.green(), profile.blue(), alpha);
-        return true;
+        if (alpha <= 0.01f) {
+            return new GroundSpotDiagnosis(groundSurfaceY, verticalDistance, maxDistance, falloff, alpha, radius,
+                    "alfa final demasiado bajo (" + String.format(java.util.Locale.ROOT, "%.3f", alpha) + ")");
+        }
+        return new GroundSpotDiagnosis(groundSurfaceY, verticalDistance, maxDistance, falloff, alpha, radius, null);
     }
 
     private static void drawAdditive(BuiltBuffer built) {

@@ -114,6 +114,7 @@ public final class EmitterTracker {
      * reparto por árbol, ver el atajo en {@link #selectWithPerTreeBudget}). */
     private static Map<Long, int[]> lastTreeBudgets = Map.of();
     private static ActiveEmitter testEmitter = null;
+    private static GroundSpot testGroundSpot = null;
     private static final Map<Long, Float> fade = new HashMap<>();
     private static final Map<Long, Float> emissiveFade = new HashMap<>();
     private static final Map<Long, Float> groundFade = new HashMap<>();
@@ -160,11 +161,17 @@ public final class EmitterTracker {
 
     /** Focos de suelo activos, uno como máximo por celda ocupada de la
      * rejilla (ver documentación de clase), con su fundido de
-     * entrada/salida ya aplicado. */
+     * entrada/salida ya aplicado, más el foco de prueba de la sección
+     * 4.2 del encargo V4.2 si hay uno colocado (siempre con fundido
+     * 1.0, ignorando por completo la selección de hojas/sticky
+     * representative -- un foco de prueba real, anclado a una posición
+     * de mundo fija, para aislar el pipeline gráfico). */
     public static List<GroundSpot> groundSpots() {
         LightingConfig config = ApuYawarLightingClient.config();
-        if (!config.rgbEnabled || !config.groundDecalsEnabled) return List.of();
-        List<GroundSpot> result = new ArrayList<>(groundSpots.size());
+        if (!config.rgbEnabled) return List.of();
+        List<GroundSpot> result = new ArrayList<>(groundSpots.size() + 1);
+        if (testGroundSpot != null) result.add(testGroundSpot);
+        if (!config.groundDecalsEnabled) return result;
         for (GroundSpot s : groundSpots) {
             float f = groundFade.getOrDefault(s.cellKey(), 0f);
             if (f > 0.001f) result.add(s.withFade(f));
@@ -182,6 +189,27 @@ public final class EmitterTracker {
 
     public static boolean hasTestEmitter() {
         return testEmitter != null;
+    }
+
+    /** V4.2, entrega 2 (sección 4.2 del encargo: "necesito un modo
+     * diagnóstico que dibuje temporalmente un foco en coordenadas de
+     * mundo conocidas... ignorar temporalmente la lógica de selección
+     * de hojas"). {@code anchorPos}/{@code groundY} son arbitrarios,
+     * pasados directamente -- no derivan de ningún escaneo ni de
+     * {@code findGroundY}, para aislar el pipeline de dibujo del
+     * pipeline de detección. Visible aunque {@code groundDecalsEnabled}
+     * esté desactivado (es una prueba manual explícita, no un foco
+     * real). */
+    public static void setTestGroundSpot(BlockPos anchorPos, int groundY, EmitterProfile profile) {
+        testGroundSpot = new GroundSpot(0L, anchorPos, groundY, profile, 1.0f);
+    }
+
+    public static void clearTestGroundSpot() {
+        testGroundSpot = null;
+    }
+
+    public static boolean hasTestGroundSpot() {
+        return testGroundSpot != null;
     }
 
     private static long cellKey(BlockPos pos) {
@@ -245,6 +273,7 @@ public final class EmitterTracker {
             emissiveSurfaces = List.of();
             groundSpots = List.of();
             testEmitter = null;
+            testGroundSpot = null;
             fade.clear();
             emissiveFade.clear();
             groundFade.clear();
@@ -574,8 +603,29 @@ public final class EmitterTracker {
         return spots;
     }
 
+    /** V4.2, entrega 2 -- causa raíz real confirmada del "foco de suelo
+     * registrado pero invisible" (sección 4.1 del encargo, el equipo ya
+     * había diagnosticado correctamente la hipótesis): esta función
+     * ANTES preferÍa la hoja de MAYOR altura de la celda
+     * (`candidate.pos().getY() > current.pos().getY()`). Combinado con
+     * {@code WorldLightingRenderer#addGroundSpot}, donde
+     * {@code maxDistance = groundSpotRadius * 6} (≈9.6 bloques con el
+     * valor por defecto 1.6) y el foco se descarta por completo
+     * (`return false`, CERO vértices) en cuanto la distancia vertical
+     * del ancla al suelo supera ese valor -- para un Abeto Celestial de
+     * más de ~10 bloques de alto (la silueta real de pino, con varias
+     * capas), la hoja MÁS ALTA de la copa, elegida como representante,
+     * está casi garantizado que exceda esa distancia. El foco quedaba
+     * registrado en {@code EmitterTracker.groundSpots()} (con su
+     * `anchorPos`, `groundY`, etc. todos válidos) pero
+     * {@code addGroundSpot} nunca llegaba a generar un solo triángulo
+     * -- exactamente "22 focos registrados" sin ningún píxel visible.
+     * Invertido a preferir la hoja de MENOR altura (más cerca del
+     * suelo real, donde la caída vertical es mínima) -- sigue siendo
+     * una elección determinista (mismo empate por
+     * {@code BlockPos#asLong()}), sólo cambia CUÁL hoja gana. */
     private static boolean isBetterRepresentative(ActiveEmitter candidate, ActiveEmitter current) {
-        if (candidate.pos().getY() != current.pos().getY()) return candidate.pos().getY() > current.pos().getY();
+        if (candidate.pos().getY() != current.pos().getY()) return candidate.pos().getY() < current.pos().getY();
         return candidate.pos().asLong() < current.pos().asLong();
     }
 
