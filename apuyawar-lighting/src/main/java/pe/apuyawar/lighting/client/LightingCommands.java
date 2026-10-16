@@ -296,8 +296,11 @@ final class LightingCommands {
      * demanda, no un registro continuo en el log. */
     private static int debugEmitters(com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> ctx) {
         var active = EmitterTracker.active();
+        var emissive = EmitterTracker.emissiveSurfaces();
         var spots = EmitterTracker.groundSpots();
-        feedback(ctx.getSource(), "Puntos de copa activos: " + active.size() + " -- focos de suelo: " + spots.size());
+        feedback(ctx.getSource(), "Puntos de copa activos (cupo de luces): " + active.size()
+                + " -- hojas con follaje emisivo (presupuesto propio, V4.1): " + emissive.size()
+                + " -- focos de suelo: " + spots.size());
         return 1;
     }
 

@@ -2780,3 +2780,82 @@ instrucciones de prueba).
 
 Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 1: Bloom real
 incluye ahora follaje emisivo y partículas".
+
+### 24.2. Entrega 2 — distribución completa de iluminación por la copa
+
+**Causa real encontrada** (sección 5.2 del encargo, exactamente lo que
+pidió investigar): `WorldLightingRenderer#renderEmissiveSurfaces`
+recibía la lista `active` -- la misma lista YA recortada al cupo de
+`maxActiveLights` (96 en HIGH) para los puntos de luz. Esto significa
+que, con un árbol de más de 96 hojas detectadas, sólo las hojas que
+"ganaban" el cupo de puntos de luz llegaban a tener follaje emisivo --
+el resto de la copa se quedaba sin NINGÚN tratamiento visual, ni punto
+ni emisión de superficie. Esta es, con alta probabilidad, la causa real
+de "la mayor parte de la copa sigue demasiado oscura" y "la punta...
+no tiene suficiente iluminación": dibujar un punto de luz con halos
+tiene un costo real (varios círculos aditivos por punto); dibujar un
+cubo con textura emisiva no lo tiene, así que no había ninguna razón
+técnica para que comparteran el mismo presupuesto restrictivo.
+
+**Corrección real** (`EmitterTracker`, sección 5.2 del encargo: "la
+emisión visual de las hojas y los emisores puntuales deben tener
+presupuestos... separados"): nueva lista independiente
+`emissiveSurfaces`, con su propio presupuesto `MAX_EMISSIVE_SURFACES =
+600` (muy por encima de `maxActiveLights`), su propio mapa de fundido
+(`emissiveFade`) y su propio getter público (`emissiveSurfaces()`).
+`WorldLightingRenderer#renderEmissiveSurfaces` ahora itera esta lista
+nueva, no `active()`. Si varios árboles juntos superan incluso este
+presupuesto más generoso, se reutiliza el mismo reparto por árbol de la
+V4 fase 4 (`selectWithPerTreeBudget`) -- con un parámetro nuevo
+(`trackForDiagnostics=false`) para que este reparto NO pise el
+diagnóstico `debug arboles` del reparto de puntos de luz: son dos
+presupuestos independientes, con su propio diagnóstico cada uno.
+
+**Resultado esperado para un solo árbol** (el caso común de todas las
+pruebas hasta ahora): si el árbol tiene menos de 600 hojas emisoras
+detectadas (lo normal para un Abeto/Cerezo Celestial individual),
+TODAS reciben follaje emisivo real, incluida la punta -- sin importar
+cuántas "ganen" el cupo de puntos de luz, mucho más pequeño.
+
+**Profundidad visual entre zonas** (sección 5.4 del encargo:
+"iluminación base/intermedia/principal... no debe ser igual en todos
+los píxeles"): ya existe, a nivel de píxel, desde la fase 1 de la V4 --
+`EmissiveMaskGenerator` escala el alfa de cada píxel emisivo según lo
+brillante que era relativo al máximo de SU textura (sección "El alfa de
+la máscara combina..." en §23.1), así que un fragmento apenas por
+encima del umbral ya brilla menos que el más claro de la hoja. No se
+añadió un sistema de categorías por bloque adicional esta ronda --
+sería redundante con lo que la máscara ya hace por píxel, con más
+resolución que cualquier categoría a nivel de bloque.
+
+**Conservación de texturas** (sección 5.5 del encargo): sin cambios --
+sigue sin dibujarse ninguna textura nueva a mano; la máscara sigue
+derivándose de las texturas reales `hojas_pino_esmeralda`/
+`hojas_cerezo_florecido` ya existentes.
+
+**Qué ocurre al alcanzar el cupo de 96 puntos de luz** (pregunta
+explícita de la sección 16 del encargo): los puntos de luz (círculos +
+halos, con su contribución al Bloom) siguen limitados a 96 por el
+mismo reparto justo por árbol de la V4 fase 4 -- eso no cambió, y sigue
+siendo necesario para controlar el costo de los halos/Bloom. Lo que
+cambió es que alcanzar ese cupo YA NO apaga el follaje emisivo de las
+hojas que no entraron -- siguen brillando por su propia superficie,
+aunque no tengan también un punto de luz individual encima.
+
+**Pruebas reales ejecutadas**: `gradlew :apuyawar-lighting:compileJava`
+éxito; `gradlew :momento-cuy:runClient` real -- ambas autopruebas (V4
+fase 1 material emisivo, V4.1 entrega 1 Bloom) siguen pasando sin
+cambios, confirmando que desacoplar los presupuestos no rompió nada ya
+verificado; `gradlew build` (4 módulos) éxito.
+
+**No verificado visualmente**: si la copa de un árbol real, con más de
+96 hojas, ahora se ve con follaje emisivo en TODA su extensión (no sólo
+en las 96 que ganan el cupo de puntos) -- exige un mundo cargado con un
+árbol real, no disponible en este entorno. El comando
+`/apuyawarlighting debug emisores` ahora reporta ambos números por
+separado (puntos de copa activos vs. hojas con follaje emisivo) para
+que el equipo confirme que el segundo número es sustancialmente mayor
+que el primero en un árbol denso.
+
+Commit de esta entrega: "APU YAWAR Lighting V4.1 entrega 2: follaje
+emisivo con presupuesto propio, independiente de maxluces".

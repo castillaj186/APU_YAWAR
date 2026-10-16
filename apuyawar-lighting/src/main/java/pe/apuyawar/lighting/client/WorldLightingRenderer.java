@@ -184,7 +184,16 @@ final class WorldLightingRenderer {
         }
 
         if (config.emissiveMaterialEnabled) {
-            renderEmissiveSurfaces(active, cameraPos, config, dayNightFactor, worldTime);
+            // V4.1, entrega 2 (sección 5.2 del encargo: "la emisión
+            // visual de las hojas y los emisores puntuales deben tener
+            // presupuestos... separados"): usa
+            // EmitterTracker.emissiveSurfaces(), NO la lista `active`
+            // (ya recortada al cupo de puntos de luz) -- antes, una
+            // hoja que no entraba en el cupo de 96 luces tampoco recibía
+            // follaje emisivo, aunque técnicamente dibujar un cubo con
+            // textura no comparte el mismo costo que un punto de luz
+            // con halos.
+            renderEmissiveSurfaces(EmitterTracker.emissiveSurfaces(), cameraPos, config, dayNightFactor, worldTime);
         }
 
         if (config.realBloomEnabled) {
@@ -207,11 +216,11 @@ final class WorldLightingRenderer {
      * bloque -- ver {@code EmissiveMaskGenerator} para la justificación
      * completa. Agrupado por textura de máscara resultante para no
      * cambiar de textura en cada emisor. */
-    private static void renderEmissiveSurfaces(List<EmitterTracker.ActiveEmitter> active, Vec3d cameraPos,
+    private static void renderEmissiveSurfaces(List<EmitterTracker.ActiveEmitter> emissiveCandidates, Vec3d cameraPos,
                                                  LightingConfig config, float dayNightFactor, long worldTime) {
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
         Map<Identifier, List<EmitterTracker.ActiveEmitter>> byMask = new HashMap<>();
-        for (EmitterTracker.ActiveEmitter emitter : active) {
+        for (EmitterTracker.ActiveEmitter emitter : emissiveCandidates) {
             EmitterProfile profile = emitter.profile();
             if (!emitter.isFoliage() || !profile.hasEmissiveMask()) continue;
             int rgb = ((clampByte(profile.red())) << 16) | ((clampByte(profile.green())) << 8) | clampByte(profile.blue());

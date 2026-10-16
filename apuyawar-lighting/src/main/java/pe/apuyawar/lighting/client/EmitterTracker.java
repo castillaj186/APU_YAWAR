@@ -85,9 +85,26 @@ public final class EmitterTracker {
     private static final int GROUND_CELL_SIZE = 8;
     private static final int GROUND_SCAN_DEPTH = 32;
 
+    /** V4.1, entrega 2 (sección 5.2 del encargo: "la emisión visual de
+     * las hojas y los emisores puntuales deben tener presupuestos...
+     * separados... las hojas no deberían perder su textura emisiva
+     * únicamente porque otro árbol consumió los 96 emisores"). Tope
+     * propio, mucho más alto que {@code maxActiveLights} (96 en HIGH),
+     * para el follaje emisivo real (ver {@code WorldLightingRenderer
+     * #renderEmissiveSurfaces}) -- dibujar un cubo con textura no tiene
+     * el mismo costo que un punto de luz con halos, así que no debería
+     * compartir el mismo presupuesto restrictivo. Sigue acotado (nunca
+     * "sin límite") por si un escaneo real encuentra más hojas de las
+     * esperadas dentro del radio. */
+    private static final int MAX_EMISSIVE_SURFACES = 600;
+
     private static int tickCounter = 0;
     private static long rescanCounter = 0;
     private static List<ActiveEmitter> active = List.of();
+    /** V4.1, entrega 2: candidatos de follaje emisivo, INDEPENDIENTES
+     * del recorte por presupuesto de {@link #active} -- ver
+     * documentación de {@link #MAX_EMISSIVE_SURFACES}. */
+    private static List<ActiveEmitter> emissiveSurfaces = List.of();
     private static List<GroundSpot> groundSpots = List.of();
     /** V4, fase 4: cuántos emisores reales había y cuántos recibió cada
      * celda/árbol en el último reparto de presupuesto -- sólo para el
@@ -98,6 +115,7 @@ public final class EmitterTracker {
     private static Map<Long, int[]> lastTreeBudgets = Map.of();
     private static ActiveEmitter testEmitter = null;
     private static final Map<Long, Float> fade = new HashMap<>();
+    private static final Map<Long, Float> emissiveFade = new HashMap<>();
     private static final Map<Long, Float> groundFade = new HashMap<>();
     private static final Map<Long, ChunkCache> chunkCache = new HashMap<>();
     /** Representante "pegajoso" de cada celda de foco de suelo -- ver
@@ -120,6 +138,21 @@ public final class EmitterTracker {
         if (testEmitter != null) result.add(testEmitter);
         for (ActiveEmitter e : base) {
             float f = fade.getOrDefault(e.pos().asLong(), 0f);
+            if (f > 0.001f) result.add(e.withFade(f));
+        }
+        return result;
+    }
+
+    /** V4.1, entrega 2: candidatos de follaje emisivo real, con su
+     * fundido de entrada/salida PROPIO -- independientes del recorte
+     * por presupuesto de {@link #active()} (ver
+     * {@link #MAX_EMISSIVE_SURFACES}). {@code WorldLightingRenderer
+     * #renderEmissiveSurfaces} itera esta lista, no {@link #active()}. */
+    public static List<ActiveEmitter> emissiveSurfaces() {
+        if (!ApuYawarLightingClient.config().rgbEnabled) return List.of();
+        List<ActiveEmitter> result = new ArrayList<>(emissiveSurfaces.size());
+        for (ActiveEmitter e : emissiveSurfaces) {
+            float f = emissiveFade.getOrDefault(e.pos().asLong(), 0f);
             if (f > 0.001f) result.add(e.withFade(f));
         }
         return result;
@@ -162,16 +195,17 @@ public final class EmitterTracker {
     }
 
     private static void onTick(MinecraftClient client) {
-        updateFadeMap(fade, activePositionKeys(), ApuYawarLightingClient.config().fadeTransitionTicks);
+        updateFadeMap(fade, activePositionKeys(active), ApuYawarLightingClient.config().fadeTransitionTicks);
+        updateFadeMap(emissiveFade, activePositionKeys(emissiveSurfaces), ApuYawarLightingClient.config().fadeTransitionTicks);
         updateFadeMap(groundFade, groundSpotKeys(), ApuYawarLightingClient.config().fadeTransitionTicks);
         if (++tickCounter < SCAN_INTERVAL_TICKS) return;
         tickCounter = 0;
         rescan(client);
     }
 
-    private static Set<Long> activePositionKeys() {
+    private static Set<Long> activePositionKeys(List<ActiveEmitter> list) {
         Set<Long> keys = new HashSet<>();
-        for (ActiveEmitter e : active) keys.add(e.pos().asLong());
+        for (ActiveEmitter e : list) keys.add(e.pos().asLong());
         return keys;
     }
 
@@ -208,9 +242,11 @@ public final class EmitterTracker {
         ClientWorld world = client.world;
         if (world == null || client.player == null) {
             active = List.of();
+            emissiveSurfaces = List.of();
             groundSpots = List.of();
             testEmitter = null;
             fade.clear();
+            emissiveFade.clear();
             groundFade.clear();
             chunkCache.clear();
             stickyGroundRepresentative.clear();
@@ -219,6 +255,7 @@ public final class EmitterTracker {
         LightingConfig config = ApuYawarLightingClient.config();
         if (!config.rgbEnabled || !ApuYawarLighting.hasAnyEmitters()) {
             active = List.of();
+            emissiveSurfaces = List.of();
             groundSpots = List.of();
             return;
         }
@@ -236,6 +273,25 @@ public final class EmitterTracker {
         int cap = Math.max(1, config.maxActiveLights);
         List<ActiveEmitter> capped = found.size() > cap ? selectWithPerTreeBudget(found, cap) : new ArrayList<>(found);
         active = capped;
+
+        // V4.1, entrega 2: lista INDEPENDIENTE para el follaje emisivo
+        // real -- ver documentación de MAX_EMISSIVE_SURFACES. No
+        // reutiliza `capped`: una hoja con máscara emisiva debe brillar
+        // aunque no haya entrado en el cupo (mucho más pequeño) de
+        // puntos de luz.
+        List<ActiveEmitter> emissiveCandidates = new ArrayList<>();
+        for (ActiveEmitter e : found) {
+            if (e.isFoliage() && e.profile().hasEmissiveMask()) emissiveCandidates.add(e);
+        }
+        // Si varios árboles juntos superan incluso este presupuesto más
+        // generoso, reparte por árbol (la misma lógica que ya protege a
+        // los puntos de luz, sección 5.3 del encargo: "no basta con
+        // seleccionar los más cercanos... distribución por árbol") en
+        // vez de truncar por cercanía/prioridad sin más, lo que dejaría
+        // a los árboles más lejanos sin ningún follaje emisivo.
+        emissiveSurfaces = emissiveCandidates.size() > MAX_EMISSIVE_SURFACES
+                ? selectWithPerTreeBudget(emissiveCandidates, MAX_EMISSIVE_SURFACES, false)
+                : emissiveCandidates;
 
         groundSpots = config.groundDecalsEnabled ? buildGroundSpots(world, registered, capped) : List.of();
     }
@@ -397,12 +453,23 @@ public final class EmitterTracker {
      * hojas más cercanas (Error 3 de la V3). Con un solo árbol/celda en
      * rango, el comportamiento es idéntico al de antes de esta fase. */
     private static List<ActiveEmitter> selectWithPerTreeBudget(List<ActiveEmitter> found, int cap) {
+        return selectWithPerTreeBudget(found, cap, true);
+    }
+
+    /** @param trackForDiagnostics si actualiza {@link #lastTreeBudgets}
+     *        (el comando {@code debug arboles}) -- V4.1 llama a este
+     *        método también para el follaje emisivo
+     *        ({@link #MAX_EMISSIVE_SURFACES}), con {@code false} aquí,
+     *        para no pisar el diagnóstico del reparto de PUNTOS DE LUZ
+     *        con el del follaje emisivo (presupuestos independientes a
+     *        propósito, sección 5.2 del encargo V4.1). */
+    private static List<ActiveEmitter> selectWithPerTreeBudget(List<ActiveEmitter> found, int cap, boolean trackForDiagnostics) {
         Map<Long, List<ActiveEmitter>> byCell = new java.util.LinkedHashMap<>();
         for (ActiveEmitter e : found) {
             byCell.computeIfAbsent(cellKey(e.pos()), k -> new ArrayList<>()).add(e);
         }
         if (byCell.size() <= 1) {
-            lastTreeBudgets = Map.of();
+            if (trackForDiagnostics) lastTreeBudgets = Map.of();
             return selectStratifiedByHeight(found, cap);
         }
 
@@ -422,7 +489,7 @@ public final class EmitterTracker {
                     ? cellEmitters
                     : selectStratifiedByHeight(cellEmitters, cellQuota));
         }
-        lastTreeBudgets = budgets;
+        if (trackForDiagnostics) lastTreeBudgets = budgets;
         return result;
     }
 
