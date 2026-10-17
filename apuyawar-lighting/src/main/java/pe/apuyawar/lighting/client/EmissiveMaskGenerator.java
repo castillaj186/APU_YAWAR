@@ -82,7 +82,32 @@ final class EmissiveMaskGenerator {
             if (mask == null) return Optional.empty();
             Identifier maskId = Identifier.of(sourceTexture.getNamespace(),
                     "apuyawar_lighting_emissive_mask/" + sourceTexture.getPath().replace('/', '_') + "_" + Integer.toHexString(rgb));
-            MinecraftClient.getInstance().getTextureManager().registerTexture(maskId, new NativeImageBackedTexture(mask));
+            NativeImageBackedTexture maskTexture = new NativeImageBackedTexture(mask);
+            // V4.3, fase 2 -- causa real investigada y CONFIRMADA leyendo
+            // el bytecode real de TextureUtil/AbstractTexture (se descartó
+            // primero la hipótesis de "mipmap incompleta": prepareImage
+            // SÍ fija GL_TEXTURE_MAX_LEVEL=0 para una textura de un solo
+            // nivel, así que no hay ningún nivel faltante que la vuelva
+            // incompleta). Lo que prepareImage NUNCA toca es
+            // GL_TEXTURE_MAG_FILTER -- y ninguna NativeImageBackedTexture
+            // llama a setFilter() por su cuenta, así que ese parámetro
+            // se queda en el valor por defecto real de OpenGL para una
+            // textura nueva: GL_LINEAR. Con una máscara mayormente
+            // transparente y unos pocos píxeles opacos sueltos, ver el
+            // cubo de cerca (ampliación, el caso normal al pararse junto
+            // a un árbol) activa ese MAG_FILTER lineal -- cada píxel
+            // brillante aislado se MEZCLA con sus vecinos de alfa 0,
+            // diluyendo su color/alfa real. Esto explica "cientos de
+            // cubos enviados al dibujo, copa oscura, sólo algunos
+            // píxeles sueltos (los que caen en grupos, no aislados)
+            // visibles" de forma independiente de cualquier cálculo de
+            // alfa en nuestro propio código. setFilter(false, false)
+            // fuerza GL_NEAREST en ambos filtros -- cada píxel de la
+            // máscara se muestrea tal cual, sin mezclarse con sus
+            // vecinos, conservando el pixel art nítido en vez de
+            // desenfocarlo.
+            maskTexture.setFilter(false, false);
+            MinecraftClient.getInstance().getTextureManager().registerTexture(maskId, maskTexture);
             cache.put(key, maskId);
             LOGGER.info("[DIAG] Máscara emisiva generada para {} (color #{}) -> {}",
                     resourcePath, Integer.toHexString(rgb), maskId);
