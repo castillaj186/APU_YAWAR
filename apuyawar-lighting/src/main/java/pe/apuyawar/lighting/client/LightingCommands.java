@@ -95,6 +95,8 @@ final class LightingCommands {
                                 .then(setFloatField("intensidaddecal", c -> c.groundDecalIntensityMultiplier, (c, v) -> c.groundDecalIntensityMultiplier = v))
                                 .then(setFloatField("radiofoco", c -> c.groundSpotRadius, (c, v) -> c.groundSpotRadius = v))
                                 .then(setFloatField("intensidadfoco", c -> c.groundSpotIntensity, (c, v) -> c.groundSpotIntensity = v))
+                                .then(setFloatField("alcancefoco", c -> c.groundSpotFalloffRange, (c, v) -> c.groundSpotFalloffRange = v))
+                                .then(setFloatField("caidafoco", c -> c.groundSpotFalloffExponent, (c, v) -> c.groundSpotFalloffExponent = v))
                                 .then(ClientCommandManager.literal("distanciamax")
                                         .then(ClientCommandManager.argument("valor", FloatArgumentType.floatArg(4.0f, 128.0f))
                                                 .executes(ctx -> {
@@ -261,8 +263,9 @@ final class LightingCommands {
                 c.bloomRadiusMultiplier, c.fixedPointDensityMultiplier, c.dayIntensityMultiplier, c.nightIntensityMultiplier,
                 c.maxActiveLights, EmitterTracker.active().size()));
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
-                "decals=%s intensidadDecal=%.2f radioFoco=%.2f intensidadFoco=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
+                "decals=%s intensidadDecal=%.2f radioFoco=%.2f intensidadFoco=%.2f alcanceFoco=%.1f caidaFoco=%.2f distanciaMax=%.1f simplificarDesde=%.1f transicion=%dticks puntosOcultos(debug)=%s",
                 c.groundDecalsEnabled, c.groundDecalIntensityMultiplier, c.groundSpotRadius, c.groundSpotIntensity,
+                c.groundSpotFalloffRange, c.groundSpotFalloffExponent,
                 c.maxEffectDistance, c.simplifyDetailBeyondDistance, c.fadeTransitionTicks, c.debugHideFixedPoints));
         feedback(ctx.getSource(), String.format(java.util.Locale.ROOT,
                 "materialEmisivo=%s intensidadMaterial=%.2f particulasMoviles=%.2f fraccionEstrellas=%.2f bloomReal=%s",

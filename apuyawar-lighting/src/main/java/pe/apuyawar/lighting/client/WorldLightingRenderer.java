@@ -505,13 +505,18 @@ final class WorldLightingRenderer {
                                  float falloff, float alpha, float radius, String discardReason) {}
 
     static GroundSpotDiagnosis diagnoseGroundSpot(EmitterTracker.GroundSpot spot, LightingConfig config, float dayNightFactor) {
-        EmitterProfile profile = spot.profile();
         var pos = spot.anchorPos();
         double groundSurfaceY = spot.groundY() + 1.01;
         double verticalDistance = Math.max(0.0, pos.getY() - groundSurfaceY);
-        double maxDistance = Math.max(2.0, config.groundSpotRadius * 6.0);
+        // V4.3, fase 1: alcance vertical y exponente de caída AHORA
+        // propios (`groundSpotFalloffRange`/`groundSpotFalloffExponent`),
+        // independientes de `groundSpotRadius` (tamaño visual del decal)
+        // y de `profile.falloff()` (pensado para el radio de luz de la
+        // hoja, no para esto) -- ver documentación de esos campos en
+        // LightingConfig.
+        double maxDistance = Math.max(2.0, config.groundSpotFalloffRange);
         float linear = clamp01(1.0f - (float) (verticalDistance / maxDistance));
-        float falloff = (float) Math.pow(linear, Math.max(0.1f, profile.falloff()));
+        float falloff = (float) Math.pow(linear, Math.max(0.1f, config.groundSpotFalloffExponent));
         float radius = Math.max(0.1f, config.groundSpotRadius);
         if (falloff <= 0.02f) {
             return new GroundSpotDiagnosis(groundSurfaceY, verticalDistance, maxDistance, falloff, 0f, radius,

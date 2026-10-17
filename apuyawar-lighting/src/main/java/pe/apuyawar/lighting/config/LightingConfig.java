@@ -133,6 +133,35 @@ public final class LightingConfig {
      * del encargo V2). */
     public float groundSpotIntensity = 0.4f;
 
+    /** V4.3, fase 1 -- causa real confirmada de "17 focos enviados al
+     * dibujo, pero con alfa final de 0.05-0.22, apenas visibles":
+     * {@code maxDistance} (el alcance vertical del foco antes de
+     * apagarse del todo) salía de {@code groundSpotRadius * 6} -- es
+     * decir, el TAMAÑO VISUAL del decal y su ALCANCE VERTICAL eran la
+     * misma cosa derivada, aunque conceptualmente no tienen ninguna
+     * relación (uno es "qué tan ancho se ve en el suelo", el otro es
+     * "desde qué altura de copa sigue llegando algo de luz"). Campo
+     * nuevo, independiente -- en bloques, el alcance vertical real
+     * antes de que la caída llegue a 0. 8.0 es muy similar al valor
+     * efectivo anterior (9.6 con el radio por defecto de 1.6), pero
+     * ahora es un número propio, ajustable sin tocar el tamaño del
+     * decal. */
+    public float groundSpotFalloffRange = 8.0f;
+
+    /** V4.3, fase 1: exponente de la curva de caída vertical --
+     * ANTES se reutilizaba {@code profile.falloff()} (2.0 para
+     * follaje, pensado para la caída del RADIO DE LUZ de una hoja, una
+     * cosa completamente distinta), dando una curva cuadrática sobre
+     * una rampa ya lineal -- demasiado agresiva para una luz ambiental
+     * de suelo: una hoja representante a sólo 2-6 bloques del suelo
+     * real (el caso normal tras la corrección V4.2 de preferir la hoja
+     * más baja) ya perdía 45%-90% de su intensidad. 1.0 (lineal, sin
+     * exponente extra) da una caída mucho más suave y natural para
+     * este uso concreto, sin tocar el alcance total
+     * ({@link #groundSpotFalloffRange}) ni ningún multiplicador de
+     * intensidad. */
+    public float groundSpotFalloffExponent = 1.0f;
+
     /** Ticks para que un emisor que entra/sale del rango de efecto suba o
      * baje su intensidad de 0 a 1 (o viceversa) — evita el salto brusco de
      * oscuro a brillante de golpe (sección 7 del encargo). 1 tick = muy
