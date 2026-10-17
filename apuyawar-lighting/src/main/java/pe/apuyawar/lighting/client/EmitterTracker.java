@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import pe.apuyawar.lighting.ApuYawarLighting;
@@ -46,6 +47,16 @@ import java.util.Set;
  *     verdad, dando una distancia vertical casi nula y por tanto un foco
  *     casi siempre al máximo de intensidad (sección "Error 5").</li>
  * </ol>
+ *
+ * <p><b>Corrección V4.4 ("el foco de suelo aparece desplazado hacia un
+ * lado, fuera del árbol")</b>: el ancla horizontal (X/Z) del foco de
+ * suelo ya no es la hoja representante -- ahora es la base del tronco
+ * real más cercano a esa hoja ({@link #findNearbyTrunkBase}), cacheada
+ * junto con el representante pegajoso para que el círculo nunca se
+ * mueva mientras el árbol siga en pie. Ver {@link #buildGroundSpots}
+ * para el detalle completo, incluida la deduplicación por columna de
+ * tronco (un árbol cuyo faldón/ramas tocan dos celdas de 8×8 ya no
+ * produce dos focos superpuestos).</p>
  */
 public final class EmitterTracker {
     private static final int SCAN_INTERVAL_TICKS = 10;
@@ -84,6 +95,14 @@ public final class EmitterTracker {
      * fija en coordenadas del mundo, nunca centrada en el jugador. */
     private static final int GROUND_CELL_SIZE = 8;
     private static final int GROUND_SCAN_DEPTH = 32;
+    /** V4.4: radio horizontal máximo (bloques) en el que se busca el
+     * tronco real más cercano a la hoja representante de un foco de
+     * suelo -- ver {@link #findNearbyTrunkBase}. */
+    private static final int TRUNK_SEARCH_RADIUS = 6;
+    /** V4.4: ventana vertical (bloques arriba/abajo de la hoja
+     * representante) en la que se busca un tronco -- ver
+     * {@link #findNearbyTrunkBase}. */
+    private static final int TRUNK_SEARCH_VERTICAL = 20;
 
     /** V4.1, entrega 2 (sección 5.2 del encargo: "la emisión visual de
      * las hojas y los emisores puntuales deben tener presupuestos...
@@ -122,6 +141,14 @@ public final class EmitterTracker {
     /** Representante "pegajoso" de cada celda de foco de suelo -- ver
      * documentación de clase, punto 2. */
     private static final Map<Long, BlockPos> stickyGroundRepresentative = new HashMap<>();
+    /** V4.4 (corrección "el foco de suelo aparece desplazado hacia un
+     * lado"): ancla real del foco de suelo -- la base del tronco más
+     * cercano al representante pegajoso de la celda, no la hoja misma.
+     * Se recalcula únicamente cuando el representante pegajoso de esa
+     * celda cambia (ver {@link #buildGroundSpots}), nunca todos los
+     * rescaneos, para que el centro del círculo nunca se mueva mientras
+     * el árbol siga siendo el mismo. */
+    private static final Map<Long, BlockPos> stickyTrunkAnchor = new HashMap<>();
 
     private EmitterTracker() {}
 
@@ -279,6 +306,7 @@ public final class EmitterTracker {
             groundFade.clear();
             chunkCache.clear();
             stickyGroundRepresentative.clear();
+            stickyTrunkAnchor.clear();
             return;
         }
         LightingConfig config = ApuYawarLightingClient.config();
@@ -560,7 +588,26 @@ public final class EmitterTracker {
      * siendo el mismo mientras continúe siendo candidato en esa celda, en
      * vez de recalcularse "el mejor" en cada rescaneo (eso es lo que
      * hacía que {@code anchorPos} pudiera moverse sin que el árbol
-     * cambiara realmente -- ver documentación de clase, punto 2). */
+     * cambiara realmente -- ver documentación de clase, punto 2).
+     *
+     * <p><b>Corrección V4.4 ("el foco aparece desplazado hacia un
+     * lado")</b>: hasta ahora el ANCLA del foco era directamente la hoja
+     * representante -- correcto para decidir la celda, pero equivocado
+     * como centro visual, porque el faldón del Abeto Celestial
+     * ({@code spruce_foliage_placer}, radio 2-3) y las ramas laterales
+     * del Cerezo Celestial ({@code cherry_trunk_placer}, hasta 4 bloques
+     * de largo) colocan hojas reales varios bloques lejos de la columna
+     * del tronco. Ahora, cada vez que se fija un nuevo representante
+     * pegajoso, se busca además el tronco real más cercano
+     * ({@link #findNearbyTrunkBase}) y se usa SU columna (X/Z) como
+     * ancla -- la hoja sigue decidiendo qué celda/árbol es, pero ya no
+     * decide dónde cae el círculo de luz. Como el faldón de un mismo
+     * árbol puede ocupar más de una celda de 8×8, dos celdas distintas
+     * pueden resolver el MISMO tronco; se deduplica por columna de
+     * tronco (no por celda) para que cada árbol real produzca un único
+     * foco, eligiendo de forma determinista (por {@code cellKey} más
+     * bajo) para que la elección no dependa del orden de iteración del
+     * mapa y por tanto nunca parpadee entre rescaneos. */
     private static List<GroundSpot> buildGroundSpots(ClientWorld world,
                                                        Map<net.minecraft.util.Identifier, EmitterProfile> registered,
                                                        List<ActiveEmitter> emitters) {
@@ -570,7 +617,8 @@ public final class EmitterTracker {
             byCell.computeIfAbsent(cellKey(e.pos()), k -> new ArrayList<>()).add(e);
         }
 
-        List<GroundSpot> spots = new ArrayList<>(byCell.size());
+        record CellResolution(long cellKey, ActiveEmitter chosen, BlockPos anchor) {}
+        List<CellResolution> resolutions = new ArrayList<>(byCell.size());
         for (var entry : byCell.entrySet()) {
             long key = entry.getKey();
             List<ActiveEmitter> candidates = entry.getValue();
@@ -584,6 +632,7 @@ public final class EmitterTracker {
                     }
                 }
             }
+            boolean representativeChanged = chosen == null;
             if (chosen == null) {
                 // No hay representante pegajoso todavía, o el anterior ya no
                 // es candidato en esta celda (se rompió/decayó/salió de
@@ -593,14 +642,103 @@ public final class EmitterTracker {
                 }
                 stickyGroundRepresentative.put(key, chosen.pos());
             }
-            Integer groundY = findGroundY(world, chosen.pos(), registered);
+
+            BlockPos anchor = stickyTrunkAnchor.get(key);
+            if (representativeChanged || anchor == null) {
+                BlockPos trunkBase = findNearbyTrunkBase(world, chosen.pos());
+                anchor = trunkBase != null ? trunkBase : chosen.pos();
+                stickyTrunkAnchor.put(key, anchor);
+            }
+            resolutions.add(new CellResolution(key, chosen, anchor));
+        }
+
+        Map<Long, CellResolution> byAnchorColumn = new HashMap<>();
+        for (CellResolution r : resolutions) {
+            long columnKey = columnKey(r.anchor());
+            CellResolution existing = byAnchorColumn.get(columnKey);
+            if (existing == null || r.cellKey() < existing.cellKey()) {
+                byAnchorColumn.put(columnKey, r);
+            }
+        }
+
+        List<GroundSpot> spots = new ArrayList<>(byAnchorColumn.size());
+        for (CellResolution r : byAnchorColumn.values()) {
+            Integer groundY = findGroundY(world, r.anchor(), registered);
             if (groundY == null) continue;
-            spots.add(new GroundSpot(key, chosen.pos(), groundY, chosen.profile()));
+            spots.add(new GroundSpot(r.cellKey(), r.anchor(), groundY, r.chosen().profile()));
         }
         // Limpia celdas que ya no tienen ningún candidato (el árbol salió de
         // rango del todo) para no acumular memoria indefinidamente.
         stickyGroundRepresentative.keySet().retainAll(byCell.keySet());
+        stickyTrunkAnchor.keySet().retainAll(byCell.keySet());
         return spots;
+    }
+
+    /** Clave de columna (X,Z exactos, sin agrupar en celdas) -- usada
+     * para deduplicar focos de suelo que resolvieron al mismo tronco
+     * desde celdas de hojas distintas (ver {@link #buildGroundSpots}). */
+    private static long columnKey(BlockPos pos) {
+        return (((long) pos.getX()) << 32) ^ (pos.getZ() & 0xFFFFFFFFL);
+    }
+
+    /** V4.4: punto más bajo del tronco real más cercano (distancia
+     * horizontal) a {@code leafPos}, o {@code null} si no se encuentra
+     * ningún bloque de la etiqueta vanilla {@code minecraft:logs} dentro
+     * del radio de búsqueda. Se usa la etiqueta genérica en vez de los
+     * identificadores concretos de {@code momento_cuy} porque
+     * apuyawar-lighting no depende de ese módulo -- la dirección real es
+     * la contraria (momento-cuy llama a
+     * {@code ApuYawarLighting.registerBlockEmitter}). El radio
+     * horizontal (6 bloques) cubre con margen el faldón del Abeto
+     * Celestial ({@code spruce_foliage_placer}, radio 2-3) y las ramas
+     * del Cerezo Celestial ({@code cherry_trunk_placer}, hasta 4 bloques
+     * de largo); la ventana vertical (20 bloques) cubre la altura total
+     * de cualquiera de los dos troncos (7-13 bloques) sin importar si la
+     * hoja representante quedó cerca de la copa o cerca del faldón
+     * bajo. */
+    private static BlockPos findNearbyTrunkBase(ClientWorld world, BlockPos leafPos) {
+        BlockPos.Mutable cursor = new BlockPos.Mutable();
+        BlockPos best = null;
+        int bestDistSq = Integer.MAX_VALUE;
+        for (int dx = -TRUNK_SEARCH_RADIUS; dx <= TRUNK_SEARCH_RADIUS; dx++) {
+            int x = leafPos.getX() + dx;
+            for (int dz = -TRUNK_SEARCH_RADIUS; dz <= TRUNK_SEARCH_RADIUS; dz++) {
+                int distSq = dx * dx + dz * dz;
+                if (distSq > bestDistSq) continue; // ya hay una columna más cercana
+                int z = leafPos.getZ() + dz;
+                int lowestLogY = Integer.MIN_VALUE;
+                boolean found = false;
+                for (int dy = -TRUNK_SEARCH_VERTICAL; dy <= TRUNK_SEARCH_VERTICAL; dy++) {
+                    int y = leafPos.getY() + dy;
+                    cursor.set(x, y, z);
+                    if (!world.isInBuildLimit(cursor)) continue;
+                    if (world.getBlockState(cursor).isIn(BlockTags.LOGS)) {
+                        found = true;
+                        if (lowestLogY == Integer.MIN_VALUE || y < lowestLogY) lowestLogY = y;
+                    }
+                }
+                if (!found) continue;
+                // En este punto distSq <= bestDistSq (la guarda de arriba ya
+                // descartó lo peor) -- si es estrictamente mejor, o si hay un
+                // empate real, se actualiza; el cortocircuito de "||" evita
+                // invocar isEarlierColumn con `best == null` en el primer
+                // candidato encontrado.
+                if (distSq < bestDistSq || isEarlierColumn(x, z, best)) {
+                    bestDistSq = distSq;
+                    best = new BlockPos(x, lowestLogY, z);
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Desempate determinista (por coordenada, no por orden de
+     * iteración) para columnas de tronco igual de cercanas a la hoja
+     * representante -- caso raro (dos troncos a idéntica distancia) pero
+     * debe ser estable entre rescaneos. */
+    private static boolean isEarlierColumn(int x, int z, BlockPos current) {
+        if (x != current.getX()) return x < current.getX();
+        return z < current.getZ();
     }
 
     /** V4.2, entrega 2 -- causa raíz real confirmada del "foco de suelo

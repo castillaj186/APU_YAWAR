@@ -3452,3 +3452,151 @@ cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
    `/apuyawarlighting set caidafoco 0.7` antes de reportarlo.
 5. Repetir las pruebas F-J del encargo (Bloom, Cerezo, Panel K,
    rendimiento).
+
+## 27. APU YAWAR Lighting V4.4 — foco de suelo anclado a la base del tronco
+
+### 27.1. Causa exacta del desplazamiento
+
+El ancla horizontal (X/Z) del foco de suelo nunca fue la base del
+árbol: era directamente la posición de la **hoja representante** de la
+celda de 8×8 (`EmitterTracker.stickyGroundRepresentative`, invertida en
+V4.2 para preferir la hoja más BAJA en vez de la más alta). Esa hoja es
+perfectamente válida para decidir "sigue habiendo un árbol en esta
+celda", pero nunca fue pensada como centro visual del círculo.
+
+El problema es que ninguna de las dos copas celestiales crece en línea
+recta sobre su tronco:
+
+- **Abeto Celestial** (`abeto_celestial.json`, `trunk_placer` tipo
+  `straight_trunk_placer`, altura 8-13): usa `spruce_foliage_placer`
+  con radio 2-3, el mismo "faldón" ancho del abeto vanilla —las capas
+  de hojas más bajas (que V4.2 ahora prefiere como representante,
+  justo porque están más cerca del suelo) son las que más se abren
+  lateralmente, hasta 3 bloques del tronco.
+- **Cerezo Celestial** (`cerezo_celestial.json`, `trunk_placer` tipo
+  `cherry_trunk_placer`): genera 1-3 ramas laterales de 2-4 bloques de
+  largo cerca de la copa, cada una con su propio follaje
+  (`cherry_foliage_placer`, radio 4) — una hoja representante en la
+  punta de una rama puede estar a 4+ bloques de la columna real del
+  tronco.
+
+Con la hoja más baja (y lateral) como ancla, el círculo nacía
+sistemáticamente desplazado 2-4 bloques hacia el lado donde esa rama o
+capa del faldón creció, nunca debajo del tronco. Confirmado leyendo
+`abeto_celestial.json`/`cerezo_celestial.json` y los parámetros reales
+de `spruce_foliage_placer`/`cherry_trunk_placer`, no por inspección
+visual únicamente.
+
+### 27.2. Lógica nueva: ancla por columna de tronco, no por hoja
+
+`EmitterTracker.findNearbyTrunkBase(world, leafPos)` (nuevo): busca,
+en un radio horizontal de 6 bloques y una ventana vertical de 20
+bloques alrededor de la hoja representante, el bloque más bajo que
+tenga la etiqueta vanilla `minecraft:logs` — la etiqueta genérica, no
+los identificadores concretos de `momento_cuy:tronco_abeto_celestial`/
+`tronco_cerezo_celestial`, porque `apuyawar-lighting` no depende del
+módulo `momento-cuy` (la dependencia real va al revés: `momento-cuy`
+llama a `ApuYawarLighting.registerBlockEmitter`). El radio/ventana
+cubren con margen el faldón del abeto y las ramas del cerezo
+documentados en 27.1.
+
+Si se encuentra un tronco, su columna (X, Y del log más bajo, Z) pasa
+a ser el `anchorPos` real del `GroundSpot`, en vez de la hoja. Si no se
+encuentra ninguno (tronco talado, hoja aislada fuera de rango, etc.),
+se conserva el comportamiento anterior como respaldo (ancla = hoja
+representante), para no introducir un foco que desaparece por
+completo donde antes sí aparecía algo.
+
+**Estabilidad ("no debe moverse al caminar, no debe completarse según
+me acerco")**: la búsqueda de tronco sólo se ejecuta cuando el
+representante pegajoso de esa celda cambia por primera vez (nueva
+celda, o el árbol anterior salió de rango/fue talado) — el resultado
+se cachea en `EmitterTracker.stickyTrunkAnchor`, igual que
+`stickyGroundRepresentative`. Mientras el árbol siga siendo el mismo,
+el ancla nunca se recalcula, así que el centro del círculo es
+literalmente el mismo objeto `BlockPos` en cada rescaneo, no sólo "una
+posición parecida".
+
+**Un foco por árbol, no uno por celda que su copa toque**: el faldón
+del abeto o las ramas del cerezo pueden extenderse a una celda de 8×8
+vecina a la del tronco. Antes, cada celda con hojas producía su propio
+`GroundSpot` — ahora, tras resolver el ancla de tronco de cada celda,
+se deduplica por **columna de tronco real** (`columnKey`, X/Z exactos,
+no la rejilla de 8×8): si dos celdas de hojas distintas resuelven al
+mismo tronco, sólo sobrevive una, elegida de forma determinista (la de
+menor `cellKey`) para que la elección no dependa del orden de
+iteración de un `HashMap` y por tanto nunca parpadee entre rescaneos.
+
+**Efecto colateral comprobado por lectura de código, no buscado
+deliberadamente**: como la base de un tronco real SIEMPRE está
+apoyada directamente sobre el bloque de suelo (así generan los
+`trunk_placer` de vanilla y los de este mod), `verticalDistance` en
+`diagnoseGroundSpot` ahora es prácticamente 0 para cualquier foco
+anclado a un tronco real (antes podía ser de 2.5 a 6.2 bloques con una
+hoja lejana como ancla). Esto significa que la curva de atenuación
+desacoplada en la sección 26.1 deja de ser la que limita el alfa final
+en el caso normal — sólo sigue aplicando en el caso de respaldo (sin
+tronco encontrado). No se tocó esa curva esta ronda; es una
+consecuencia matemática directa del cambio de ancla, verificada
+leyendo `diagnoseGroundSpot`, no una afirmación de que "ahora se ve
+mejor" sin prueba.
+
+### 27.3. Archivos modificados
+
+- `apuyawar-lighting/src/main/java/pe/apuyawar/lighting/client/EmitterTracker.java`:
+  nuevo campo `stickyTrunkAnchor`, nuevos métodos `findNearbyTrunkBase`,
+  `isEarlierColumn`, `columnKey`, y reescritura de `buildGroundSpots`
+  para resolver y deduplicar por columna de tronco. Import nuevo:
+  `net.minecraft.registry.tag.BlockTags`.
+
+Ningún otro archivo necesitó cambios: `WorldLightingRenderer#addGroundSpot`/
+`#diagnoseGroundSpot` y `LightingCommands#debugGroundSpots` ya eran
+genéricos sobre `spot.anchorPos()` (nunca asumieron que fuera
+necesariamente una hoja), así que el nuevo ancla de tronco fluye sin
+tocarlos — incluido el comando de diagnóstico existente
+(`/apuyawarlighting debug focos`, campo `ancla=`), que ahora imprime la
+columna del tronco automáticamente.
+
+### 27.4. Pruebas realizadas
+
+- `gradlew :apuyawar-lighting:compileJava`: éxito.
+- `gradlew :momento-cuy:compileJava`: éxito (confirma que el bridge de
+  registro de emisores sigue enlazando sin cambios).
+- `gradlew build` (4 módulos): éxito, sin regresión.
+
+**No verificado visualmente esta ronda**: este entorno no tiene acceso
+a teclado/ratón/captura de pantalla, así que no se pudo confirmar en
+vivo que el círculo aparece ahora debajo del tronco en lugar de al
+lado. La corrección está verificada por lectura de código (los
+parámetros reales de `spruce_foliage_placer`/`cherry_trunk_placer`
+explican el desplazamiento observado, y la nueva búsqueda de tronco es
+genérica sobre la etiqueta vanilla `minecraft:logs`, no sobre un caso
+especial) y por compilación/build limpios, no por una captura de
+pantalla nueva. Pendiente de confirmación visual real por el equipo —
+ver 27.5.
+
+### 27.5. Instrucciones de prueba para el equipo
+
+```
+cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
+```
+
+1. Pararse junto a un Abeto Celestial o Cerezo Celestial de noche y
+   mirar el suelo: el círculo de luz debe verse justo debajo del
+   tronco, no desplazado hacia un lado ni fuera de la silueta del
+   árbol.
+2. `/apuyawarlighting debug focos` -- el campo `ancla=` debe coincidir
+   en X/Z (aproximadamente) con la posición del tronco visible, no con
+   una hoja lateral; `distVertical` debería salir ahora muy cercano a
+   `0.0` (antes 2.5-6.2 según la altura del árbol).
+3. Caminar alrededor del árbol varias veces, incluyendo alejarse y
+   volver a acercarse -- el círculo no debe moverse ni "completarse"
+   progresivamente; debe ser el mismo desde el primer instante en que
+   vuelve a ser visible.
+4. Repetir con varios árboles juntos (un grupo de 2-3 Abetos/Cerezos
+   uno junto a otro) -- confirmar que aparece un círculo por árbol, no
+   varios superpuestos ni ninguno fusionado.
+5. Si algún árbol real no muestra ningún tronco (p. ej. talado a mitad
+   de altura, o con el tronco fuera de la ventana vertical cacheada),
+   confirmar que el foco cae de vuelta al comportamiento anterior
+   (ancla = hoja) en vez de desaparecer por completo.
