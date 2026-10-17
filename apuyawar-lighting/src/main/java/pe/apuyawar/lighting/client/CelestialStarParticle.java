@@ -29,7 +29,17 @@ final class CelestialStarParticle extends SpriteBillboardParticle {
         // CelestialSparkParticle -- mismos tres controles, leídos en
         // vivo al nacer.
         LightingConfig config = ApuYawarLightingClient.config();
-        float sizeScale = Math.max(0.1f, config.celestialParticleSizeMultiplier);
+        // V4.3, fase 4 (sección 6.1 del encargo: "comprueba que
+        // tamanoparticulas=2.00 no produzca estrellas exageradamente
+        // grandes") -- la estrella es la más llamativa de las tres
+        // partículas (destello + secuencia animada), así que su
+        // multiplicador de tamaño se acota aparte del de la chispa
+        // (que puede seguir creciendo sin tope -- un halo grande sigue
+        // leyéndose como "suave", nunca como "gigante"). 1.8 con la
+        // escala base de 0.22 da 0.40 como máximo absoluto, nunca el
+        // "¿0.44 con el multiplicador en 2.0?" que se habría obtenido
+        // sin este tope.
+        float sizeScale = Math.min(1.8f, Math.max(0.1f, config.celestialParticleSizeMultiplier));
         float lifeScale = Math.max(0.1f, config.celestialParticleLifetimeMultiplier);
         float speedScale = Math.max(0.0f, config.celestialParticleSpeedMultiplier);
 
