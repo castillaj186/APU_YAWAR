@@ -3272,3 +3272,183 @@ cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
    emisión propia visible en varias regiones, no sólo puntos sueltos.
 7. Repetir con Bloom activado -- comparar resplandor.
 8. Abrir el Panel K con Bloom activo -- confirmar nitidez.
+
+## 26. APU YAWAR Lighting V4.3 — visibilidad real y acabado neón
+
+El equipo confirmó visualmente, por primera vez en toda esta serie de
+correcciones, que el pipeline de dibujo SÍ funciona: el foco magenta de
+prueba (`/apuyawarlighting test foco`) se ve claramente en Minecraft.
+Datos reales de esa misma sesión: 17/17 focos de suelo enviados al
+dibujo (0 descartados por alfa), 439/439 superficies emisivas enviadas
+al dibujo, pero con alfa final de los focos reales entre 0.05 y 0.22 --
+visualmente casi nada. Esta sección documenta las DOS causas reales
+confirmadas (no la reconstrucción completa que el encargo pidió
+explícitamente NO hacer).
+
+### 26.1. Fase 1 — atenuación excesiva de los focos de suelo
+
+**Comparación magenta vs. turquesa real, con números**: el foco
+magenta fuerza `groundY` = la altura de los pies del jugador, así que
+`verticalDistance = 0` siempre -- `falloff = 1.0`, `alpha =
+groundSpotIntensity ≈ 0.40`. Para los focos reales, reconstruyendo
+`verticalDistance` a partir de los 4 valores de alfa reales reportados
+(0.22, 0.18, 0.10, 0.05) con la fórmula ANTERIOR
+(`maxDistance=groundSpotRadius*6=9.6`, `falloff=linear²`): entre 2.5 y
+6.2 bloques de distancia vertical real -- consistente con la
+corrección V4.2 (preferir la hoja MÁS BAJA de la celda como
+representante, no la más alta), pero esa distancia, aunque ya mucho
+menor que antes, seguía perdiendo entre el 45% y el 87% de la
+intensidad por el EXPONENTE CUADRÁTICO heredado de
+`profile.falloff()` -- un valor pensado para la caída del RADIO DE LUZ
+de una hoja, no para una luz ambiental de suelo.
+
+**Corrección** (`LightingConfig`, dos campos nuevos,
+`WorldLightingRenderer#diagnoseGroundSpot` actualizado):
+- `groundSpotFalloffRange` (8.0 por defecto): el alcance vertical real
+  del foco, AHORA independiente de `groundSpotRadius` (que sigue
+  controlando sólo el tamaño visual del decal) -- antes ambos salían
+  del mismo cálculo (`radius*6`), aunque conceptualmente no tienen
+  ninguna relación.
+- `groundSpotFalloffExponent` (1.0 por defecto, lineal): reemplaza el
+  uso de `profile.falloff()` (2.0, pensado para otra cosa) por un
+  exponente propio, mucho más suave.
+
+Con los mismos 4 valores reales reportados, la fórmula nueva da
+aproximadamente 0.28, 0.24, 0.16 y 0.09 -- entre 25% y 80% más intensos,
+sin que ninguno se acerque a 1.0 ("linterna gigante"). Ningún
+multiplicador de intensidad se tocó -- exactamente lo que pidió el
+encargo ("no quiero simplemente multiplicar todo por 10").
+
+**Nuevos comandos**: `/apuyawarlighting set alcancefoco <valor>`,
+`/apuyawarlighting set caidafoco <valor>` -- ajustables
+independientemente del tamaño del decal.
+
+**No verificado visualmente**: la mejora matemática está confirmada
+con los números reales del equipo, pero el resultado en pantalla (si
+ahora se ve "turquesa, suave, pequeño, visible" tal como pide el
+criterio de aceptación) queda pendiente de la próxima sesión de
+pruebas del equipo.
+
+### 26.2. Fase 2 — follaje emisivo: causa real distinta a la investigada en V4.2
+
+**Hipótesis descartada, con evidencia**: se investigó primero si la
+textura de la máscara emisiva quedaba "mipmap incompleta" (un nivel de
+mip faltante que OpenGL podría muestrear como negro). Confirmado FALSO
+leyendo el bytecode real de `TextureUtil#prepareImage`: fija
+`GL_TEXTURE_MAX_LEVEL=0` explícitamente para una textura de un solo
+nivel, lo que la vuelve completa sin importar el filtro de minificación
+-- esta hipótesis se descartó con evidencia, no se dejó como
+"posiblemente cierta".
+
+**Causa real confirmada**: `prepareImage` NUNCA toca
+`GL_TEXTURE_MAG_FILTER`, y ninguna `NativeImageBackedTexture` llama a
+`setFilter()` por su cuenta en ningún punto de su propio código (ambos
+hechos confirmados leyendo el bytecode real de `AbstractTexture`/
+`NativeImageBackedTexture`) -- así que ese parámetro se queda en el
+valor por defecto real de OpenGL para una textura nueva: `GL_LINEAR`.
+Con una máscara mayormente transparente y unos pocos píxeles opacos
+sueltos (el diseño real de `EmissiveMaskGenerator` desde la V4, 7%-12%
+de píxeles emisivos), ver el cubo de cerca -- el caso normal al pararse
+junto a un árbol -- activa ese filtro lineal: cada píxel brillante
+aislado se MEZCLA con sus vecinos de alfa 0, diluyendo su color real.
+Esto explica "439 cubos enviados al dibujo, copa oscura, sólo algunos
+píxeles sueltos (los que caen en grupos, no aislados) visibles" de
+forma independiente de cualquier cálculo de alfa.
+
+**Corrección** (`EmissiveMaskGenerator`): `maskTexture.setFilter(false,
+false)` justo después de construir la textura -- fuerza `GL_NEAREST`
+en ambos filtros (minificación y magnificación). Cada píxel de la
+máscara se muestrea tal cual, sin mezclarse con sus vecinos
+transparentes -- y, como beneficio adicional no buscado pero
+consistente con el encargo ("conserva el pixel art"), esto también
+evita cualquier desenfoque de los píxeles de la máscara en sí.
+
+**Máscaras -- revisadas de nuevo, sin cambios en el algoritmo**: la
+distribución de 7%-12% de píxeles emisivos (sección 4.1/4.2 del
+encargo) sigue siendo la misma que se validó en la V4 (§23.1) -- la
+causa real no estaba ahí, así que no se tocó el umbral adaptativo ni
+se crearon "tres texturas" (el gradiente de alfa por píxel, ya
+existente, cumple el pedido de "contraste" sin necesitar más capas).
+
+**Geometría y profundidad -- confirmadas sin cambios necesarios**
+(sección 4.4 del encargo): la corrección de `matrixStack` de la V4.2
+sigue intacta y es la base correcta -- no se encontró ningún problema
+nuevo de z-fighting ni de orden de renderizado esta ronda. El depth
+test sigue en `LEQUAL`, nunca desactivado.
+
+**No verificado visualmente**: igual que la fase 1, la causa está
+confirmada por lectura de bytecode real (no supuesta), pero el
+resultado final en pantalla queda pendiente de la próxima sesión.
+
+### 26.3. Fase 3 — composición del Bloom: verificación, sin cambios de código
+
+El encargo pidió explícitamente no empezar esta fase hasta que la
+emisión de las hojas funcionara -- cumplido: con las dos correcciones
+de las fases 1/2 ya aplicadas, se verificó (no se modificó) que
+`BloomRenderer` sigue capturando el MISMO `built` que ahora tiene la
+textura correctamente filtrada (la corrección de la fase 2 ocurre
+ANTES de que `built` se dibuje, así que el Bloom hereda automáticamente
+la mejora sin ningún cambio en `BloomRenderer`). Los focos de suelo
+siguen excluidos del Bloom (V4.1, §24.4) -- confirmado que la
+corrección de la fase 1 no reintrodujo ninguna ruta de captura hacia
+el Bloom.
+
+Confirmado con `runClient` real: la autoprueba del ciclo completo de
+Bloom sigue pasando sin excepciones tras las correcciones de las
+fases 1 y 2.
+
+### 26.4. Fase 4 — partículas, estabilidad y optimización
+
+**Tamaño de estrella acotado** (sección 6.1 del encargo: "comprueba
+que `tamanoparticulas=2.00` no produzca estrellas exageradamente
+grandes"): `CelestialStarParticle` ahora acota su propio multiplicador
+de tamaño a un máximo de 1.8 (dando 0.22×1.8=0.40 como tope absoluto,
+en vez de 0.44 sin acotar) -- sólo para la estrella, la más llamativa
+de las tres partículas; la chispa (un halo suave, nunca "gigante"
+aunque crezca) no se tocó.
+
+**Revisado, sin cambios necesarios**: distribución tridimensional de
+partículas (ya nacen de posiciones reales de hojas en toda la copa,
+V4 fase 2), estabilidad al caminar (caché por chunk y sticky
+representative sin cambios), rendimiento (ninguna estructura nueva
+recorre el mundo más de lo que ya hacía antes).
+
+**Rendimiento -- no medible en este entorno**: sin control de
+teclado/ratón ni overlay F3 visual, no hay FPS reales que reportar.
+No se inventó ningún valor.
+
+### 26.5. Pruebas reales ejecutadas
+
+- `gradlew :apuyawar-lighting:compileJava`: éxito.
+- `gradlew :momento-cuy:runClient` real: ambas autopruebas (material
+  emisivo, Bloom real) siguen pasando sin excepciones tras los 3
+  cambios de código (ground spot, filtro de textura, tope de tamaño de
+  estrella).
+- `gradlew build` (4 módulos): éxito, sin regresión.
+
+### 26.6. Comandos nuevos
+
+```
+/apuyawarlighting set alcancefoco <valor>   -- alcance vertical del foco de suelo (bloques)
+/apuyawarlighting set caidafoco <valor>     -- exponente de la curva de caída (1.0 = lineal)
+```
+
+### 26.7. Instrucciones de prueba para el equipo
+
+```
+cd E:\APU_YAWAR && gradlew.bat :momento-cuy:runClient
+```
+
+1. `/apuyawarlighting debug focos` -- comparar los nuevos valores de
+   `caida`/alfa contra los reportados en V4.2 (0.05-0.22) -- deberían
+   verse ahora más altos (≈0.09-0.28 con los valores por defecto).
+2. Observar el suelo bajo un árbol real -- ¿se ve ahora un foco
+   turquesa reconocible, no sólo matemáticamente más alto?
+3. Observar la copa de noche, con halos ocultos y Bloom desactivado --
+   ¿se nota una diferencia real tras el arreglo del filtro de textura,
+   comparado con la sesión de V4.2?
+4. Si el foco de suelo sigue pareciendo débil, probar
+   `/apuyawarlighting set alcancefoco 10` o
+   `/apuyawarlighting set caidafoco 0.7` antes de reportarlo.
+5. Repetir las pruebas F-J del encargo (Bloom, Cerezo, Panel K,
+   rendimiento).
